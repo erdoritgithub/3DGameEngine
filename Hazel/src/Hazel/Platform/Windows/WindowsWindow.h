@@ -20,13 +20,15 @@ namespace Hazel {
 		void SetVSync(bool enabled);
 		bool IsVSync() const;
 
+		inline GLFWwindow* GetGLFWWindow() const { return m_Window; }
+
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
 
 	private:
 		GLFWwindow* m_Window;
-		GLFWcursor* m_MouseCursors[9] = { 0 };
+		GLFWcursor* m_ImGuiMouseCursors[9] = { 0 };
 
 		EventCallbackFn m_EventCallbackFn;
 

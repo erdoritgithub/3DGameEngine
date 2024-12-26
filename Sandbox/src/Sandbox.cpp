@@ -11,8 +11,7 @@ public:
 
 	virtual void OnInit() override
 	{
-		PushLayer(new Hazel::ImGuiLayer());
-		PushOverlay(new Hazel::ImGuiLayer("Second Layer"));
+		PushOverlay(new Hazel::ImGuiLayer("ImGui"));
 	}
 };
 Hazel::Application* Hazel::CreateApplication()
