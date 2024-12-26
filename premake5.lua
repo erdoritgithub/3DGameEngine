@@ -10,27 +10,40 @@ workspace "Hazel"
     }
     
 local outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+IncludeDir = {}
+IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
+
+include "Hazel/vendor/GLFW"
+
 project "Hazel"
     location "Hazel"
     kind "StaticLib"
     language "C++"
+    systemversion "latest"
     buildoptions "/utf-8"
     
 	targetdir ("bin/" .. outputdir .. "/Hazel")
     objdir ("bin-int/" .. outputdir .. "/Hazel")
 	files 
 	{ 
-		"Hazel/**.h", 
-		"Hazel/**.c", 
-		"Hazel/**.hpp", 
-		"Hazel/**.cpp" 
+		"%{prj.name}/src/**.h", 
+		"%{prj.name}/src/**.c", 
+		"%{prj.name}/src/**.hpp", 
+		"%{prj.name}/src/**.cpp" 
     }
 
     includedirs
 	{
 		"Hazel/src",
 		"Hazel/vendor",
+        "%{IncludeDir.GLFW}"
 	}
+
+    links 
+	{ 
+		"GLFW"
+    }
     
 	filter "system:windows"
 		cppdialect "C++17"
@@ -56,6 +69,7 @@ project "Sandbox"
     location "Sandbox"
     kind "ConsoleApp"
     language "C++"
+    systemversion "latest"
     buildoptions "/utf-8"
     
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -67,10 +81,10 @@ project "Sandbox"
     
 	files 
 	{ 
-		"%{prj.name}/**.h", 
-		"%{prj.name}/**.c", 
-		"%{prj.name}/**.hpp", 
-		"%{prj.name}/**.cpp" 
+		"%{prj.name}/src/**.h", 
+		"%{prj.name}/src/**.c", 
+		"%{prj.name}/src/**.hpp", 
+		"%{prj.name}/src/**.cpp" 
 	}
     
 	includedirs 
