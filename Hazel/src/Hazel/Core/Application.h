@@ -2,6 +2,7 @@
 
 #include "Hazel/Core/Core.h"
 #include "Hazel/Core/Window.h"
+#include "Hazel/Core/LayerStack.h"
 
 #include "Hazel/Core/Events/ApplicationEvent.h"
 
@@ -18,6 +19,9 @@ namespace Hazel {
 		virtual void OnUpdate() {}
 
 		virtual void OnEvent(Event& event);
+
+		void PushLayer(Layer* layer);
+		void PushOverlay(Layer* layer);
 	private:
 		bool OnWindowResize(WindowResizeEvent& e);
 		bool OnWindowClose(WindowCloseEvent& e);
@@ -25,6 +29,7 @@ namespace Hazel {
 	private:
 		std::unique_ptr<Window> m_Window;
 		bool m_Running = true;
+		LayerStack m_LayerStack;
 
 	};
 	// Implemented by CLIENT

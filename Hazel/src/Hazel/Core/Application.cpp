@@ -1,6 +1,7 @@
+#include "hzpch.h"
 #include "Application.h"
 
-#include "Hazel/Core/Log.h"
+#include <GLFW/glfw3.h>
 
 namespace Hazel {
 
@@ -16,12 +17,30 @@ namespace Hazel {
 	{
 	}
 
+	void Application::PushLayer(Layer* layer)
+	{
+		m_LayerStack.PushLayer(layer);
+	}
+
+	void Application::PushOverlay(Layer* layer)
+	{
+		m_LayerStack.PushOverlay(layer);
+	}
+
 	void Application::Run()
 	{
+		OnInit();
 		while (m_Running)
 		{
+			glClearColor(1, 0, 1, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			for (Layer* layer : m_LayerStack)
+				layer->OnUpdate();
+
 			m_Window->OnUpdate();
 		}
+		OnShutdown();
 	}
 
 	void Application::OnEvent(Event& event)
@@ -30,7 +49,12 @@ namespace Hazel {
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OnWindowResize));
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
 
-		HZ_CORE_TRACE("{}", event.ToString());
+		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
+		{
+			(*--it)->OnEvent(event);
+			if (event.Handled)
+				break;
+		}
 	}
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)

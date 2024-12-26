@@ -25,6 +25,10 @@ project "Hazel"
     
 	targetdir ("bin/" .. outputdir .. "/Hazel")
     objdir ("bin-int/" .. outputdir .. "/Hazel")
+
+    pchheader "hzpch.h"
+    pchsource "Hazel/src/hzpch.cpp"
+
 	files 
 	{ 
 		"%{prj.name}/src/**.h", 
@@ -42,7 +46,8 @@ project "Hazel"
 
     links 
 	{ 
-		"GLFW"
+		"GLFW",
+        "opengl32.lib"
     }
     
 	filter "system:windows"

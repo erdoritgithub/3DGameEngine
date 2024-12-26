@@ -1,5 +1,6 @@
+#include "hzpch.h"
 #include "WindowsWindow.h"
-#include "Hazel/Core/Log.h"
+
 #include "Hazel/Core/Events/ApplicationEvent.h"
 #include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Core/Events/MouseEvent.h"
@@ -37,7 +38,7 @@ namespace Hazel {
 		{
 			// TODO: glfwTerminate on system shutdown
 			int success = glfwInit();
-			HZ_ASSERT(success, "Could not intialize GLFW!");
+			HZ_CORE_ASSERT(success, "Could not intialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_GLFWInitialized = true;
 		}
