@@ -3,11 +3,11 @@
 extern Hazel::Application* Hazel::CreateApplication();
 int main(int argc, char** argv)
 {
-	hz::Log::Init();
+	Hazel::Log::Init();
 	Hazel::Application* app = Hazel::CreateApplication();
+	HZ_CORE_ASSERT(app, "Client Application is null!");
 	app->Run();
 	delete app;
 }
-#else
-#error Hazel only supports Windows
+
 #endif

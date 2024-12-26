@@ -4,7 +4,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include "spdlog/fmt/bundled/ostream.h"
 
-namespace hz {
+namespace Hazel{
 	class Log
 	{
 	public:
@@ -17,14 +17,14 @@ namespace hz {
 	};
 }
 // Core Logging Macros
-#define HZ_CORE_TRACE(...)	hz::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define HZ_CORE_INFO(...)	hz::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define HZ_CORE_WARN(...)	hz::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define HZ_CORE_ERROR(...)	hz::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define HZ_CORE_FATAL(...)	hz::Log::GetCoreLogger()->critical(__VA_ARGS__)
+#define HZ_CORE_TRACE(...)	Hazel::Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define HZ_CORE_INFO(...)	Hazel::Log::GetCoreLogger()->info(__VA_ARGS__)
+#define HZ_CORE_WARN(...)	Hazel::Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define HZ_CORE_ERROR(...)	Hazel::Log::GetCoreLogger()->error(__VA_ARGS__)
+#define HZ_CORE_FATAL(...)	Hazel::Log::GetCoreLogger()->critical(__VA_ARGS__)
 // Client Logging Macros
-#define HZ_TRACE(...)	hz::Log::GetClientLogger()->trace(__VA_ARGS__)
-#define HZ_INFO(...)	hz::Log::GetClientLogger()->info(__VA_ARGS__)
-#define HZ_WARN(...)	hz::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define HZ_ERROR(...)	hz::Log::GetClientLogger()->error(__VA_ARGS__)
-#define HZ_FATAL(...)	hz::Log::GetClientLogger()->critical(__VA_ARGS__)
+#define HZ_TRACE(...)	Hazel::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define HZ_INFO(...)	Hazel::Log::GetClientLogger()->info(__VA_ARGS__)
+#define HZ_WARN(...)	Hazel::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define HZ_ERROR(...)	Hazel::Log::GetClientLogger()->error(__VA_ARGS__)
+#define HZ_FATAL(...)	Hazel::Log::GetClientLogger()->critical(__VA_ARGS__)
