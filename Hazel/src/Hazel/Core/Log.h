@@ -2,7 +2,7 @@
 #include "Hazel/Core/Core.h"
 #include "spdlog/spdlog.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
-#include "spdlog/fmt/bundled/ostream.h"
+#include "spdlog/fmt/ostr.h"
 
 namespace Hazel{
 	class Log
