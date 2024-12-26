@@ -26,6 +26,8 @@ namespace Hazel {
 
 	private:
 		GLFWwindow* m_Window;
+		GLFWcursor* m_MouseCursors[9] = { 0 };
+
 		EventCallbackFn m_EventCallbackFn;
 
 		struct WindowData
