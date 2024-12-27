@@ -9,6 +9,8 @@
 #include "Hazel/Core/Application.h"
 #include <GLFW/glfw3.h>
 
+#include "Hazel/Renderer/Renderer.h"
+
 namespace Hazel {
 	ImGuiLayer::ImGuiLayer()
 	{
@@ -58,7 +60,7 @@ namespace Hazel {
 		ImGui::DestroyContext();
 	}
 
-	void ImGuiLayer::OnUpdate()
+	void ImGuiLayer::OnImGuiRender()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

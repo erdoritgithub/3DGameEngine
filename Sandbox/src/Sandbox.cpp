@@ -21,11 +21,26 @@ public:
 
 	virtual void OnUpdate() override
 	{
-		Hazel::Renderer::Clear(0.2f, 0.3f, 0.8f, 1);
+		Hazel::Renderer::Clear(0.8f, 0.3f, 0.8f, 1);
+		float r = 1.0f;
+		float g = 0.0f;
+		float b = 1.0f;
+		HZ_RENDER_III(r, g, b, {
+			Hazel::RendererAPI::Clear(r, g, b, 1.0f);
+			});
 	}
+
+	virtual void OnImGuiRender() override
+	{
+		/*ImGui::Begin("Example Window");
+		ImGui::Text("Hello World!");
+		ImGui::End();*/
+	}
+
 	virtual void OnEvent(Hazel::Event& event) override
 	{
 	}
+
 };
 
 

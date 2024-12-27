@@ -10,6 +10,7 @@
 #include "Hazel/Core/Events/MouseEvent.h"
 
 #include "Hazel/Renderer/Renderer.h"
+#include "imgui/imgui.h"
 
 // ---Entry Point------------
 #include "Hazel/EntryPoint.h"

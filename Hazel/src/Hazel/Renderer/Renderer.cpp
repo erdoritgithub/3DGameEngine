@@ -1,7 +1,6 @@
 #include "hzpch.h"
 
 #include "Renderer.h"
-#include "RenderCommand.h"
 
 namespace Hazel {
 	Renderer* Renderer::s_Instance = new Renderer();
@@ -12,13 +11,14 @@ namespace Hazel {
 
 	void Renderer::Clear()
 	{
-		// HZ_RENDER(Clear());
+		
 	}
 
 	void Renderer::Clear(float r, float g, float b, float a)
 	{
-		float params[4] = { r, g, b, a };
-		s_Instance->m_CommandQueue.SubmitCommand(RenderCommand::Clear, params, sizeof(float) * 4);
+		HZ_RENDER_IV(r, g, b, a, {
+			RendererAPI::Clear(r, g, b, a);
+		});
 	}
 
 	void Renderer::ClearMagenta()
@@ -28,7 +28,7 @@ namespace Hazel {
 
 	void Renderer::SetClearColor(float r, float g, float b, float a)
 	{
-		// HZ_RENDER(SetClearColor(r, g, b, a));
+		
 	}
 
 	void Renderer::WaitAndRender()

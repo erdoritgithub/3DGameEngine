@@ -44,6 +44,9 @@ namespace Hazel {
 				layer->OnUpdate();
 
 			Renderer::Get().WaitAndRender();
+			for (Layer* layer : m_LayerStack)
+				layer->OnImGuiRender();
+
 			m_Window->OnUpdate();
 
 		}
