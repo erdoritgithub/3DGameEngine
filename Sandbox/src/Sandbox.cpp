@@ -29,6 +29,18 @@ public:
 
 	virtual void OnAttach() override
 	{
+		static float vertices[] = {
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+			 0.0f,  0.5f, 0.0f
+		};
+		static unsigned int indices[] = {
+			0, 1, 2
+		};
+		m_VB = std::unique_ptr<Hazel::VertexBuffer>(Hazel::VertexBuffer::Create());
+		m_VB->SetData(vertices, sizeof(vertices));
+		m_IB = std::unique_ptr<Hazel::IndexBuffer>(Hazel::IndexBuffer::Create());
+		m_IB->SetData(indices, sizeof(indices));
 	}
 
 	virtual void OnDetach() override
@@ -37,7 +49,11 @@ public:
 
 	virtual void OnUpdate() override
 	{
-		Hazel::Renderer::Clear(m_ClearColor[0], m_ClearColor[1], m_ClearColor[2], m_ClearColor[3]);
+		using namespace Hazel;
+		Renderer::Clear(m_ClearColor[0], m_ClearColor[1], m_ClearColor[2], m_ClearColor[3]);
+		m_VB->Bind();
+		m_IB->Bind();
+		Renderer::DrawIndexed(3);
 	}
 
 	virtual void OnImGuiRender() override
@@ -128,6 +144,8 @@ public:
 	{
 	}
 private:
+	std::unique_ptr<Hazel::VertexBuffer> m_VB;
+	std::unique_ptr<Hazel::IndexBuffer> m_IB;
 	float m_ClearColor[4];
 };
 

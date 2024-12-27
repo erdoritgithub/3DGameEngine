@@ -15,9 +15,11 @@ namespace Hazel {
 		static void Clear(float r, float g, float b, float a = 1.0f);
 		static void SetClearColor(float r, float g, float b, float a);
 
+		static void DrawIndexed(unsigned int count);
+
 		static void ClearMagenta();
 
-		void Init();
+		static void Init();
 
 		static void* Submit(RenderCommandFn fn, unsigned int size)
 		{
@@ -48,7 +50,7 @@ namespace Hazel {
         }\
     };\
 	{\
-		auto mem = RenderCommandQueue::Submit(sizeof(HZ_RENDER_UNIQUE(HZRenderCommand)), HZ_RENDER_UNIQUE(HZRenderCommand)::Execute);\
+		auto mem = ::Hazel::Renderer::Submit(HZ_RENDER_UNIQUE(HZRenderCommand)::Execute, sizeof(HZ_RENDER_UNIQUE(HZRenderCommand)));\
 		new (mem) HZ_RENDER_UNIQUE(HZRenderCommand)();\
 	}\
 
@@ -59,9 +61,9 @@ namespace Hazel {
 		HZ_RENDER_UNIQUE(HZRenderCommand)(typename ::std::remove_const<typename ::std::remove_reference<decltype(arg0)>::type>::type arg0) \
 		: arg0(arg0) {}\
 		\
-        static void Execute(void* self)\
+        static void Execute(void* argBuffer)\
         {\
-			auto& arg0 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg0;\
+			auto& arg0 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg0;\
             code\
         }\
 		\
@@ -79,10 +81,10 @@ namespace Hazel {
 											typename ::std::remove_const<typename ::std::remove_reference<decltype(arg1)>::type>::type arg1) \
 		: arg0(arg0), arg1(arg1) {}\
 		\
-        static void Execute(void* self)\
+        static void Execute(void* argBuffer)\
         {\
-			auto& arg0 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg0;\
-			auto& arg1 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg1;\
+			auto& arg0 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg0;\
+			auto& arg1 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg1;\
             code\
         }\
 		\
@@ -102,11 +104,11 @@ namespace Hazel {
 											typename ::std::remove_const<typename ::std::remove_reference<decltype(arg2)>::type>::type arg2) \
 		: arg0(arg0), arg1(arg1), arg2(arg2) {}\
 		\
-        static void Execute(void* self)\
+        static void Execute(void* argBuffer)\
         {\
-			auto& arg0 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg0;\
-			auto& arg1 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg1;\
-			auto& arg2 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg2;\
+			auto& arg0 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg0;\
+			auto& arg1 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg1;\
+			auto& arg2 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg2;\
             code\
         }\
 		\
@@ -128,12 +130,12 @@ namespace Hazel {
 											typename ::std::remove_const<typename ::std::remove_reference<decltype(arg3)>::type>::type arg3)\
 		: arg0(arg0), arg1(arg1), arg2(arg2), arg3(arg3) {}\
 		\
-        static void Execute(void* self)\
+        static void Execute(void* argBuffer)\
         {\
-			auto& arg0 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg0;\
-			auto& arg1 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg1;\
-			auto& arg2 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg2;\
-			auto& arg3 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)self)->arg3;\
+			auto& arg0 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg0;\
+			auto& arg1 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg1;\
+			auto& arg2 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg2;\
+			auto& arg3 = ((HZ_RENDER_UNIQUE(HZRenderCommand)*)argBuffer)->arg3;\
             code\
         }\
 		\
@@ -146,3 +148,16 @@ namespace Hazel {
 		auto mem = Renderer::Submit(HZ_RENDER_UNIQUE(HZRenderCommand)::Execute, sizeof(HZ_RENDER_UNIQUE(HZRenderCommand)));\
 		new (mem) HZ_RENDER_UNIQUE(HZRenderCommand)(arg0, arg1, arg2, arg3);\
 	}
+
+
+#define HZ_RENDER_S(code) auto self = this;\
+	HZ_RENDER_1(self, code)
+
+#define HZ_RENDER_S1(arg0, code) auto self = this;\
+	HZ_RENDER_2(self, arg0, code)
+
+#define HZ_RENDER_S2(arg0, arg1, code) auto self = this;\
+	HZ_RENDER_3(self, arg0, arg1, code)
+
+#define HZ_RENDER_S3(arg0, arg1, arg2, code) auto self = this;\
+	HZ_RENDER_4(self, arg0, arg1, arg2, code)

@@ -4,14 +4,23 @@
 
 namespace Hazel {
 	Renderer* Renderer::s_Instance = new Renderer();
+	RendererAPIType RendererAPI::s_CurrentRendererAPI = RendererAPIType::OpenGL;
 
 	void Renderer::Init()
 	{
+		HZ_RENDER({ RendererAPI::Init(); });
 	}
 
 	void Renderer::Clear()
 	{
 		
+	}
+
+	void Renderer::DrawIndexed(unsigned int count)
+	{
+		HZ_RENDER_1(count, {
+			RendererAPI::DrawIndexed(count);
+			});
 	}
 
 	void Renderer::Clear(float r, float g, float b, float a)
