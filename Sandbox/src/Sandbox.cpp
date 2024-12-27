@@ -10,18 +10,18 @@ public:
 	virtual ~GameLayer()
 	{
 	}
+
 	virtual void OnAttach() override
 	{
 	}
+
 	virtual void OnDetach() override
 	{
 	}
+
 	virtual void OnUpdate() override
 	{
-		//#define HZ_RENDER(x) ::Hazel::Renderer::Submit([=](){ RendererAPI::x })
-		//
-		//		Renderer::Clear(0, 0, 0, 1);
-		//		HZ_RENDER(Clear(0, 0, 0, 1));
+		Hazel::Renderer::Clear(0.2f, 0.3f, 0.8f, 1);
 	}
 	virtual void OnEvent(Hazel::Event& event) override
 	{

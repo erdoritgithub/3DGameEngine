@@ -9,6 +9,8 @@
 #include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Core/Events/MouseEvent.h"
 
+#include "Hazel/Renderer/Renderer.h"
+
 // ---Entry Point------------
 #include "Hazel/EntryPoint.h"
 // --------------------------
