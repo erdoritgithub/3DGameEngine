@@ -8,6 +8,8 @@ workspace "Hazel"
         "Release",
         "Dist"
     }
+
+    startproject "Sandbox"
     
 local outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
