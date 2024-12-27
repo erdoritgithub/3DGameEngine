@@ -20,7 +20,7 @@ namespace Hazel {
 		void SetVSync(bool enabled);
 		bool IsVSync() const;
 
-		inline GLFWwindow* GetGLFWWindow() const { return m_Window; }
+		inline void* GetNativeWindow() const { return m_Window; }
 
 	private:
 		virtual void Init(const WindowProps& props);

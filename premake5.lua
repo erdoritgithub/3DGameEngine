@@ -87,11 +87,7 @@ project "Sandbox"
     
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	dependson 
-	{ 
-		"Hazel"
-    }
-    
+	
 	files 
 	{ 
 		"%{prj.name}/src/**.h", 
