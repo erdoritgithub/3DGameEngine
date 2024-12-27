@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <functional>
 #include <algorithm>
+#include <fstream>
 #include <Hazel/Core/Core.h>
 #include <Hazel/Core/Log.h>
 #include <Hazel/Core/Events/Event.h>

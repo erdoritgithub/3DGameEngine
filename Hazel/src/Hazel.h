@@ -18,6 +18,7 @@
 #include "Hazel/Renderer/VertexBuffer.h"
 #include "Hazel/Renderer/IndexBuffer.h"
 #include "Hazel/Renderer/Texture.h"
+#include "Hazel/Renderer/Shader.h"
 // ---------------------------------------------------
 
 // ---Entry Point------------

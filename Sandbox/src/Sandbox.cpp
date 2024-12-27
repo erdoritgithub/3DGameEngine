@@ -41,6 +41,7 @@ public:
 		m_VB->SetData(vertices, sizeof(vertices));
 		m_IB = std::unique_ptr<Hazel::IndexBuffer>(Hazel::IndexBuffer::Create());
 		m_IB->SetData(indices, sizeof(indices));
+		m_Shader.reset(Hazel::Shader::Create("assets/shaders/shader.glsl"));
 	}
 
 	virtual void OnDetach() override
@@ -51,6 +52,7 @@ public:
 	{
 		using namespace Hazel;
 		Renderer::Clear(m_ClearColor[0], m_ClearColor[1], m_ClearColor[2], m_ClearColor[3]);
+		m_Shader->Bind();
 		m_VB->Bind();
 		m_IB->Bind();
 		Renderer::DrawIndexed(3);
@@ -146,6 +148,7 @@ public:
 private:
 	std::unique_ptr<Hazel::VertexBuffer> m_VB;
 	std::unique_ptr<Hazel::IndexBuffer> m_IB;
+	std::unique_ptr<Hazel::Shader> m_Shader;
 	float m_ClearColor[4];
 };
 
