@@ -7,7 +7,6 @@ namespace Hazel {
 
 	class Renderer
 	{
-	
 	public:
 		typedef void(*RenderCommandFn)(void*);
 
@@ -15,7 +14,9 @@ namespace Hazel {
 		static void Clear();
 		static void Clear(float r, float g, float b, float a = 1.0f);
 		static void SetClearColor(float r, float g, float b, float a);
+
 		static void ClearMagenta();
+
 		void Init();
 
 		static void* Submit(RenderCommandFn fn, unsigned int size)
@@ -24,10 +25,11 @@ namespace Hazel {
 		}
 
 		void WaitAndRender();
-		inline static Renderer& Get() { return *s_Instance; }
 
+		inline static Renderer& Get() { return *s_Instance; }
 	private:
 		static Renderer* s_Instance;
+
 		RenderCommandQueue m_CommandQueue;
 	};
 
@@ -50,10 +52,11 @@ namespace Hazel {
 		new (mem) HZ_RENDER_UNIQUE(HZRenderCommand)();\
 	}\
 
-#define HZ_RENDER_I(arg0, code) \
+#define HZ_RENDER_1(arg0, code) \
+	do {\
     struct HZ_RENDER_UNIQUE(HZRenderCommand) \
     {\
-		HZ_RENDER_UNIQUE(HZRenderCommand)(typename ::std::remove_const<typename ::std::remove_reference<decltype(param)>::type>::type arg0) \
+		HZ_RENDER_UNIQUE(HZRenderCommand)(typename ::std::remove_const<typename ::std::remove_reference<decltype(arg0)>::type>::type arg0) \
 		: arg0(arg0) {}\
 		\
         static void Execute(void* self)\
@@ -67,9 +70,9 @@ namespace Hazel {
 	{\
 		auto mem = ::Hazel::Renderer::Submit(HZ_RENDER_UNIQUE(HZRenderCommand)::Execute, sizeof(HZ_RENDER_UNIQUE(HZRenderCommand)));\
 		new (mem) HZ_RENDER_UNIQUE(HZRenderCommand)(arg0);\
-	}\
+	} } while(0)
 
-#define HZ_RENDER_II(arg0, arg1, code) \
+#define HZ_RENDER_2(arg0, arg1, code) \
     struct HZ_RENDER_UNIQUE(HZRenderCommand) \
     {\
 		HZ_RENDER_UNIQUE(HZRenderCommand)(typename ::std::remove_const<typename ::std::remove_reference<decltype(arg0)>::type>::type arg0,\
@@ -91,7 +94,7 @@ namespace Hazel {
 		new (mem) HZ_RENDER_UNIQUE(HZRenderCommand)(arg0, arg1);\
 	}\
 
-#define HZ_RENDER_III(arg0, arg1, arg2, code) \
+#define HZ_RENDER_3(arg0, arg1, arg2, code) \
     struct HZ_RENDER_UNIQUE(HZRenderCommand) \
     {\
 		HZ_RENDER_UNIQUE(HZRenderCommand)(typename ::std::remove_const<typename ::std::remove_reference<decltype(arg0)>::type>::type arg0,\
@@ -116,7 +119,7 @@ namespace Hazel {
 		new (mem) HZ_RENDER_UNIQUE(HZRenderCommand)(arg0, arg1, arg2);\
 	}\
 
-#define HZ_RENDER_IV(arg0, arg1, arg2, arg3, code) \
+#define HZ_RENDER_4(arg0, arg1, arg2, arg3, code) \
     struct HZ_RENDER_UNIQUE(HZRenderCommand) \
     {\
 		HZ_RENDER_UNIQUE(HZRenderCommand)(typename ::std::remove_const<typename ::std::remove_reference<decltype(arg0)>::type>::type arg0,\

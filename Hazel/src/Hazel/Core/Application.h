@@ -6,6 +6,9 @@
 
 #include "Hazel/Core/Events/ApplicationEvent.h"
 
+#include "Hazel/ImGui/ImGuiLayer.h"
+
+
 namespace Hazel {
 	class Application
 	{
@@ -23,6 +26,8 @@ namespace Hazel {
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
 
+		void RenderImGui();
+
 		inline Window& GetWindow() { return *m_Window; }
 
 		static inline Application& Get() { return *s_Instance; }
@@ -35,6 +40,7 @@ namespace Hazel {
 		std::unique_ptr<Window> m_Window;
 		bool m_Running = true;
 		LayerStack m_LayerStack;
+		ImGuiLayer* m_ImGuiLayer;
 
 		static Application* s_Instance;
 
