@@ -15,6 +15,7 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
 IncludeDir["Glad"] = "Hazel/vendor/Glad/include"
 IncludeDir["ImGui"] = "Hazel/vendor/ImGui"
+IncludeDir["glm"] = "Hazel/vendor/glm"
 
 include "Hazel/vendor/GLFW"
 include "Hazel/vendor/Glad"
@@ -47,6 +48,7 @@ project "Hazel"
 		"Hazel/vendor",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
+        "%{IncludeDir.glm}",
         "%{IncludeDir.ImGui}"
 	}
 
@@ -101,6 +103,7 @@ project "Sandbox"
         "%{prj.name}/src",
         "Hazel/src",
         "Hazel/vendor",
+        "%{IncludeDir.glm}"
     }
 	
 	filter "system:windows"

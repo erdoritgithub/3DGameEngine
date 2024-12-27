@@ -2,6 +2,9 @@
 
 #include "Hazel/ImGui/ImGuiLayer.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 static void ImGuiShowHelpMarker(const char* desc)
 {
 	ImGui::TextDisabled("(?)");
@@ -19,7 +22,7 @@ class EditorLayer : public Hazel::Layer
 {
 public:
 	EditorLayer()
-		: m_ClearColor{ 0.2f, 0.3f, 0.8f, 1.0f }
+		: m_ClearColor{ 0.2f, 0.3f, 0.8f, 1.0f }, m_TriangleColor{ 0.8f, 0.2f, 0.3f, 1.0f }
 	{
 	}
 
@@ -52,6 +55,11 @@ public:
 	{
 		using namespace Hazel;
 		Renderer::Clear(m_ClearColor[0], m_ClearColor[1], m_ClearColor[2], m_ClearColor[3]);
+
+		Hazel::UniformBufferDeclaration<sizeof(glm::vec4), 1> buffer;
+		buffer.Push("u_Color", m_TriangleColor);
+		m_Shader->UploadUniformBuffer(buffer);
+
 		m_Shader->Bind();
 		m_VB->Bind();
 		m_IB->Bind();
@@ -60,12 +68,10 @@ public:
 
 	virtual void OnImGuiRender() override
 	{
-		static bool show_demo_window = true;
-		if (show_demo_window)
-			ImGui::ShowDemoWindow(&show_demo_window);
 
 		ImGui::Begin("GameLayer");
 		ImGui::ColorEdit4("Clear Color", m_ClearColor);
+		ImGui::ColorEdit4("Triangle Color", glm::value_ptr(m_TriangleColor));
 		ImGui::End();
 
 #if ENABLE_DOCKSPACE
@@ -150,6 +156,7 @@ private:
 	std::unique_ptr<Hazel::IndexBuffer> m_IB;
 	std::unique_ptr<Hazel::Shader> m_Shader;
 	float m_ClearColor[4];
+	glm::vec4 m_TriangleColor;
 };
 
 class Sandbox : public Hazel::Application
