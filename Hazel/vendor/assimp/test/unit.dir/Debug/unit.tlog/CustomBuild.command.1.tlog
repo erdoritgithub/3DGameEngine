@@ -1,0 +1,10 @@
+^C:\USERS\ERDOR\SOURCE\REPOS\3DHAZEL\HAZEL\VENDOR\ASSIMP\TEST\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/erdor/source/repos/3DHazel/Hazel/vendor/assimp -BC:/Users/erdor/source/repos/3DHazel/Hazel/vendor/assimp --check-stamp-file C:/Users/erdor/source/repos/3DHazel/Hazel/vendor/assimp/test/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

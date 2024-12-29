@@ -8,11 +8,10 @@ workspace "Hazel"
         "Release",
         "Dist"
     }
-
-    startproject "Sandbox"
     
-local outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+-- Include directories relative to root folder (solution directory)
 IncludeDir = {}
 IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
 IncludeDir["Glad"] = "Hazel/vendor/Glad/include"
@@ -27,11 +26,12 @@ project "Hazel"
     location "Hazel"
     kind "StaticLib"
     language "C++"
-    systemversion "latest"
+    cppdialect "C++17"
+    staticruntime "on"
     buildoptions "/utf-8"
-    
-	targetdir ("bin/" .. outputdir .. "/Hazel")
-    objdir ("bin-int/" .. outputdir .. "/Hazel")
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
     pchheader "hzpch.h"
     pchsource "Hazel/src/hzpch.cpp"
@@ -46,31 +46,32 @@ project "Hazel"
 
     includedirs
 	{
-		"Hazel/src",
-		"Hazel/vendor",
+		"%{prj.name}/src",
+        "%{prj.name}/vendor",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
         "%{IncludeDir.glm}",
-        "%{IncludeDir.ImGui}"
-	}
-
+        "%{IncludeDir.ImGui}",
+        "%{prj.name}/vendor/assimp/include",
+        "%{prj.name}/vendor/stb/include"
+    }
+    
     links 
 	{ 
-		"GLFW",
+        "GLFW",
         "Glad",
         "ImGui",
         "opengl32.lib"
     }
     
 	filter "system:windows"
-		cppdialect "C++17"
-        staticruntime "On"
+        systemversion "latest"
         
 		defines 
 		{ 
             "HZ_PLATFORM_WINDOWS"
 		}
-					
+
     filter "configurations:Debug"
         defines "HZ_DEBUG"
         symbols "On"
@@ -78,20 +79,28 @@ project "Hazel"
     filter "configurations:Release"
         defines "HZ_RELEASE"
         optimize "On"
+
     filter "configurations:Dist"
         defines "HZ_DIST"
         optimize "On"
-    
+
 project "Sandbox"
     location "Sandbox"
     kind "ConsoleApp"
     language "C++"
-    systemversion "latest"
+    cppdialect "C++17"
+    staticruntime "on"
     buildoptions "/utf-8"
     
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	
+
+	links 
+	{ 
+        "Hazel",
+        "Hazel/vendor/assimp/lib/Debug/assimp.lib"
+    }
+    
 	files 
 	{ 
 		"%{prj.name}/src/**.h", 
@@ -109,27 +118,21 @@ project "Sandbox"
     }
 	
 	filter "system:windows"
-        cppdialect "C++17"
-        staticruntime "On"
-        
-		links 
-		{ 
-			"Hazel"
-		}
-        
+        systemversion "latest"
+                
 		defines 
 		{ 
-            "HZ_PLATFORM_WINDOWS",
+            "HZ_PLATFORM_WINDOWS"
 		}
     
     filter "configurations:Debug"
         defines "HZ_DEBUG"
-        symbols "On"
+        symbols "on"
                 
     filter "configurations:Release"
         defines "HZ_RELEASE"
-        optimize "On"
+        optimize "on"
+
     filter "configurations:Dist"
         defines "HZ_DIST"
-        optimize "On"
-          
+        optimize "on"
