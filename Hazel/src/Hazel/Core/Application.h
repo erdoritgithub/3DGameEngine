@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Hazel/Core/Core.h"
+
+#include "Hazel/Core/TimeStep.h"
 #include "Hazel/Core/Window.h"
 #include "Hazel/Core/LayerStack.h"
 
@@ -10,17 +12,23 @@
 
 namespace Hazel {
 
+	struct ApplicationProps
+	{
+		std::string Name;
+		uint32_t WindowWidth, WindowHeight;
+	};
+
 	class Application
 	{
 	public:
-		Application();
+		Application(const ApplicationProps& props = { "Hazel Engine", 1280, 720 });
 		virtual ~Application();
 
 		void Run();
 
 		virtual void OnInit() {}
 		virtual void OnShutdown() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(TimeStep ts) {}
 
 		virtual void OnEvent(Event& event);
 
@@ -33,6 +41,8 @@ namespace Hazel {
 		inline Window& GetWindow() { return *m_Window; }
 
 		static inline Application& Get() { return *s_Instance; }
+		float GetTime() const; // TODO: This should be in "Platform"
+
 	private:
 		bool OnWindowResize(WindowResizeEvent& e);
 		bool OnWindowClose(WindowCloseEvent& e);
@@ -41,6 +51,8 @@ namespace Hazel {
 		bool m_Running = true, m_Minimized = false;
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;
+		TimeStep m_TimeStep;
+		float m_LastFrameTime = 0.0f;
 
 		static Application* s_Instance;
 	};

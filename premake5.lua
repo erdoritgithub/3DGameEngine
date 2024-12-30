@@ -8,6 +8,8 @@ workspace "Hazel"
         "Release",
         "Dist"
     }
+
+	startproject "Hazelnut"
     
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
@@ -69,7 +71,8 @@ project "Hazel"
         
 		defines 
 		{ 
-            "HZ_PLATFORM_WINDOWS"
+            "HZ_PLATFORM_WINDOWS",
+            "HZ_BUILD_DLL"
 		}
 
     filter "configurations:Debug"
@@ -84,8 +87,8 @@ project "Hazel"
         defines "HZ_DIST"
         optimize "On"
 
-project "Sandbox"
-    location "Sandbox"
+project "Hazelnut"
+    location "Hazelnut"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
@@ -97,8 +100,7 @@ project "Sandbox"
 
 	links 
 	{ 
-        "Hazel",
-        "Hazel/vendor/assimp/lib/Debug/assimp.lib"
+        "Hazel"
     }
     
 	files 
@@ -128,11 +130,93 @@ project "Sandbox"
     filter "configurations:Debug"
         defines "HZ_DEBUG"
         symbols "on"
+
+		links
+		{
+			"Hazel/vendor/assimp/bin/Debug/assimp.lib"
+		}
                 
     filter "configurations:Release"
         defines "HZ_RELEASE"
         optimize "on"
 
+		links
+		{
+			"Hazel/vendor/assimp/bin/Release/assimp.lib"
+		}
+
     filter "configurations:Dist"
         defines "HZ_DIST"
         optimize "on"
+
+		links
+		{
+			"Hazel/vendor/assimp/bin/Release/assimp.lib"
+        }
+        
+project "Sandbox"
+    location "Sandbox"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++17"
+    staticruntime "on"
+    buildoptions "/utf-8"
+    
+    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+    links 
+    { 
+        "Hazel"
+    }
+    
+    files 
+    { 
+        "%{prj.name}/src/**.h", 
+        "%{prj.name}/src/**.c", 
+        "%{prj.name}/src/**.hpp", 
+        "%{prj.name}/src/**.cpp" 
+    }
+    
+    includedirs 
+    {
+        "%{prj.name}/src",
+        "Hazel/src",
+        "Hazel/vendor",
+        "%{IncludeDir.glm}"
+    }
+    
+    filter "system:windows"
+        systemversion "latest"
+                
+        defines 
+        { 
+            "HZ_PLATFORM_WINDOWS"
+        }
+    
+    filter "configurations:Debug"
+        defines "HZ_DEBUG"
+        symbols "on"
+
+        links
+        {
+            "Hazel/vendor/assimp/bin/Debug/assimp.lib"
+        }
+                
+    filter "configurations:Release"
+        defines "HZ_RELEASE"
+        optimize "on"
+
+        links
+        {
+            "Hazel/vendor/assimp/bin/Release/assimp.lib"
+        }
+
+    filter "configurations:Dist"
+        defines "HZ_DIST"
+        optimize "on"
+
+        links
+        {
+            "Hazel/vendor/assimp/bin/Release/assimp.lib"
+        }

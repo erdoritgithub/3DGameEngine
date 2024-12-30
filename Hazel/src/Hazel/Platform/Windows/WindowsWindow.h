@@ -15,6 +15,8 @@ namespace Hazel {
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
 
+		virtual std::pair<float, float> GetWindowPos() const override;
+
 		// Window attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		void SetVSync(bool enabled);
@@ -42,6 +44,7 @@ namespace Hazel {
 		};
 
 		WindowData m_Data;
+		float m_LastFrameTime = 0.0f;
 	};
 
 }

@@ -2,18 +2,27 @@
 
 #include "Hazel/Renderer/RendererAPI.h"
 #include <Glad/glad.h>
+#include "Hazel/Renderer/Shader.h"
 
 namespace Hazel {
 
 	static void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 	{
 		if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+		{
 			HZ_CORE_ERROR("{0}", message);
+			HZ_CORE_ASSERT(false, "");
+		}
+		else
+		{
+			//HZ_CORE_TRACE("{0}", message);
+		}
 	}
 
 	void RendererAPI::Init()
 	{
 		glDebugMessageCallback(OpenGLLogMessage, nullptr);
+		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
 		unsigned int vao;
@@ -32,9 +41,22 @@ namespace Hazel {
 		caps.Version = (const char*)glGetString(GL_VERSION);
 		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
+
+		GLenum error = glGetError();
+		while (error != GL_NO_ERROR)
+		{
+			HZ_CORE_ERROR("OpenGL Error {0}", error);
+			error = glGetError();
+		}
+
+		LoadRequiredAssets();
 	}
 
 	void RendererAPI::Shutdown()
+	{
+	}
+
+	void RendererAPI::LoadRequiredAssets()
 	{
 	}
 
@@ -46,12 +68,13 @@ namespace Hazel {
 
 	void RendererAPI::DrawIndexed(unsigned int count, bool depthTest)
 	{
-		if (depthTest)
-			glEnable(GL_DEPTH_TEST);
-		else
+		if (!depthTest)
 			glDisable(GL_DEPTH_TEST);
 
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+
+		if (!depthTest)
+			glEnable(GL_DEPTH_TEST);
 	}
 
 	void RendererAPI::SetClearColor(float r, float g, float b, float a)

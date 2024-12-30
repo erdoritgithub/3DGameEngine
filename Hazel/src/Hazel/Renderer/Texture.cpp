@@ -4,12 +4,12 @@
 #include "Hazel/Platform/OpenGL/OpenGLTexture.h"
 
 namespace Hazel {
-	Texture2D* Texture2D::Create(TextureFormat format, unsigned int width, unsigned int height)
+	Texture2D* Texture2D::Create(TextureFormat format, unsigned int width, unsigned int height, TextureWrap wrap)
 	{
 		switch (RendererAPI::Current())
 		{
 		case RendererAPIType::None: return nullptr;
-		case RendererAPIType::OpenGL: return new OpenGLTexture2D(format, width, height);
+		case RendererAPIType::OpenGL: return new OpenGLTexture2D(format, width, height, wrap);
 		}
 		return nullptr;
 	}
@@ -32,5 +32,15 @@ namespace Hazel {
 		case RendererAPIType::OpenGL: return new OpenGLTextureCube(path);
 		}
 		return nullptr;
+	}
+
+	uint32_t Texture::GetBPP(TextureFormat format)
+	{
+		switch (format)
+		{
+		case TextureFormat::RGB:    return 3;
+		case TextureFormat::RGBA:   return 4;
+		}
+		return 0;
 	}
 }
