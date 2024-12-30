@@ -22,3 +22,4 @@
 #include "Hazel/Renderer/Material.h"
 #include "Hazel/Renderer/Framebuffer.h"
 #include "Hazel/Renderer/Buffer.h"
+#include "Hazel/Renderer/VertexArray.h"

@@ -15,6 +15,15 @@ namespace Hazel {
 			: Data(data), Size(size)
 		{
 		}
+
+		static Buffer Copy(void* data, uint32_t size)
+		{
+			Buffer buffer;
+			buffer.Allocate(size);
+			memcpy(buffer.Data, data, size);
+			return buffer;
+		}
+
 		void Allocate(uint32_t size)
 		{
 			delete[] Data;
