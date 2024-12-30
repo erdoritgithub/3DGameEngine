@@ -98,8 +98,26 @@ namespace Hazel {
 		m_EnvironmentIrradiance.reset(TextureCube::Create("assets/textures/environments/Arches_E_PineTree_Irradiance.tga"));
 		m_BRDFLUT.reset(Texture2D::Create("assets/textures/BRDF_LUT.tga"));
 
-		m_Framebuffer.reset(Framebuffer::Create(1280, 720, FramebufferFormat::RGBA16F));
-		m_FinalPresentBuffer.reset(Framebuffer::Create(1280, 720, FramebufferFormat::RGBA8));
+		// Render Passes
+		FramebufferSpecification geoFramebufferSpec;
+		geoFramebufferSpec.Width = 1280;
+		geoFramebufferSpec.Height = 720;
+		geoFramebufferSpec.Format = FramebufferFormat::RGBA16F;
+		geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+		RenderPassSpecification geoRenderPassSpec;
+		geoRenderPassSpec.TargetFramebuffer = Hazel::Framebuffer::Create(geoFramebufferSpec);
+		m_GeoPass = RenderPass::Create(geoRenderPassSpec);
+
+		FramebufferSpecification compFramebufferSpec;
+		compFramebufferSpec.Width = 1280;
+		compFramebufferSpec.Height = 720;
+		compFramebufferSpec.Format = FramebufferFormat::RGBA8;
+		compFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+		RenderPassSpecification compRenderPassSpec;
+		compRenderPassSpec.TargetFramebuffer = Hazel::Framebuffer::Create(compFramebufferSpec);
+		m_CompositePass = RenderPass::Create(compRenderPassSpec);
 
 		float x = -4.0f;
 		float roughness = 0.0f;
@@ -175,7 +193,7 @@ namespace Hazel {
 	{
 	}
 
-	void EditorLayer::OnUpdate(TimeStep ts)
+	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		// THINGS TO LOOK AT:
 		// - BRDF LUT
@@ -187,8 +205,8 @@ namespace Hazel {
 		m_Camera.Update(ts);
 		auto viewProjection = m_Camera.GetProjectionMatrix() * m_Camera.GetViewMatrix();
 
-		m_Framebuffer->Bind();
-		Renderer::Clear();
+		m_Mesh->OnUpdate(ts);
+		Renderer::BeginRenderPass(m_GeoPass);
 		// TODO:
 		// Renderer::BeginScene(m_Camera);
 		// Renderer::EndScene();
@@ -212,6 +230,7 @@ namespace Hazel {
 		m_MeshMaterial->Set("u_MetalnessTexToggle", m_MetalnessInput.UseTexture ? 1.0f : 0.0f);
 		m_MeshMaterial->Set("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
 		m_MeshMaterial->Set("u_EnvMapRotation", m_EnvMapRotation);
+
 		m_MeshMaterial->Set("u_EnvRadianceTex", m_EnvironmentCubeMap);
 		m_MeshMaterial->Set("u_EnvIrradianceTex", m_EnvironmentIrradiance);
 		m_MeshMaterial->Set("u_BRDFLUTTexture", m_BRDFLUT);
@@ -246,30 +265,30 @@ namespace Hazel {
 		{
 			// Metals
 			for (int i = 0; i < 8; i++)
-				m_SphereMesh->Render(ts, glm::mat4(1.0f), m_MetalSphereMaterialInstances[i]);
+				Renderer::SubmitMesh(m_SphereMesh, glm::mat4(1.0f), m_MetalSphereMaterialInstances[i]);
 
 			// Dielectrics
 			for (int i = 0; i < 8; i++)
-				m_SphereMesh->Render(ts, glm::mat4(1.0f), m_DielectricSphereMaterialInstances[i]);
+				Renderer::SubmitMesh(m_SphereMesh, glm::mat4(1.0f), m_DielectricSphereMaterialInstances[i]);
 		}
 		else if (m_Scene == Scene::Model)
 		{
 			if (m_Mesh)
-				m_Mesh->Render(ts, m_Transform, m_MeshMaterial);
+				Renderer::SubmitMesh(m_Mesh, m_Transform, m_MeshMaterial);
 		}
 
 		m_GridMaterial->Set("u_MVP", viewProjection * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f)));
-		m_PlaneMesh->Render(ts, m_GridMaterial);
+		Renderer::SubmitMesh(m_PlaneMesh, glm::mat4(1.0f), m_GridMaterial);
 
-		m_Framebuffer->Unbind();
+		Renderer::EndRenderPass();
 
-		m_FinalPresentBuffer->Bind();
+		Renderer::BeginRenderPass(m_CompositePass);
 		m_HDRShader->Bind();
 		m_HDRShader->SetFloat("u_Exposure", m_Exposure);
-		m_Framebuffer->BindTexture();
+		m_GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
 		m_FullscreenQuadVertexArray->Bind();
 		Renderer::DrawIndexed(m_FullscreenQuadVertexArray->GetIndexBuffer()->GetCount(), false);
-		m_FinalPresentBuffer->Unbind();
+		Renderer::EndRenderPass();
 	}
 
 	void EditorLayer::Property(const std::string& name, bool& value)
@@ -363,9 +382,9 @@ namespace Hazel {
 			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		}
 
-		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-		/*if (opt_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-			window_flags |= ImGuiWindowFlags_NoBackground;*/
+		// When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+		//if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace)
+		//	window_flags |= ImGuiWindowFlags_NoBackground;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
@@ -590,11 +609,13 @@ namespace Hazel {
 		HZ_INFO("{0}, {1}", posX, posY);*/
 
 		auto viewportSize = ImGui::GetContentRegionAvail();
-		m_Framebuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-		m_FinalPresentBuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+
+		m_GeoPass->GetSpecification().TargetFramebuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+		m_CompositePass->GetSpecification().TargetFramebuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 		m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
 		m_Camera.SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-		ImGui::Image((void*)m_FinalPresentBuffer->GetColorAttachmentRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
+		ImGui::Image((void*)m_CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(), viewportSize, { 0, 1 }, { 1, 0 });
+
 		// Gizmos
 		if (m_GizmoType != -1)
 		{
@@ -605,6 +626,7 @@ namespace Hazel {
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 			ImGuizmo::Manipulate(glm::value_ptr(m_Camera.GetViewMatrix()), glm::value_ptr(m_Camera.GetProjectionMatrix()), (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(m_Transform));
 		}
+
 		ImGui::End();
 		ImGui::PopStyleVar();
 
@@ -619,7 +641,7 @@ namespace Hazel {
 				if (ImGui::MenuItem("Flag: NoSplit", "", (opt_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 opt_flags ^= ImGuiDockNodeFlags_NoSplit;
 				if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (opt_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  opt_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
 				if (ImGui::MenuItem("Flag: NoResize", "", (opt_flags & ImGuiDockNodeFlags_NoResize) != 0))                opt_flags ^= ImGuiDockNodeFlags_NoResize;
-				/*if (ImGui::MenuItem("Flag: PassthruDockspace", "", (opt_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))       opt_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;*/
+				//if (ImGui::MenuItem("Flag: PassthruDockspace", "", (opt_flags & ImGuiDockNodeFlags_PassthruDockspace) != 0))       opt_flags ^= ImGuiDockNodeFlags_PassthruDockspace;
 				if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (opt_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          opt_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
 				ImGui::Separator();
 				if (ImGui::MenuItem("Close DockSpace", NULL, false, p_open != NULL))
@@ -651,6 +673,7 @@ namespace Hazel {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::OnKeyPressedEvent));
 	}
+
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
