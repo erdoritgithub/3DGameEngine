@@ -133,7 +133,7 @@ project "Hazelnut"
 
 		links
 		{
-			"Hazel/vendor/assimp/bin/Debug/assimp.lib"
+			"Hazel/vendor/assimp/lib/Debug/assimp.lib"
 		}
                 
     filter "configurations:Release"
@@ -142,7 +142,7 @@ project "Hazelnut"
 
 		links
 		{
-			"Hazel/vendor/assimp/bin/Release/assimp.lib"
+			"Hazel/vendor/assimp/lib/Release/assimp.lib"
 		}
 
     filter "configurations:Dist"
@@ -151,72 +151,72 @@ project "Hazelnut"
 
 		links
 		{
-			"Hazel/vendor/assimp/bin/Release/assimp.lib"
+			"Hazel/vendor/assimp/lib/Release/assimp.lib"
         }
         
-project "Sandbox"
-    location "Sandbox"
-    kind "ConsoleApp"
-    language "C++"
-    cppdialect "C++17"
-    staticruntime "on"
-    buildoptions "/utf-8"
+-- project "Sandbox"
+--     location "Sandbox"
+--     kind "ConsoleApp"
+--     language "C++"
+--     cppdialect "C++17"
+--     staticruntime "on"
+--     buildoptions "/utf-8"
     
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+--     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+--     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-    links 
-    { 
-        "Hazel"
-    }
+--     links 
+--     { 
+--         "Hazel"
+--     }
     
-    files 
-    { 
-        "%{prj.name}/src/**.h", 
-        "%{prj.name}/src/**.c", 
-        "%{prj.name}/src/**.hpp", 
-        "%{prj.name}/src/**.cpp" 
-    }
+--     files 
+--     { 
+--         "%{prj.name}/src/**.h", 
+--         "%{prj.name}/src/**.c", 
+--         "%{prj.name}/src/**.hpp", 
+--         "%{prj.name}/src/**.cpp" 
+--     }
     
-    includedirs 
-    {
-        "%{prj.name}/src",
-        "Hazel/src",
-        "Hazel/vendor",
-        "%{IncludeDir.glm}"
-    }
+--     includedirs 
+--     {
+--         "%{prj.name}/src",
+--         "Hazel/src",
+--         "Hazel/vendor",
+--         "%{IncludeDir.glm}"
+--     }
     
-    filter "system:windows"
-        systemversion "latest"
+--     filter "system:windows"
+--         systemversion "latest"
                 
-        defines 
-        { 
-            "HZ_PLATFORM_WINDOWS"
-        }
+--         defines 
+--         { 
+--             "HZ_PLATFORM_WINDOWS"
+--         }
     
-    filter "configurations:Debug"
-        defines "HZ_DEBUG"
-        symbols "on"
+--     filter "configurations:Debug"
+--         defines "HZ_DEBUG"
+--         symbols "on"
 
-        links
-        {
-            "Hazel/vendor/assimp/bin/Debug/assimp.lib"
-        }
+--         links
+--         {
+--             "Hazel/vendor/assimp/lib/Debug/assimp.lib"
+--         }
                 
-    filter "configurations:Release"
-        defines "HZ_RELEASE"
-        optimize "on"
+--     filter "configurations:Release"
+--         defines "HZ_RELEASE"
+--         optimize "on"
 
-        links
-        {
-            "Hazel/vendor/assimp/bin/Release/assimp.lib"
-        }
+--         links
+--         {
+--             "Hazel/vendor/assimp/lib/Release/assimp.lib"
+--         }
 
-    filter "configurations:Dist"
-        defines "HZ_DIST"
-        optimize "on"
+--     filter "configurations:Dist"
+--         defines "HZ_DIST"
+--         optimize "on"
 
-        links
-        {
-            "Hazel/vendor/assimp/bin/Release/assimp.lib"
-        }
+--         links
+--         {
+--             "Hazel/vendor/assimp/lib/Release/assimp.lib"
+--         }
