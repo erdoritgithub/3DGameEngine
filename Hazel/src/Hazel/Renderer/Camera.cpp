@@ -45,7 +45,7 @@ namespace Hazel {
 		return speed;
 	}
 
-	void Camera::Update(Timestep ts)
+	void Camera::OnUpdate(Timestep ts)
 	{
 		if (Input::IsKeyPressed(GLFW_KEY_LEFT_ALT))
 		{
@@ -69,18 +69,34 @@ namespace Hazel {
 		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
 		m_ViewMatrix = glm::inverse(m_ViewMatrix);
 	}
+
+	void Camera::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(Camera::OnMouseScroll));
+	}
+
+	bool Camera::OnMouseScroll(MouseScrolledEvent& e)
+	{
+		float delta = e.GetYOffset() * 0.1f;
+		MouseZoom(delta);
+		return false;
+	}
+
 	void Camera::MousePan(const glm::vec2& delta)
 	{
 		auto [xSpeed, ySpeed] = PanSpeed();
 		m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
 		m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
 	}
+
 	void Camera::MouseRotate(const glm::vec2& delta)
 	{
 		float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 		m_Yaw += yawSign * delta.x * RotationSpeed();
 		m_Pitch += delta.y * RotationSpeed();
 	}
+
 	void Camera::MouseZoom(float delta)
 	{
 		m_Distance -= delta * ZoomSpeed();
@@ -90,22 +106,27 @@ namespace Hazel {
 			m_Distance = 1.0f;
 		}
 	}
+
 	glm::vec3 Camera::GetUpDirection()
 	{
 		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 1.0f, 0.0f));
 	}
+
 	glm::vec3 Camera::GetRightDirection()
 	{
 		return glm::rotate(GetOrientation(), glm::vec3(1.0f, 0.0f, 0.0f));
 	}
+
 	glm::vec3 Camera::GetForwardDirection()
 	{
 		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, -1.0f));
 	}
+
 	glm::vec3 Camera::CalculatePosition()
 	{
 		return m_FocalPoint - GetForwardDirection() * m_Distance;
 	}
+
 	glm::quat Camera::GetOrientation()
 	{
 		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));

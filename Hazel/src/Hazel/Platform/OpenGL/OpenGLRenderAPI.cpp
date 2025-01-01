@@ -8,14 +8,21 @@ namespace Hazel {
 
 	static void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 	{
-		if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+		switch (severity)
 		{
-			HZ_CORE_ERROR("{0}", message);
-			HZ_CORE_ASSERT(false, "");
-		}
-		else
-		{
-			//HZ_CORE_TRACE("{0}", message);
+		case GL_DEBUG_SEVERITY_HIGH:
+			HZ_CORE_ERROR("[OpenGL Debug HIGH] {0}", message);
+			HZ_CORE_ASSERT(false, "GL_DEBUG_SEVERITY_HIGH");
+			break;
+		case GL_DEBUG_SEVERITY_MEDIUM:
+			HZ_CORE_WARN("[OpenGL Debug MEDIUM] {0}", message);
+			break;
+		case GL_DEBUG_SEVERITY_LOW:
+			HZ_CORE_INFO("[OpenGL Debug LOW] {0}", message);
+			break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION:
+			// HZ_CORE_TRACE("[OpenGL Debug NOTIFICATION] {0}", message);
+			break;
 		}
 	}
 
@@ -35,12 +42,16 @@ namespace Hazel {
 		glFrontFace(GL_CCW);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_MULTISAMPLE);
+
 		auto& caps = RendererAPI::GetCapabilities();
 		caps.Vendor = (const char*)glGetString(GL_VENDOR);
 		caps.Renderer = (const char*)glGetString(GL_RENDERER);
 		caps.Version = (const char*)glGetString(GL_VERSION);
+
 		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
 
 		GLenum error = glGetError();
 		while (error != GL_NO_ERROR)
@@ -66,15 +77,30 @@ namespace Hazel {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void RendererAPI::DrawIndexed(unsigned int count, bool depthTest)
+	void RendererAPI::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
 		if (!depthTest)
 			glDisable(GL_DEPTH_TEST);
 
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		GLenum glPrimitiveType = 0;
+		switch (type)
+		{
+		case PrimitiveType::Triangles:
+			glPrimitiveType = GL_TRIANGLES;
+			break;
+		case PrimitiveType::Lines:
+			glPrimitiveType = GL_LINES;
+			break;
+		}
+		glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
 
 		if (!depthTest)
 			glEnable(GL_DEPTH_TEST);
+	}
+
+	void RendererAPI::SetLineThickness(float thickness)
+	{
+		glLineWidth(thickness);
 	}
 
 	void RendererAPI::SetClearColor(float r, float g, float b, float a)

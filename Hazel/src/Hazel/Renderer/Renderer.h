@@ -1,7 +1,6 @@
 #pragma once
 
 #include "RenderCommandQueue.h"
-#include "RendererAPI.h"
 #include "RenderPass.h"
 #include "Mesh.h"
 
@@ -19,13 +18,16 @@ namespace Hazel {
 		static void Clear(float r, float g, float b, float a = 1.0f);
 		static void SetClearColor(float r, float g, float b, float a);
 
-		static void DrawIndexed(uint32_t count, bool depthTest = true);
+		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
+
+		// For OpenGL
+		static void SetLineThickness(float thickness);
 
 		static void ClearMagenta();
 
 		static void Init();
 
-		static const Scope<ShaderLibrary>& GetShaderLibrary() { return Get().m_ShaderLibrary; }
+		static const Scope<ShaderLibrary>& GetShaderLibrary();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
@@ -38,7 +40,7 @@ namespace Hazel {
 				// static_assert(std::is_trivially_destructible_v<FuncT>, "FuncT must be trivially destructible");
 				pFunc->~FuncT();
 				};
-			auto storageBuffer = s_Instance->m_CommandQueue.Allocate(renderCmd, sizeof(func));
+			auto storageBuffer = GetRenderCommandQueue().Allocate(renderCmd, sizeof(func));
 			new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		}
 
@@ -47,32 +49,20 @@ namespace Hazel {
 			return s_Instance->m_CommandQueue.Allocate(fn, size);
 		}*/
 
-		void WaitAndRender();
-
-		inline static Renderer& Get() { return *s_Instance; }
+		static void WaitAndRender();
 
 		// ~Actual~ Renderer here... TODO: remove confusion later
-		static void BeginRenderPass(const Ref<RenderPass>& renderPass) { s_Instance->IBeginRenderPass(renderPass); }
-		static void EndRenderPass() { s_Instance->IEndRenderPass(); }
-		static void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, 
-			const Ref<MaterialInstance>& overrideMaterial = nullptr) 
-		{ s_Instance->SubmitMeshI(mesh, transform, overrideMaterial); }
+		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear = true);
+		static void EndRenderPass();
+
+		static void SubmitQuad(const Ref<MaterialInstance>& material, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitFullscreenQuad(const Ref<MaterialInstance>& material);
+		static void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial = nullptr);
+		static void DrawAABB(const Ref<Mesh>& mesh, const glm::vec4& color = glm::vec4(1.0f));
 
 	private:
-		void IBeginRenderPass(const Ref<RenderPass>& renderPass);
-		void IEndRenderPass();
+		static RenderCommandQueue& GetRenderCommandQueue();
 
-		void SubmitMeshI(const Ref<Mesh>& mesh, const glm::mat4& transform, 
-			const Ref<MaterialInstance>& overrideMaterial);
-
-	private:
-		static Renderer* s_Instance;
-
-	private:
-		Ref<RenderPass> m_ActiveRenderPass;
-
-		RenderCommandQueue m_CommandQueue;
-		Scope<ShaderLibrary> m_ShaderLibrary;
 	};
 
 }
