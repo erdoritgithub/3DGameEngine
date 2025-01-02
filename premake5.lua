@@ -118,6 +118,11 @@ project "Hazelnut"
         "Hazel/vendor",
         "%{IncludeDir.glm}"
     }
+
+    postbuildcommands 
+    {
+        '{COPY} "../Hazel/vendor/assimp/bin/Debug/assimp-vc143-mtd.dll" "%{cfg.targetdir}"'
+    }
 	
 	filter "system:windows"
         systemversion "latest"

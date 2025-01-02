@@ -34,10 +34,13 @@ namespace Hazel {
 		float& GetExposure() { return m_Exposure; }
 
 	private:
+		void UpdateCameraView();
+
 		bool OnMouseScroll(MouseScrolledEvent& e);
 		void MousePan(const glm::vec2& delta);
 		void MouseRotate(const glm::vec2& delta);
 		void MouseZoom(float delta);
+
 		glm::vec3 CalculatePosition();
 		glm::quat GetOrientation();
 
