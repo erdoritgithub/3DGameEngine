@@ -2,17 +2,21 @@
 #version 450 core
 // Physically Based Rendering
 // Copyright (c) 2017-2018 Michał Siejak
+
 // Pre-filters environment cube map using GGX NDF importance sampling.
 // Part of specular IBL split-sum approximation.
 
 const float PI = 3.141592;
 const float TwoPI = 2 * PI;
 const float Epsilon = 0.00001;
-const uint NumSamples = 1024;
+
+const uint NumSamples = 480;
 const float InvNumSamples = 1.0 / float(NumSamples);
+
 const int NumMipLevels = 1;
 layout(binding = 0) uniform samplerCube inputTexture;
 layout(binding = 0, rgba16f) restrict writeonly uniform imageCube outputTexture[NumMipLevels];
+
 // Roughness value to pre-filter for.
 layout(location=0) uniform float roughness;
 
@@ -43,9 +47,11 @@ vec2 sampleHammersley(uint i)
 vec3 sampleGGX(float u1, float u2, float roughness)
 {
 	float alpha = roughness * roughness;
+
 	float cosTheta = sqrt((1.0 - u2) / (1.0 + (alpha*alpha - 1.0) * u2));
 	float sinTheta = sqrt(1.0 - cosTheta*cosTheta); // Trig. identity
 	float phi = TwoPI * u1;
+
 	// Convert to Cartesian upon return.
 	return vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
 }
@@ -56,6 +62,7 @@ float ndfGGX(float cosLh, float roughness)
 {
 	float alpha   = roughness * roughness;
 	float alphaSq = alpha * alpha;
+
 	float denom = (cosLh * cosLh) * (alphaSq - 1.0) + 1.0;
 	return alphaSq / (PI * denom * denom);
 }
@@ -64,6 +71,7 @@ vec3 GetCubeMapTexCoord()
 {
     vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(outputTexture[PARAM_LEVEL]));
     vec2 uv = 2.0 * vec2(st.x, 1.0 - st.y) - vec2(1.0);
+
     vec3 ret;
     if (gl_GlobalInvocationID.z == 0)      ret = vec3(  1.0, uv.y, -uv.x);
     else if (gl_GlobalInvocationID.z == 1) ret = vec3( -1.0, uv.y,  uv.x);
@@ -80,6 +88,7 @@ void computeBasisVectors(const vec3 N, out vec3 S, out vec3 T)
 	// Branchless select non-degenerate T.
 	T = cross(N, vec3(0.0, 1.0, 0.0));
 	T = mix(cross(N, vec3(1.0, 0.0, 0.0)), T, step(Epsilon, dot(T, T)));
+
 	T = normalize(T);
 	S = normalize(cross(N, T));
 }
@@ -98,12 +107,12 @@ void main(void)
 	if(gl_GlobalInvocationID.x >= outputSize.x || gl_GlobalInvocationID.y >= outputSize.y) {
 		return;
 	}
-
+	
 	// Solid angle associated with a single cubemap texel at zero mipmap level.
 	// This will come in handy for importance sampling below.
 	vec2 inputSize = vec2(textureSize(inputTexture, 0));
 	float wt = 4.0 * PI / (6 * inputSize.x * inputSize.y);
-
+	
 	// Approximation: Assume zero viewing angle (isotropic reflections).
 	vec3 N = GetCubeMapTexCoord();
 	vec3 Lo = N;
@@ -117,28 +126,36 @@ void main(void)
 	// Convolve environment map using GGX NDF importance sampling.
 	// Weight by cosine term since Epic claims it generally improves quality.
 	for(uint i = 0; i < NumSamples; i++) {
+
 		vec2 u = sampleHammersley(i);
 		vec3 Lh = tangentToWorld(sampleGGX(u.x, u.y, PARAM_ROUGHNESS), N, S, T);
+
 		// Compute incident direction (Li) by reflecting viewing direction (Lo) around half-vector (Lh).
 		vec3 Li = 2.0 * dot(Lo, Lh) * Lh - Lo;
-		float cosLi = dot(N, Li);
 
+		float cosLi = dot(N, Li);
 		if(cosLi > 0.0) {
 			// Use Mipmap Filtered Importance Sampling to improve convergence.
 			// See: https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html, section 20.4
+
 			float cosLh = max(dot(N, Lh), 0.0);
+
 			// GGX normal distribution function (D term) probability density function.
 			// Scaling by 1/4 is due to change of density in terms of Lh to Li (and since N=V, rest of the scaling factor cancels out).
 			float pdf = ndfGGX(cosLh, PARAM_ROUGHNESS) * 0.25;
+
 			// Solid angle associated with this sample.
 			float ws = 1.0 / (NumSamples * pdf);
+
 			// Mip level to sample from.
 			float mipLevel = max(0.5 * log2(ws / wt) + 1.0, 0.0);
-			//color  += textureLod(inputTexture, Li, mipLevel).rgb * cosLi;
+
+			color  += textureLod(inputTexture, Li, mipLevel).rgb * cosLi;
 			weight += cosLi;
 		}
 	}
 
 	color /= weight;
+
 	imageStore(outputTexture[PARAM_LEVEL], ivec3(gl_GlobalInvocationID), vec4(color, 1.0));
 }

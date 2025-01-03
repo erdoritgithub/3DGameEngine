@@ -17,14 +17,14 @@ namespace Hazel {
 	{
 		Ref<RenderPass> m_ActiveRenderPass;
 		RenderCommandQueue m_CommandQueue;
-		Scope<ShaderLibrary> m_ShaderLibrary;
+		Ref<ShaderLibrary> m_ShaderLibrary;
 		Ref<VertexArray> m_FullscreenQuadVertexArray;
 	};
 	static RendererData s_Data;
 
 	void Renderer::Init()
 	{
-		s_Data.m_ShaderLibrary = std::make_unique<ShaderLibrary>();
+		s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
 		Renderer::Submit([]() { RendererAPI::Init(); });
 
 		Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
@@ -63,7 +63,7 @@ namespace Hazel {
 		Renderer2D::Init();
 	}
 
-	const Scope<ShaderLibrary>& Renderer::GetShaderLibrary()
+	Ref<ShaderLibrary> Renderer::GetShaderLibrary()
 	{
 		return s_Data.m_ShaderLibrary;
 	}
@@ -112,7 +112,7 @@ namespace Hazel {
 		s_Data.m_CommandQueue.Execute();
 	}
 
-	void Renderer::BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear)
+	void Renderer::BeginRenderPass(Ref<RenderPass> renderPass, bool clear)
 	{
 		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 		// TODO: Convert all of this into a render command buffer
@@ -135,7 +135,7 @@ namespace Hazel {
 		s_Data.m_ActiveRenderPass = nullptr;
 	}
 
-	void Renderer::SubmitQuad(const Ref<MaterialInstance>& material, const glm::mat4& transform)
+	void Renderer::SubmitQuad(Ref<MaterialInstance> material, const glm::mat4& transform)
 	{
 		bool depthTest = true;
 		if (material)
@@ -149,7 +149,7 @@ namespace Hazel {
 		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void Renderer::SubmitFullscreenQuad(const Ref<MaterialInstance>& material)
+	void Renderer::SubmitFullscreenQuad(Ref<MaterialInstance> material)
 	{
 		bool depthTest = true;
 		if (material)
@@ -163,7 +163,7 @@ namespace Hazel {
 		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial)
+	void Renderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance> overrideMaterial)
 	{
 		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
 		// auto shader = material->GetShader();
@@ -197,7 +197,7 @@ namespace Hazel {
 		}
 	}
 
-	void Renderer::DrawAABB(const Ref<Mesh>& mesh, const glm::mat4& transform, const glm::vec4& color)
+	void Renderer::DrawAABB(Ref<Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
 		for (Submesh& submesh : mesh->m_Submeshes)
 		{

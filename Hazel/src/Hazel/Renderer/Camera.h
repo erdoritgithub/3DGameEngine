@@ -23,15 +23,19 @@ namespace Hazel {
 		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
 		inline void SetViewportSize(uint32_t width, uint32_t height) { m_ViewportWidth = width; m_ViewportHeight = height; }
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-		const glm::mat4& GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
+		glm::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
 
 		glm::vec3 GetUpDirection();
 		glm::vec3 GetRightDirection();
 		glm::vec3 GetForwardDirection();
 		const glm::vec3& GetPosition() const { return m_Position; }
+		glm::quat GetOrientation() const;
 
 		float GetExposure() const { return m_Exposure; }
 		float& GetExposure() { return m_Exposure; }
+
+		float GetPitch() const { return m_Pitch; }
+		float GetYaw() const { return m_Yaw; }
 
 	private:
 		void UpdateCameraView();
@@ -42,7 +46,6 @@ namespace Hazel {
 		void MouseZoom(float delta);
 
 		glm::vec3 CalculatePosition();
-		glm::quat GetOrientation();
 
 		std::pair<float, float> PanSpeed() const;
 		float RotationSpeed() const;
@@ -59,5 +62,6 @@ namespace Hazel {
 		float m_Pitch, m_Yaw;
 		float m_Exposure = 0.8f;
 		uint32_t m_ViewportWidth = 1280, m_ViewportHeight = 720;
+
 	};
 }

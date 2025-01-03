@@ -37,6 +37,7 @@ namespace Hazel {
 	class OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
+		OpenGLIndexBuffer(uint32_t size);
 		OpenGLIndexBuffer(void* data, uint32_t size);
 		virtual ~OpenGLIndexBuffer();
 		virtual void SetData(void* data, uint32_t size, uint32_t offset = 0);

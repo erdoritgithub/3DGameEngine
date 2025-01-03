@@ -19,11 +19,22 @@ IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
 IncludeDir["Glad"] = "Hazel/vendor/Glad/include"
 IncludeDir["ImGui"] = "Hazel/vendor/ImGui"
 IncludeDir["glm"] = "Hazel/vendor/glm"
+IncludeDir["entt"] = "Hazel/vendor/entt/include"
+IncludeDir["FastNoise"] = "Hazel/vendor/FastNoise"
+IncludeDir["mono"] = "Hazel/vendor/mono/include"
 
+LibraryDir = {}
+LibraryDir["mono"] = "vendor/mono/lib/mono-2.0-sgen.lib"
+
+
+group "Dependencies"
 include "Hazel/vendor/GLFW"
 include "Hazel/vendor/Glad"
 include "Hazel/vendor/ImGui"
+group ""
 
+
+group "Core"
 project "Hazel"
     location "Hazel"
     kind "StaticLib"
@@ -43,7 +54,8 @@ project "Hazel"
 		"%{prj.name}/src/**.h", 
 		"%{prj.name}/src/**.c", 
 		"%{prj.name}/src/**.hpp", 
-		"%{prj.name}/src/**.cpp" 
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/FastNoise/**.cpp"
     }
 
     includedirs
@@ -54,6 +66,9 @@ project "Hazel"
         "%{IncludeDir.Glad}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.ImGui}",
+        "%{IncludeDir.entt}",
+		"%{IncludeDir.mono}",
+		"%{IncludeDir.FastNoise}",
         "%{prj.name}/vendor/assimp/include",
         "%{prj.name}/vendor/stb/include"
     }
@@ -63,8 +78,12 @@ project "Hazel"
         "GLFW",
         "Glad",
         "ImGui",
-        "opengl32.lib"
+        "opengl32.lib",
+		"%{LibraryDir.mono}"
     }
+
+    filter "files:%{prj.name}/vendor/FastNoise/**.cpp"
+        flags { "NoPCH" }
     
 	filter "system:windows"
         systemversion "latest"
@@ -87,6 +106,21 @@ project "Hazel"
         defines "HZ_DIST"
         optimize "On"
 
+
+project "Hazel-ScriptCore"
+	location "Hazel-ScriptCore"
+	kind "SharedLib"
+	language "C#"
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	files 
+	{
+		"%{prj.name}/src/**.cs", 
+	}
+group ""
+
+
+group "Tools"
 project "Hazelnut"
     location "Hazelnut"
     kind "ConsoleApp"
@@ -116,14 +150,16 @@ project "Hazelnut"
         "%{prj.name}/src",
         "Hazel/src",
         "Hazel/vendor",
+        "%{IncludeDir.entt}",
         "%{IncludeDir.glm}"
     }
 
     postbuildcommands 
-    {
-        '{COPY} "../Hazel/vendor/assimp/bin/Debug/assimp-vc143-mtd.dll" "%{cfg.targetdir}"'
-    }
-	
+	{
+		'{COPY} "../Hazelnut/assets" "%{cfg.targetdir}/assets"'
+	}
+
+
 	filter "system:windows"
         systemversion "latest"
                 
@@ -140,6 +176,12 @@ project "Hazelnut"
 		{
 			"Hazel/vendor/assimp/lib/Debug/assimp.lib"
 		}
+
+        postbuildcommands 
+        {
+            '{COPY} "../Hazel/vendor/assimp/bin/Debug/assimp-vc143-mtd.dll" "%{cfg.targetdir}"',
+            '{COPY} "../Hazel/vendor/mono/bin/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+        }
                 
     filter "configurations:Release"
         defines "HZ_RELEASE"
@@ -150,6 +192,12 @@ project "Hazelnut"
 			"Hazel/vendor/assimp/lib/Release/assimp.lib"
 		}
 
+        postbuildcommands 
+        {
+            '{COPY} "../Hazel/vendor/assimp/bin/Debug/assimp-vc143-mtd.dll" "%{cfg.targetdir}"',
+            '{COPY} "../Hazel/vendor/mono/bin/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+        }
+
     filter "configurations:Dist"
         defines "HZ_DIST"
         optimize "on"
@@ -158,7 +206,32 @@ project "Hazelnut"
 		{
 			"Hazel/vendor/assimp/lib/Release/assimp.lib"
         }
+
+        postbuildcommands 
+        {
+            '{COPY} "../Hazel/vendor/assimp/bin/Debug/assimp-vc143-mtd.dll" "%{cfg.targetdir}"',
+            '{COPY} "../Hazel/vendor/mono/bin/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+        }
         
+group ""
+
+
+group "Examples"
+project "ExampleApp"
+	location "ExampleApp"
+	kind "SharedLib"
+	language "C#"
+	targetdir ("Hazelnut/assets/scripts")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	files 
+	{
+		"%{prj.name}/src/**.cs", 
+	}
+	links
+	{
+		"Hazel-ScriptCore"
+	}
+
 -- project "Sandbox"
 --     location "Sandbox"
 --     kind "ConsoleApp"
@@ -225,3 +298,5 @@ project "Hazelnut"
 --         {
 --             "Hazel/vendor/assimp/lib/Release/assimp.lib"
 --         }
+
+group ""

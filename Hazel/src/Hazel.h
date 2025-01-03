@@ -5,6 +5,7 @@
 #include <Hazel/Core/Log.h>
 #include "Hazel/Core/Input.h"
 #include "Hazel/Core/Timestep.h"
+#include "Hazel/Core/Timer.h"
 
 #include "Hazel/Core/Events/Event.h"
 #include "Hazel/Core/Events/ApplicationEvent.h"
@@ -33,3 +34,4 @@
 // Scenes
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Scene/Scene.h"
+#include "Hazel/Scene/Components.h"

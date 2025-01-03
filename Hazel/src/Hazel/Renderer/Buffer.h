@@ -99,7 +99,7 @@ namespace Hazel {
 		None = 0, Static = 1, Dynamic = 2
 	};
 
-	class VertexBuffer
+	class VertexBuffer : public RefCounted
 	{
 	public:
 		virtual ~VertexBuffer() {}
@@ -115,15 +115,19 @@ namespace Hazel {
 		static Ref<VertexBuffer> Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
 	};
 
-	class IndexBuffer
+	class IndexBuffer : public RefCounted
 	{
 	public:
 		virtual ~IndexBuffer() {}
+
 		virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void Bind() const = 0;
 		virtual unsigned int GetSize() const = 0;
 		virtual uint32_t GetCount() const = 0;
 		virtual RendererID GetRendererID() const = 0;
+
+		static Ref<IndexBuffer> Create(uint32_t size);
 		static Ref<IndexBuffer> Create(void* data, uint32_t size = 0);
+
 	};
 }
