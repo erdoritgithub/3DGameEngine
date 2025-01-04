@@ -99,6 +99,17 @@ namespace Hazel {
 			return result;
 		}
 
+		uint64_t Hazel_Entity_FindEntityByTag(MonoString* tag)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			HZ_CORE_ASSERT(scene, "No active scene!");
+			Entity entity = scene->FindEntityByTag(mono_string_to_utf8(tag));
+			if (entity)
+				return entity.GetComponent<IDComponent>().ID;
+
+			return 0;
+		}
+
 		void* Hazel_MeshComponent_GetMesh(uint64_t entityID)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
@@ -134,6 +145,35 @@ namespace Hazel {
 			auto& component = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)component.RuntimeBody;
 			body->ApplyLinearImpulse(*(const b2Vec2*)impulse, body->GetWorldCenter() + *(const b2Vec2*)offset, wake);
+		}
+
+		void Hazel_RigidBody2DComponent_GetLinearVelocity(uint64_t entityID, glm::vec2* outVelocity)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			HZ_CORE_ASSERT(scene, "No active scene!");
+			const auto& entityMap = scene->GetEntityMap();
+			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+			Entity entity = entityMap.at(entityID);
+			HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
+			auto& component = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)component.RuntimeBody;
+			const auto& velocity = body->GetLinearVelocity();
+			HZ_CORE_ASSERT(outVelocity);
+			*outVelocity = { velocity.x, velocity.y };
+		}
+
+		void Hazel_RigidBody2DComponent_SetLinearVelocity(uint64_t entityID, glm::vec2* velocity)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			HZ_CORE_ASSERT(scene, "No active scene!");
+			const auto& entityMap = scene->GetEntityMap();
+			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+			Entity entity = entityMap.at(entityID);
+			HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
+			auto& component = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)component.RuntimeBody;
+			HZ_CORE_ASSERT(velocity);
+			body->SetLinearVelocity({ velocity->x, velocity->y });
 		}
 
 		Ref<Mesh>* Hazel_Mesh_Constructor(MonoString* filepath)

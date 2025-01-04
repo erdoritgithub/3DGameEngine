@@ -3,14 +3,17 @@
 #include "Hazel/Core/Core.h"
 
 namespace Hazel {
+
 	struct Buffer
 	{
 		byte* Data;
 		uint32_t Size;
+
 		Buffer()
 			: Data(nullptr), Size(0)
 		{
 		}
+
 		Buffer(byte* data, uint32_t size)
 			: Data(data), Size(size)
 		{
@@ -28,8 +31,10 @@ namespace Hazel {
 		{
 			delete[] Data;
 			Data = nullptr;
+
 			if (size == 0)
 				return;
+
 			Data = new byte[size];
 			Size = size;
 		}
@@ -38,6 +43,12 @@ namespace Hazel {
 		{
 			if (Data)
 				memset(Data, 0, Size);
+		}
+
+		template<typename T>
+		T& Read(uint32_t offset = 0)
+		{
+			return *(T*)(Data + offset);
 		}
 
 		void Write(void* data, uint32_t size, uint32_t offset = 0)
@@ -55,15 +66,19 @@ namespace Hazel {
 		{
 			return Data[index];
 		}
+
 		byte operator[](int index) const
 		{
 			return Data[index];
 		}
+
 		template<typename T>
 		T* As()
 		{
 			return (T*)Data;
 		}
+
 		inline uint32_t GetSize() const { return Size; }
 	};
+
 }

@@ -47,9 +47,12 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.Entity::CreateComponent_Native", Hazel::Script::Hazel_Entity_CreateComponent);
 		mono_add_internal_call("Hazel.Entity::HasComponent_Native", Hazel::Script::Hazel_Entity_HasComponent);
 
+		mono_add_internal_call("Hazel.Entity::FindEntityByTag_Native", Hazel::Script::Hazel_Entity_FindEntityByTag);
 		mono_add_internal_call("Hazel.MeshComponent::GetMesh_Native", Hazel::Script::Hazel_MeshComponent_GetMesh);
 		mono_add_internal_call("Hazel.MeshComponent::SetMesh_Native", Hazel::Script::Hazel_MeshComponent_SetMesh);
 		mono_add_internal_call("Hazel.RigidBody2DComponent::ApplyLinearImpulse_Native", Hazel::Script::Hazel_RigidBody2DComponent_ApplyLinearImpulse);
+		mono_add_internal_call("Hazel.RigidBody2DComponent::GetLinearVelocity_Native", Hazel::Script::Hazel_RigidBody2DComponent_GetLinearVelocity);
+		mono_add_internal_call("Hazel.RigidBody2DComponent::SetLinearVelocity_Native", Hazel::Script::Hazel_RigidBody2DComponent_SetLinearVelocity);
 
 		mono_add_internal_call("Hazel.Input::IsKeyPressed_Native", Hazel::Script::Hazel_Input_IsKeyPressed);
 		mono_add_internal_call("Hazel.Texture2D::Constructor_Native", Hazel::Script::Hazel_Texture2D_Constructor);

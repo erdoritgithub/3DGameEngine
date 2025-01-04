@@ -9,6 +9,11 @@ workspace "Hazel"
         "Dist"
     }
 
+	flags
+	{
+		"MultiProcessorCompile"
+	}
+
 	startproject "Hazelnut"
     
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"

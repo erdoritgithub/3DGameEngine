@@ -19,6 +19,7 @@ namespace Hazel {
 		std::string FilePath;
 		Ref<TextureCube> RadianceMap;
 		Ref<TextureCube> IrradianceMap;
+
 		static Environment Load(const std::string& filepath);
 	};
 
@@ -26,6 +27,7 @@ namespace Hazel {
 	{
 		glm::vec3 Direction = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+
 		float Multiplier = 1.0f;
 	};
 
@@ -48,6 +50,7 @@ namespace Hazel {
 		// Runtime
 		void OnRuntimeStart();
 		void OnRuntimeStop();
+
 		void SetViewportSize(uint32_t width, uint32_t height);
 
 		void SetEnvironment(const Environment& environment);
@@ -56,14 +59,15 @@ namespace Hazel {
 
 		Light& GetLight() { return m_Light; }
 		const Light& GetLight() const { return m_Light; }
+
 		Entity GetMainCameraEntity();
 
 		float& GetSkyboxLod() { return m_SkyboxLod; }
 
 		Entity CreateEntity(const std::string& name = "");
 		Entity CreateEntityWithID(UUID uuid, const std::string& name = "", bool runtimeMap = false);
-
 		void DestroyEntity(Entity entity);
+
 		void DuplicateEntity(Entity entity);
 
 		template<typename T>
@@ -72,9 +76,13 @@ namespace Hazel {
 			return m_Registry.view<T>();
 		}
 
+		Entity FindEntityByTag(const std::string& tag);
+
 		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
 		void CopyTo(Ref<Scene>& target);
+
 		UUID GetUUID() const { return m_SceneID; }
+
 		static Ref<Scene> GetScene(UUID uuid);
 
 		float GetPhysics2DGravity() const;
@@ -82,10 +90,8 @@ namespace Hazel {
 
 		// Editor-specific
 		void SetSelectedEntity(entt::entity entity) { m_SelectedEntity = entity; }
-
 	private:
 		UUID m_SceneID;
-
 		entt::entity m_SceneEntity;
 		entt::registry m_Registry;
 
@@ -102,6 +108,9 @@ namespace Hazel {
 		Ref<MaterialInstance> m_SkyboxMaterial;
 
 		entt::entity m_SelectedEntity;
+
+		Entity* m_PhysicsBodyEntityBuffer = nullptr;
+
 		float m_SkyboxLod = 1.0f;
 		bool m_IsPlaying = false;
 
@@ -111,6 +120,7 @@ namespace Hazel {
 		friend class SceneHierarchyPanel;
 
 		friend void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity);
-
+		friend void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity);
 	};
+
 }

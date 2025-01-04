@@ -18,9 +18,7 @@ namespace Hazel {
 		std::string Tag;
 
 		TagComponent() = default;
-		TagComponent(const TagComponent& other)
-			: Tag(other.Tag) {
-		}
+		TagComponent(const TagComponent& other) = default;
 		TagComponent(const std::string& tag)
 			: Tag(tag) {
 		}
@@ -34,9 +32,7 @@ namespace Hazel {
 		glm::mat4 Transform;
 
 		TransformComponent() = default;
-		TransformComponent(const TransformComponent& other)
-			: Transform(other.Transform) {
-		}
+		TransformComponent(const TransformComponent& other) = default;
 		TransformComponent(const glm::mat4& transform)
 			: Transform(transform) {
 		}
@@ -50,9 +46,7 @@ namespace Hazel {
 		Ref<Hazel::Mesh> Mesh;
 
 		MeshComponent() = default;
-		MeshComponent(const MeshComponent& other)
-			: Mesh(other.Mesh) {
-		}
+		MeshComponent(const MeshComponent& other) = default;
 		MeshComponent(const Ref<Hazel::Mesh>& mesh)
 			: Mesh(mesh) {
 		}
@@ -65,9 +59,7 @@ namespace Hazel {
 		std::string ModuleName;
 
 		ScriptComponent() = default;
-		ScriptComponent(const ScriptComponent& other)
-			: ModuleName(other.ModuleName) {
-		}
+		ScriptComponent(const ScriptComponent& other) = default;
 		ScriptComponent(const std::string& moduleName)
 			: ModuleName(moduleName) {
 		}
@@ -80,9 +72,7 @@ namespace Hazel {
 		bool Primary = true;
 
 		CameraComponent() = default;
-		CameraComponent(const CameraComponent& other)
-			: Camera(other.Camera), Primary(other.Primary) {
-		}
+		CameraComponent(const CameraComponent& other) = default;
 
 		operator SceneCamera& () { return Camera; }
 		operator const SceneCamera& () const { return Camera; }
@@ -96,9 +86,7 @@ namespace Hazel {
 		float TilingFactor = 1.0f;
 
 		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const SpriteRendererComponent& other)
-			: Color(other.Color), Texture(other.Texture), TilingFactor(other.TilingFactor) {
-		}
+		SpriteRendererComponent(const SpriteRendererComponent& other) = default;
 
 	};
 
@@ -106,37 +94,39 @@ namespace Hazel {
 	{
 		enum class Type { Static, Dynamic, Kinematic };
 		Type BodyType;
-		float Mass = 1.0f;
+		bool FixedRotation = false;
 		// Storage for runtime
 		void* RuntimeBody = nullptr;
 		RigidBody2DComponent() = default;
-		RigidBody2DComponent(const RigidBody2DComponent& other)
-			: BodyType(other.BodyType), Mass(other.Mass) {
-		}
+		RigidBody2DComponent(const RigidBody2DComponent& other) = default;
 	};
 
 	struct BoxCollider2DComponent
 	{
 		glm::vec2 Offset = { 0.0f,0.0f };
 		glm::vec2 Size = { 1.0f, 1.0f };
+
+		float Density = 1.0f;
+		float Friction = 1.0f;
+
 		// Storage for runtime
 		void* RuntimeFixture = nullptr;
 		BoxCollider2DComponent() = default;
-		BoxCollider2DComponent(const BoxCollider2DComponent& other)
-			: Offset(other.Offset), Size(other.Size) {
-		}
+		BoxCollider2DComponent(const BoxCollider2DComponent& other) = default;
 	};
 
 	struct CircleCollider2DComponent
 	{
 		glm::vec2 Offset = { 0.0f,0.0f };
 		float Radius = 1.0f;
+
+		float Density = 1.0f;
+		float Friction = 1.0f;
+
 		// Storage for runtime
 		void* RuntimeFixture = nullptr;
 		CircleCollider2DComponent() = default;
-		CircleCollider2DComponent(const CircleCollider2DComponent& other)
-			: Offset(other.Offset), Radius(other.Radius) {
-		}
+		CircleCollider2DComponent(const CircleCollider2DComponent& other) = default;
 	};
 
 }
