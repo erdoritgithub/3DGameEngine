@@ -34,6 +34,8 @@ namespace Hazel {
 		Component_RegisterType(ScriptComponent);
 		Component_RegisterType(CameraComponent);
 		Component_RegisterType(SpriteRendererComponent);
+		Component_RegisterType(RigidBody2DComponent);
+		Component_RegisterType(BoxCollider2DComponent);
 	}
 
 	void ScriptEngineRegistry::RegisterAll()
@@ -47,6 +49,8 @@ namespace Hazel {
 
 		mono_add_internal_call("Hazel.MeshComponent::GetMesh_Native", Hazel::Script::Hazel_MeshComponent_GetMesh);
 		mono_add_internal_call("Hazel.MeshComponent::SetMesh_Native", Hazel::Script::Hazel_MeshComponent_SetMesh);
+		mono_add_internal_call("Hazel.RigidBody2DComponent::ApplyLinearImpulse_Native", Hazel::Script::Hazel_RigidBody2DComponent_ApplyLinearImpulse);
+
 		mono_add_internal_call("Hazel.Input::IsKeyPressed_Native", Hazel::Script::Hazel_Input_IsKeyPressed);
 		mono_add_internal_call("Hazel.Texture2D::Constructor_Native", Hazel::Script::Hazel_Texture2D_Constructor);
 		mono_add_internal_call("Hazel.Texture2D::Destructor_Native", Hazel::Script::Hazel_Texture2D_Destructor);
@@ -57,6 +61,7 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.MaterialInstance::Destructor_Native", Hazel::Script::Hazel_MaterialInstance_Destructor);
 		mono_add_internal_call("Hazel.MaterialInstance::SetFloat_Native", Hazel::Script::Hazel_MaterialInstance_SetFloat);
 		mono_add_internal_call("Hazel.MaterialInstance::SetVector3_Native", Hazel::Script::Hazel_MaterialInstance_SetVector3);
+		mono_add_internal_call("Hazel.MaterialInstance::SetVector4_Native", Hazel::Script::Hazel_MaterialInstance_SetVector4);
 		mono_add_internal_call("Hazel.MaterialInstance::SetTexture_Native", Hazel::Script::Hazel_MaterialInstance_SetTexture);
 		mono_add_internal_call("Hazel.Mesh::Constructor_Native", Hazel::Script::Hazel_Mesh_Constructor);
 		mono_add_internal_call("Hazel.Mesh::Destructor_Native", Hazel::Script::Hazel_Mesh_Destructor);
