@@ -10,7 +10,7 @@ const float PI = 3.141592;
 const float TwoPI = 2 * PI;
 const float Epsilon = 0.00001;
 
-const uint NumSamples = 480;
+const uint NumSamples = 360;
 const float InvNumSamples = 1.0 / float(NumSamples);
 
 const int NumMipLevels = 1;

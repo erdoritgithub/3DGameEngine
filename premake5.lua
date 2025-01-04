@@ -82,7 +82,7 @@ project "Hazel"
 		"%{LibraryDir.mono}"
     }
 
-    filter "files:%{prj.name}/vendor/FastNoise/**.cpp"
+    filter "files:Hazel/vendor/FastNoise/**.cpp"
         flags { "NoPCH" }
     
 	filter "system:windows"

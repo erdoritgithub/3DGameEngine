@@ -5,10 +5,12 @@ namespace Example
     public class Script : Entity
     {
         public float Speed = 5.0f;
+
         public void OnCreate()
         {
             Console.WriteLine("Script.OnCreate");
         }
+
         public void OnUpdate(float ts)
         {
             Matrix4 transform = GetTransform();
@@ -25,5 +27,6 @@ namespace Example
             transform.Translation = translation;
             SetTransform(transform);
         }
+
     }
 }
