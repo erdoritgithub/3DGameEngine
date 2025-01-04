@@ -12,15 +12,19 @@ namespace Hazel {
 	namespace Script {
 		// Math
 		float Hazel_Noise_PerlinNoise(float x, float y);
+
 		// Input
 		bool Hazel_Input_IsKeyPressed(KeyCode key);
+
 		// Entity
-		void Hazel_Entity_GetTransform(uint32_t sceneID, uint32_t entityID, glm::mat4* outTransform);
-		void Hazel_Entity_SetTransform(uint32_t sceneID, uint32_t entityID, glm::mat4* inTransform);
-		void Hazel_Entity_CreateComponent(uint32_t sceneID, uint32_t entityID, void* type);
-		bool Hazel_Entity_HasComponent(uint32_t sceneID, uint32_t entityID, void* type);
-		void* Hazel_MeshComponent_GetMesh(uint32_t sceneID, uint32_t entityID);
-		void Hazel_MeshComponent_SetMesh(uint32_t sceneID, uint32_t entityID, Ref<Mesh>* inMesh);
+		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform);
+		void Hazel_Entity_SetTransform(uint64_t entityID, glm::mat4* inTransform);
+		void Hazel_Entity_CreateComponent(uint64_t entityID, void* type);
+		bool Hazel_Entity_HasComponent(uint64_t entityID, void* type);
+
+		void* Hazel_MeshComponent_GetMesh(uint64_t entityID);
+		void Hazel_MeshComponent_SetMesh(uint64_t entityID, Ref<Mesh>* inMesh);
+
 		// Renderer
 		// Texture2D
 		void* Hazel_Texture2D_Constructor(uint32_t width, uint32_t height);

@@ -55,7 +55,10 @@ project "Hazel"
 		"%{prj.name}/src/**.c", 
 		"%{prj.name}/src/**.hpp", 
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/vendor/FastNoise/**.cpp"
+		"%{prj.name}/vendor/FastNoise/**.cpp",
+		"%{prj.name}/vendor/yaml-cpp/src/**.cpp",
+		"%{prj.name}/vendor/yaml-cpp/src/**.h",
+		"%{prj.name}/vendor/yaml-cpp/include/yaml-cpp/**.h"
     }
 
     includedirs
@@ -70,7 +73,8 @@ project "Hazel"
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.FastNoise}",
         "%{prj.name}/vendor/assimp/include",
-        "%{prj.name}/vendor/stb/include"
+        "%{prj.name}/vendor/stb/include",
+		"%{prj.name}/vendor/yaml-cpp/include"
     }
     
     links 
@@ -82,7 +86,7 @@ project "Hazel"
 		"%{LibraryDir.mono}"
     }
 
-    filter "files:Hazel/vendor/FastNoise/**.cpp"
+    filter "files:Hazel/vendor/FastNoise/**.cpp or files:Hazel/vendor/yaml-cpp/src/**.cpp"
         flags { "NoPCH" }
     
 	filter "system:windows"
@@ -216,7 +220,30 @@ project "Hazelnut"
 group ""
 
 
-group "Examples"
+workspace "Sandbox"
+	architecture "x64"
+	targetdir "build"
+	
+	configurations 
+	{ 
+		"Debug", 
+		"Release",
+		"Dist"
+	}
+
+
+project "Hazel-ScriptCore"
+	location "Hazel-ScriptCore"
+	kind "SharedLib"
+	language "C#"
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	files 
+	{
+		"%{prj.name}/src/**.cs", 
+	}
+
+
 project "ExampleApp"
 	location "ExampleApp"
 	kind "SharedLib"
@@ -299,4 +326,3 @@ project "ExampleApp"
 --             "Hazel/vendor/assimp/lib/Release/assimp.lib"
 --         }
 
-group ""
