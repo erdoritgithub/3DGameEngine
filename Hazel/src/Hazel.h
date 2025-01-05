@@ -27,9 +27,9 @@
 #include "Hazel/Renderer/Camera.h"
 #include "Hazel/Renderer/Material.h"
 #include "Hazel/Renderer/Framebuffer.h"
-#include "Hazel/Renderer/Buffer.h"
-#include "Hazel/Renderer/VertexArray.h"
-
+#include "Hazel/Renderer/VertexBuffer.h"
+#include "Hazel/Renderer/IndexBuffer.h"
+#include "Hazel/Renderer/Pipeline.h"
 // ---------------------------------------------------
 // Scenes
 #include "Hazel/Scene/Entity.h"
