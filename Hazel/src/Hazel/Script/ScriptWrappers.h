@@ -1,6 +1,9 @@
 #pragma once
+
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Core/KeyCodes.h"
+#include "Hazel/Physics/Physics3D.h"
+
 #include <glm/glm.hpp>
 
 extern "C" {
@@ -19,6 +22,9 @@ namespace Hazel {
 		// Entity
 		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform);
 		void Hazel_Entity_SetTransform(uint64_t entityID, glm::mat4* inTransform);
+		void Hazel_Entity_GetForwardDirection(uint64_t entityID, glm::vec3* outForward);
+		void Hazel_Entity_GetRightDirection(uint64_t entityID, glm::vec3* outRight);
+		void Hazel_Entity_GetUpDirection(uint64_t entityID, glm::vec3* outUp);
 		void Hazel_Entity_CreateComponent(uint64_t entityID, void* type);
 		bool Hazel_Entity_HasComponent(uint64_t entityID, void* type);
 		uint64_t Hazel_Entity_FindEntityByTag(MonoString* tag);
@@ -29,6 +35,12 @@ namespace Hazel {
 		void Hazel_RigidBody2DComponent_ApplyLinearImpulse(uint64_t entityID, glm::vec2* impulse, glm::vec2* offset, bool wake);
 		void Hazel_RigidBody2DComponent_GetLinearVelocity(uint64_t entityID, glm::vec2* outVelocity);
 		void Hazel_RigidBody2DComponent_SetLinearVelocity(uint64_t entityID, glm::vec2* velocity);
+
+		void Hazel_RigidBodyComponent_AddForce(uint64_t entityID, glm::vec3* force, ForceMode foceMode);
+		void Hazel_RigidBodyComponent_AddTorque(uint64_t entityID, glm::vec3* torque, ForceMode forceMode);
+		void Hazel_RigidBodyComponent_GetLinearVelocity(uint64_t entityID, glm::vec3* outVelocity);
+		void Hazel_RigidBodyComponent_SetLinearVelocity(uint64_t entityID, glm::vec3* velocity);
+
 
 		// Renderer
 		// Texture2D

@@ -36,6 +36,9 @@ namespace Hazel {
 		Component_RegisterType(SpriteRendererComponent);
 		Component_RegisterType(RigidBody2DComponent);
 		Component_RegisterType(BoxCollider2DComponent);
+		Component_RegisterType(RigidBodyComponent);
+		Component_RegisterType(BoxColliderComponent);
+		Component_RegisterType(SphereColliderComponent);
 	}
 
 	void ScriptEngineRegistry::RegisterAll()
@@ -44,6 +47,9 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.Noise::PerlinNoise_Native", Hazel::Script::Hazel_Noise_PerlinNoise);
 		mono_add_internal_call("Hazel.Entity::GetTransform_Native", Hazel::Script::Hazel_Entity_GetTransform);
 		mono_add_internal_call("Hazel.Entity::SetTransform_Native", Hazel::Script::Hazel_Entity_SetTransform);
+		mono_add_internal_call("Hazel.Entity::GetForwardDirection_Native", Hazel::Script::Hazel_Entity_GetForwardDirection);
+		mono_add_internal_call("Hazel.Entity::GetRightDirection_Native", Hazel::Script::Hazel_Entity_GetRightDirection);
+		mono_add_internal_call("Hazel.Entity::GetUpDirection_Native", Hazel::Script::Hazel_Entity_GetUpDirection);
 		mono_add_internal_call("Hazel.Entity::CreateComponent_Native", Hazel::Script::Hazel_Entity_CreateComponent);
 		mono_add_internal_call("Hazel.Entity::HasComponent_Native", Hazel::Script::Hazel_Entity_HasComponent);
 
@@ -54,6 +60,10 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.RigidBody2DComponent::GetLinearVelocity_Native", Hazel::Script::Hazel_RigidBody2DComponent_GetLinearVelocity);
 		mono_add_internal_call("Hazel.RigidBody2DComponent::SetLinearVelocity_Native", Hazel::Script::Hazel_RigidBody2DComponent_SetLinearVelocity);
 
+		mono_add_internal_call("Hazel.RigidBodyComponent::AddForce_Native", Hazel::Script::Hazel_RigidBodyComponent_AddForce);
+		mono_add_internal_call("Hazel.RigidBodyComponent::AddTorque_Native", Hazel::Script::Hazel_RigidBodyComponent_AddTorque);
+		mono_add_internal_call("Hazel.RigidBodyComponent::GetLinearVelocity_Native", Hazel::Script::Hazel_RigidBodyComponent_GetLinearVelocity);
+		mono_add_internal_call("Hazel.RigidBodyComponent::SetLinearVelocity_Native", Hazel::Script::Hazel_RigidBodyComponent_SetLinearVelocity);
 		mono_add_internal_call("Hazel.Input::IsKeyPressed_Native", Hazel::Script::Hazel_Input_IsKeyPressed);
 		mono_add_internal_call("Hazel.Texture2D::Constructor_Native", Hazel::Script::Hazel_Texture2D_Constructor);
 		mono_add_internal_call("Hazel.Texture2D::Destructor_Native", Hazel::Script::Hazel_Texture2D_Destructor);

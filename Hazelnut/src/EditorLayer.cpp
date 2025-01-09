@@ -107,12 +107,13 @@ namespace Hazel {
 		m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EditorLayer::OnEntityDeleted, this, std::placeholders::_1));
 
 		SceneSerializer serializer(m_EditorScene);
-		serializer.Deserialize("assets/scenes/levels/Physics2D-Game.hsc");
+		serializer.Deserialize("assets/scenes/Physics3DTest.hsc");
 
 	}
 
 	void EditorLayer::OnDetach()
 	{
+		m_EditorScene->OnShutdown();
 	}
 
 	void EditorLayer::OnScenePlay()

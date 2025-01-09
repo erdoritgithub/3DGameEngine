@@ -28,9 +28,24 @@ IncludeDir["Box2D"] = "Hazel/vendor/Box2D/include"
 IncludeDir["entt"] = "Hazel/vendor/entt/include"
 IncludeDir["FastNoise"] = "Hazel/vendor/FastNoise"
 IncludeDir["mono"] = "Hazel/vendor/mono/include"
+IncludeDir["PhysX"] = "Hazel/vendor/PhysX/physx/include"
 
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/mono-2.0-sgen.lib"
+LibraryDir["PhysX_LowLevel"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/LowLevel_static_64.lib"
+LibraryDir["PhysX_LowLevelAABB"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/LowLevelAABB_static_64.lib"
+LibraryDir["PhysX_LowLevelDynamics"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/LowLevelDynamics_static_64.lib"
+LibraryDir["PhysX"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysX_64.lib"
+LibraryDir["PhysXCharacterKinematic"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXCharacterKinematic_static_64.lib"
+LibraryDir["PhysXCommon"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXCommon_64.lib"
+LibraryDir["PhysXCooking"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXCooking_64.lib"
+LibraryDir["PhysXExtensions"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXExtensions_static_64.lib"
+LibraryDir["PhysXFoundation"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXFoundation_64.lib"
+LibraryDir["PhysXPvd"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXPvdSDK_static_64.lib"
+LibraryDir["PhysXTask"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXTask_static_64.lib"
+LibraryDir["PhysXVehicle"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXVehicle_static_64.lib"
+LibraryDir["PhysX_SceneQuery"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/SceneQuery_static_64.lib"
+LibraryDir["PhysX_SimulationController"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/SimulationController_static_64.lib"
 
 
 group "Dependencies"
@@ -80,6 +95,7 @@ project "Hazel"
         "%{IncludeDir.entt}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.FastNoise}",
+		"%{IncludeDir.PhysX}",
         "%{prj.name}/vendor/assimp/include",
         "%{prj.name}/vendor/stb/include",
 		"%{prj.name}/vendor/yaml-cpp/include"
@@ -92,7 +108,21 @@ project "Hazel"
         "ImGui",
 		"Box2D",
         "opengl32.lib",
-		"%{LibraryDir.mono}"
+		"%{LibraryDir.mono}",
+		-- "%{LibraryDir.PhysX_LowLevel}",
+		-- "%{LibraryDir.PhysX_LowLevelAABB}",
+		-- "%{LibraryDir.PhysX_LowLevelDynamics}",
+		"%{LibraryDir.PhysX}",
+		"%{LibraryDir.PhysXCharacterKinematic}",
+		"%{LibraryDir.PhysXCommon}",
+		"%{LibraryDir.PhysXCooking}",
+		"%{LibraryDir.PhysXExtensions}",
+		"%{LibraryDir.PhysXFoundation}",
+		"%{LibraryDir.PhysXPvd}",
+		-- "%{LibraryDir.PhysXTask}",
+		-- "%{LibraryDir.PhysXVehicle}",
+		-- "%{LibraryDir.PhysX_SceneQuery}",
+		-- "%{LibraryDir.PhysX_SimulationController}"
     }
 
     filter "files:Hazel/vendor/FastNoise/**.cpp or files:Hazel/vendor/yaml-cpp/src/**.cpp"
@@ -104,7 +134,8 @@ project "Hazel"
 		defines 
 		{ 
             "HZ_PLATFORM_WINDOWS",
-            "HZ_BUILD_DLL"
+            "HZ_BUILD_DLL",
+			"PX_PHYSX_STATIC_LIB"
 		}
 
     filter "configurations:Debug"

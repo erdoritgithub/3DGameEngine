@@ -8,6 +8,7 @@
 #include <imgui/imgui.h>
 
 #include "Hazel/Script/ScriptEngine.h"
+#include "Hazel/Physics/Physics3D.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
@@ -31,6 +32,7 @@ namespace Hazel {
 		PushOverlay(m_ImGuiLayer);
 
 		ScriptEngine::Init("assets/scripts/ExampleApp.dll");
+		Physics3D::Init();
 
 		Renderer::Init();
 		Renderer::WaitAndRender();
@@ -38,6 +40,9 @@ namespace Hazel {
 
 	Application::~Application()
 	{
+		for (Layer* layer : m_LayerStack)
+			layer->OnDetach();
+		Physics3D::Shutdown();
 		ScriptEngine::Shutdown();
 	}
 

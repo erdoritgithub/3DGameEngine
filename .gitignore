@@ -17,3 +17,5 @@ obj/
 Hazel/obj/
 Hazel/vendor/assimp/code/assimp.dir/Debug/
 Hazel/vendor/assimp/test/assimp.dir/Debug/
+Hazel/vendor/Glad/obj/Debug/
+Hazel/vendor/imgui/obj/Debug/

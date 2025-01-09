@@ -41,6 +41,7 @@ namespace Hazel {
 		~Scene();
 
 		void Init();
+		void OnShutdown();
 
 		void OnUpdate(Timestep ts);
 		void OnRenderRuntime(Timestep ts);
@@ -109,7 +110,8 @@ namespace Hazel {
 
 		entt::entity m_SelectedEntity;
 
-		Entity* m_PhysicsBodyEntityBuffer = nullptr;
+		Entity* m_Physics3DBodyEntityBuffer = nullptr;
+		Entity* m_Physics2DBodyEntityBuffer = nullptr;
 
 		float m_SkyboxLod = 1.0f;
 		bool m_IsPlaying = false;
