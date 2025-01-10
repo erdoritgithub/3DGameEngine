@@ -47,13 +47,13 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.Noise::PerlinNoise_Native", Hazel::Script::Hazel_Noise_PerlinNoise);
 		mono_add_internal_call("Hazel.Entity::GetTransform_Native", Hazel::Script::Hazel_Entity_GetTransform);
 		mono_add_internal_call("Hazel.Entity::SetTransform_Native", Hazel::Script::Hazel_Entity_SetTransform);
-		mono_add_internal_call("Hazel.Entity::GetForwardDirection_Native", Hazel::Script::Hazel_Entity_GetForwardDirection);
-		mono_add_internal_call("Hazel.Entity::GetRightDirection_Native", Hazel::Script::Hazel_Entity_GetRightDirection);
-		mono_add_internal_call("Hazel.Entity::GetUpDirection_Native", Hazel::Script::Hazel_Entity_GetUpDirection);
 		mono_add_internal_call("Hazel.Entity::CreateComponent_Native", Hazel::Script::Hazel_Entity_CreateComponent);
 		mono_add_internal_call("Hazel.Entity::HasComponent_Native", Hazel::Script::Hazel_Entity_HasComponent);
 
 		mono_add_internal_call("Hazel.Entity::FindEntityByTag_Native", Hazel::Script::Hazel_Entity_FindEntityByTag);
+		mono_add_internal_call("Hazel.TransformComponent::GetTransform_Native", Hazel::Script::Hazel_Entity_GetTransform);
+		mono_add_internal_call("Hazel.TransformComponent::SetTransform_Native", Hazel::Script::Hazel_Entity_SetTransform);
+		mono_add_internal_call("Hazel.TransformComponent::GetRelativeDirection_Native", Hazel::Script::Hazel_TransformComponent_GetRelativeDirection);
 		mono_add_internal_call("Hazel.MeshComponent::GetMesh_Native", Hazel::Script::Hazel_MeshComponent_GetMesh);
 		mono_add_internal_call("Hazel.MeshComponent::SetMesh_Native", Hazel::Script::Hazel_MeshComponent_SetMesh);
 		mono_add_internal_call("Hazel.RigidBody2DComponent::ApplyLinearImpulse_Native", Hazel::Script::Hazel_RigidBody2DComponent_ApplyLinearImpulse);

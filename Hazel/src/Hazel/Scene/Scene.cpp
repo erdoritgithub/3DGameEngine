@@ -20,8 +20,7 @@
 
 #include "Hazel/Physics/Physics3D.h"
 
-// TEMP
-#include "Hazel/Core/Input.h"
+#include <PhysX/PxPhysicsAPI.h>
 
 namespace Hazel {
 
@@ -98,58 +97,7 @@ namespace Hazel {
 		}
 	};
 
-	class PhysXContactListener : public physx::PxSimulationEventCallback
-	{
-	public:
-		virtual void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override
-		{
-			PX_UNUSED(constraints);
-			PX_UNUSED(count);
-		}
-		virtual void onWake(physx::PxActor** actors, physx::PxU32 count) override
-		{
-			PX_UNUSED(actors);
-			PX_UNUSED(count);
-		}
-		virtual void onSleep(physx::PxActor** actors, physx::PxU32 count) override
-		{
-			PX_UNUSED(actors);
-			PX_UNUSED(count);
-		}
-		virtual void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) override
-		{
-			Entity& a = *(Entity*)pairHeader.actors[0]->userData;
-			Entity& b = *(Entity*)pairHeader.actors[1]->userData;
-			if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_HAS_FIRST_TOUCH)
-			{
-				if (a.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(a.GetComponent<ScriptComponent>().ModuleName))
-					ScriptEngine::OnCollisionBegin(a);
-				if (b.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(b.GetComponent<ScriptComponent>().ModuleName))
-					ScriptEngine::OnCollisionBegin(b);
-			}
-			else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
-			{
-				if (a.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(a.GetComponent<ScriptComponent>().ModuleName))
-					ScriptEngine::OnCollisionEnd(a);
-				if (b.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(b.GetComponent<ScriptComponent>().ModuleName))
-					ScriptEngine::OnCollisionEnd(b);
-			}
-		}
-		virtual void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override
-		{
-			PX_UNUSED(pairs);
-			PX_UNUSED(count);
-		}
-		virtual void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override
-		{
-			PX_UNUSED(bodyBuffer);
-			PX_UNUSED(poseBuffer);
-			PX_UNUSED(count);
-		}
-	};
-
 	static ContactListener s_Box2DContactListener;
-	static PhysXContactListener s_PhysXContactListener;
 
 	struct Box2DWorldComponent
 	{
@@ -194,7 +142,6 @@ namespace Hazel {
 		m_SceneEntity = m_Registry.create();
 		m_Registry.emplace<SceneComponent>(m_SceneEntity, m_SceneID);
 
-		// TODO: Obviously not necessary in all cases
 		Box2DWorldComponent& b2dWorld = m_Registry.emplace<Box2DWorldComponent>(m_SceneEntity, std::make_unique<b2World>(b2Vec2{ 0.0f, -9.8f }));
 		b2dWorld.World->SetContactListener(&s_Box2DContactListener);
 
@@ -202,7 +149,6 @@ namespace Hazel {
 
 		physx::PxSceneDesc sceneDesc = Physics3D::CreateSceneDesc();
 		sceneDesc.gravity = physx::PxVec3(0.0F, -9.8F, 0.0F);
-		sceneDesc.simulationEventCallback = &s_PhysXContactListener;
 		PhysXSceneComponent& physxWorld = m_Registry.emplace<PhysXSceneComponent>(m_SceneEntity, Physics3D::CreateScene(sceneDesc));
 		HZ_CORE_ASSERT(physxWorld.World);
 
@@ -585,13 +531,7 @@ namespace Hazel {
 					physx::PxSphereGeometry sphereGeometry = physx::PxSphereGeometry(sphereCollider.Radius);
 					physx::PxMaterial* material = Physics3D::CreateMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
 					physx::PxRigidActorExt::createExclusiveShape(*actor, sphereGeometry, *material);
-					physx::PxRigidDynamic* rigidBodyActor = actor->is<physx::PxRigidDynamic>();
-					if (rigidBodyActor)
-					{
-						rigidBodyActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, true);
-						rigidBodyActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, true);
-						rigidBodyActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, true);
-					}
+					
 				}
 			}
 		}
@@ -630,14 +570,11 @@ namespace Hazel {
 					auto& physicsMaterial = e.GetComponent<PhysicsMaterialComponent>();
 					HZ_CORE_ASSERT(rigidBody.RuntimeActor);
 					physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidBody.RuntimeActor);
-					/*physx::PxRigidBody* rigidBodyActor = actor->is<physx::PxRigidBody>();
-					if (rigidBodyActor)
-					{
-						rigidBodyActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
-					}*/
+					
 					physx::PxConvexMesh* triangleMesh = Physics3D::CreateMeshCollider(meshCollider);
 					HZ_CORE_ASSERT(triangleMesh);
 					physx::PxConvexMeshGeometry triangleGeometry = physx::PxConvexMeshGeometry(triangleMesh);
+					triangleGeometry.meshFlags = physx::PxConvexMeshGeometryFlag::eTIGHT_BOUNDS;
 					physx::PxMaterial* material = Physics3D::CreateMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
 					physx::PxRigidActorExt::createExclusiveShape(*actor, triangleGeometry, *material);
 				}

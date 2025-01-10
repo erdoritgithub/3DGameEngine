@@ -16,6 +16,8 @@
 
 #include <box2d/box2d.h>
 
+#include <PhysX/PxPhysicsAPI.h>
+
 namespace Hazel {
 	extern std::unordered_map<MonoType*, std::function<bool(Entity&)>> s_HasComponentFuncs;
 	extern std::unordered_map<MonoType*, std::function<void(Entity&)>> s_CreateComponentFuncs;
@@ -88,42 +90,6 @@ namespace Hazel {
 			memcpy(glm::value_ptr(transformComponent.Transform), inTransform, sizeof(glm::mat4));
 		}
 
-		void Hazel_Entity_GetForwardDirection(uint64_t entityID, glm::vec3* outForward)
-		{
-			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			HZ_CORE_ASSERT(scene, "No active scene!");
-			const auto& entityMap = scene->GetEntityMap();
-			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
-			Entity entity = entityMap.at(entityID);
-			auto& transformComponent = entity.GetComponent<TransformComponent>();
-			auto [position, rotation, scale] = GetTransformDecomposition(transformComponent.Transform);
-			*outForward = glm::rotate(glm::inverse(glm::normalize(rotation)), glm::vec3(0, 0, -1));
-		}
-
-		void Hazel_Entity_GetRightDirection(uint64_t entityID, glm::vec3* outRight)
-		{
-			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			HZ_CORE_ASSERT(scene, "No active scene!");
-			const auto& entityMap = scene->GetEntityMap();
-			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
-			Entity entity = entityMap.at(entityID);
-			auto& transformComponent = entity.GetComponent<TransformComponent>();
-			auto [position, rotation, scale] = GetTransformDecomposition(transformComponent.Transform);
-			*outRight = glm::rotate(glm::inverse(glm::normalize(rotation)), glm::vec3(1, 0, 0));
-		}
-
-		void Hazel_Entity_GetUpDirection(uint64_t entityID, glm::vec3* outUp)
-		{
-			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			HZ_CORE_ASSERT(scene, "No active scene!");
-			const auto& entityMap = scene->GetEntityMap();
-			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
-			Entity entity = entityMap.at(entityID);
-			auto& transformComponent = entity.GetComponent<TransformComponent>();
-			auto [position, rotation, scale] = GetTransformDecomposition(transformComponent.Transform);
-			*outUp = glm::rotate(glm::inverse(glm::normalize(rotation)), glm::vec3(0, 1, 0));
-		}
-
 		void Hazel_Entity_CreateComponent(uint64_t entityID, void* type)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
@@ -158,6 +124,18 @@ namespace Hazel {
 				return entity.GetComponent<IDComponent>().ID;
 
 			return 0;
+		}
+
+		void Hazel_TransformComponent_GetRelativeDirection(uint64_t entityID, glm::vec3* outDirection, glm::vec3* inAbsoluteDirection)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			HZ_CORE_ASSERT(scene, "No active scene!");
+			const auto& entityMap = scene->GetEntityMap();
+			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+			Entity entity = entityMap.at(entityID);
+			auto& transformComponent = entity.GetComponent<TransformComponent>();
+			auto [position, rotation, scale] = GetTransformDecomposition(transformComponent.Transform);
+			*outDirection = glm::rotate(glm::inverse(glm::normalize(rotation)), *inAbsoluteDirection);
 		}
 
 		void* Hazel_MeshComponent_GetMesh(uint64_t entityID)
@@ -235,12 +213,16 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
+			if (component.IsKinematic)
+			{
+				HZ_CORE_WARN("Cannot add a force to a kinematic actor! EntityID({0})", entityID);
+				return;
+			}
+
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			// We don't want to assert since scripts might want to be able to switch
-			// between a static and dynamic actor at runtime
-			if (!dynamicActor)
-				return;
+
+			HZ_CORE_ASSERT(dynamicActor);
 			HZ_CORE_ASSERT(force);
 			dynamicActor->addForce({ force->x, force->y, force->z }, (physx::PxForceMode::Enum)forceMode);
 		}
@@ -254,14 +236,20 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
+
+			if (component.IsKinematic)
+			{
+				HZ_CORE_WARN("Cannot add torque to a kinematic actor! EntityID({0})", entityID);
+				return;
+			}
+
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			// We don't want to assert since scripts might want to be able to switch
-			// between a static and dynamic actor at runtime
-			if (!dynamicActor)
-				return;
+
+			HZ_CORE_ASSERT(dynamicActor);
 			HZ_CORE_ASSERT(torque);
 			dynamicActor->addTorque({ torque->x, torque->y, torque->z }, (physx::PxForceMode::Enum)forceMode);
+
 		}
 
 		void Hazel_RigidBodyComponent_GetLinearVelocity(uint64_t entityID, glm::vec3* outVelocity)
@@ -275,11 +263,10 @@ namespace Hazel {
 			auto& component = entity.GetComponent<RigidBodyComponent>();
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			// We don't want to assert since scripts might want to be able to switch
-			// between a static and dynamic actor at runtime
-			if (!dynamicActor)
-				return;
+
+			HZ_CORE_ASSERT(dynamicActor);
 			HZ_CORE_ASSERT(outVelocity);
+
 			physx::PxVec3 velocity = dynamicActor->getLinearVelocity();
 			*outVelocity = { velocity.x, velocity.y, velocity.z };
 		}
@@ -295,11 +282,10 @@ namespace Hazel {
 			auto& component = entity.GetComponent<RigidBodyComponent>();
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			// We don't want to assert since scripts might want to be able to switch
-			// between a static and dynamic actor at runtime
-			if (!dynamicActor)
-				return;
+
+			HZ_CORE_ASSERT(dynamicActor);
 			HZ_CORE_ASSERT(velocity);
+
 			dynamicActor->setLinearVelocity({ velocity->x, velocity->y, velocity->z });
 		}
 

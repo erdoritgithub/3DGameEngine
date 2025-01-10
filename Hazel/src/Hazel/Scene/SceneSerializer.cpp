@@ -323,6 +323,7 @@ namespace Hazel {
 			auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << (int)rigidbodyComponent.BodyType;
 			out << YAML::Key << "Mass" << YAML::Value << rigidbodyComponent.Mass;
+			out << YAML::Key << "IsKinematic" << YAML::Value << rigidbodyComponent.IsKinematic;
 			out << YAML::Key << "Constraints";
 			out << YAML::BeginMap; // Constraints
 			out << YAML::Key << "LockPositionX" << YAML::Value << rigidbodyComponent.LockPositionX;
@@ -616,6 +617,7 @@ namespace Hazel {
 					auto& component = deserializedEntity.AddComponent<RigidBodyComponent>();
 					component.BodyType = (RigidBodyComponent::Type)rigidBodyComponent["BodyType"].as<int>();
 					component.Mass = rigidBodyComponent["Mass"].as<float>();
+					component.IsKinematic = rigidBodyComponent["IsKinematic"] ? rigidBodyComponent["IsKinematic"].as<bool>() : false;
 
 					component.LockPositionX = rigidBodyComponent["LockPositionX"] ? rigidBodyComponent["LockPositionX"].as<bool>() : false;
 					component.LockPositionY = rigidBodyComponent["LockPositionY"] ? rigidBodyComponent["LockPositionY"].as<bool>() : false;

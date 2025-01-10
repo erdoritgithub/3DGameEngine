@@ -8,11 +8,10 @@ namespace Hazel
     {
         public ulong ID { get; private set; }
 
-        private List<Action<float>> m_Collision2DBeginCallbacks = new List<Action<float>>();
-        private List<Action<float>> m_Collision2DEndCallbacks = new List<Action<float>>();
-
         private Action<float> m_CollisionBeginCallbacks;
         private Action<float> m_CollisionEndCallbacks;
+        private Action<float> m_Collision2DBeginCallbacks;
+        private Action<float> m_Collision2DEndCallbacks;
 
         protected Entity() { ID = 0; }
 
@@ -62,24 +61,6 @@ namespace Hazel
             return mat4Instance;
         }
 
-        public Vector3 GetForwardDirection()
-        {
-            GetForwardDirection_Native(ID, out Vector3 forward);
-            return forward;
-        }
-
-        public Vector3 GetRightDirection()
-        {
-            GetRightDirection_Native(ID, out Vector3 right);
-            return right;
-        }
-
-        public Vector3 GetUpDirection()
-        {
-            GetUpDirection_Native(ID, out Vector3 up);
-            return up;
-        }
-
         public void SetTransform(Matrix4 transform)
         {
             SetTransform_Native(ID, ref transform);
@@ -87,12 +68,12 @@ namespace Hazel
 
         public void AddCollision2DBeginCallback(Action<float> callback)
         {
-            m_Collision2DBeginCallbacks.Add(callback);
+            m_Collision2DBeginCallbacks += callback;
         }
 
         public void AddCollision2DEndCallback(Action<float> callback)
         {
-            m_Collision2DEndCallbacks.Add(callback);
+            m_Collision2DEndCallbacks += callback;
         }
 
         public void AddCollisionBeginCallback(Action<float> callback)
@@ -118,14 +99,12 @@ namespace Hazel
         }
         private void OnCollision2DBegin(float data)
         {
-            foreach (var callback in m_Collision2DBeginCallbacks)
-                callback.Invoke(data);
+            m_Collision2DBeginCallbacks.Invoke(data);
         }
 
         private void OnCollision2DEnd(float data)
         {
-            foreach (var callback in m_Collision2DEndCallbacks)
-                callback.Invoke(data);
+            m_Collision2DEndCallbacks.Invoke(data);
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -139,12 +118,6 @@ namespace Hazel
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void SetTransform_Native(ulong entityID, ref Matrix4 matrix);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void GetForwardDirection_Native(ulong entityID, out Vector3 forward);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void GetRightDirection_Native(ulong entityID, out Vector3 right);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void GetUpDirection_Native(ulong entityID, out Vector3 up);
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern ulong FindEntityByTag_Native(string tag);
 

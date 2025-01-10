@@ -12,6 +12,10 @@ namespace Hazel
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector3
     {
+        internal static Vector3 Forward = new Vector3(0, 0, -1);
+        internal static Vector3 Right = new Vector3(1, 0, 0);
+        internal static Vector3 Up = new Vector3(0, 1, 0);
+
         public float X;
         public float Y;
         public float Z;

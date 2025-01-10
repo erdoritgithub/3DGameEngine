@@ -11,6 +11,8 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Hazel/Physics/Physics3D.h"
+
 namespace Hazel {
 
 	static void ImGuiShowHelpMarker(const char* desc)
@@ -692,6 +694,15 @@ namespace Hazel {
 					ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
 
 				ImGui::MenuItem("Reload assembly on play", nullptr, &m_ReloadScriptOnPlay);
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Debug"))
+			{
+				if (ImGui::MenuItem("Connect To PVD"))
+				{
+					Physics3D::ConnectToPhysXDebugger();
+				}
 				ImGui::EndMenu();
 			}
 

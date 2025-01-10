@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Hazel;
 
 namespace Example
@@ -10,8 +7,9 @@ namespace Example
     public class BasicController : Entity
     {
         public float Speed;
-        private Entity m_PlayerEntity;
         public float DistanceFromPlayer = 20.0F;
+
+        private Entity m_PlayerEntity;
 
         public void OnCreate()
         {
@@ -27,7 +25,6 @@ namespace Example
             translation.XY = playerTranslation.XY;
             translation.Z = playerTranslation.Z + DistanceFromPlayer;
             translation.Y = Math.Max(translation.Y, 2.0f);
-
             transform.Translation = translation;
             SetTransform(transform);
         }

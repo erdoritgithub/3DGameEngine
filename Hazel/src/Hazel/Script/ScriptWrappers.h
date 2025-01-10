@@ -22,12 +22,12 @@ namespace Hazel {
 		// Entity
 		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform);
 		void Hazel_Entity_SetTransform(uint64_t entityID, glm::mat4* inTransform);
-		void Hazel_Entity_GetForwardDirection(uint64_t entityID, glm::vec3* outForward);
-		void Hazel_Entity_GetRightDirection(uint64_t entityID, glm::vec3* outRight);
-		void Hazel_Entity_GetUpDirection(uint64_t entityID, glm::vec3* outUp);
+		
 		void Hazel_Entity_CreateComponent(uint64_t entityID, void* type);
 		bool Hazel_Entity_HasComponent(uint64_t entityID, void* type);
 		uint64_t Hazel_Entity_FindEntityByTag(MonoString* tag);
+
+		void Hazel_TransformComponent_GetRelativeDirection(uint64_t entityID, glm::vec3* outDirection, glm::vec3* inAbsoluteDirection);
 
 		void* Hazel_MeshComponent_GetMesh(uint64_t entityID);
 		void Hazel_MeshComponent_SetMesh(uint64_t entityID, Ref<Mesh>* inMesh);
