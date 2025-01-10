@@ -26,7 +26,7 @@ namespace Hazel {
 		glm::vec3 Gravity = { 0.0F, -9.81F, 0.0F };
 	};
 
-	class Physics3D
+	class Physics
 	{
 	public:
 		static void Init();

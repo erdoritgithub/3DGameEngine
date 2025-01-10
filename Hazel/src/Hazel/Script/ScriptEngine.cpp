@@ -39,6 +39,7 @@ namespace Hazel {
 		std::string NamespaceName;
 
 		MonoClass* Class = nullptr;
+		MonoMethod* Constructor = nullptr;
 		MonoMethod* OnCreateMethod = nullptr;
 		MonoMethod* OnDestroyMethod = nullptr;
 		MonoMethod* OnUpdateMethod = nullptr;
@@ -46,17 +47,22 @@ namespace Hazel {
 		// Physics
 		MonoMethod* OnCollisionBeginMethod = nullptr;
 		MonoMethod* OnCollisionEndMethod = nullptr;
+		MonoMethod* OnTriggerBeginMethod = nullptr;
+		MonoMethod* OnTriggerEndMethod = nullptr;
 		MonoMethod* OnCollision2DBeginMethod = nullptr;
 		MonoMethod* OnCollision2DEndMethod = nullptr;
 
 		void InitClassMethods(MonoImage* image)
 		{
+			Constructor = GetMethod(s_CoreAssemblyImage, "Hazel.Entity:.ctor(ulong)");
 			OnCreateMethod = GetMethod(image, FullName + ":OnCreate()");
 			OnUpdateMethod = GetMethod(image, FullName + ":OnUpdate(single)");
 
 			// Physics (Entity class)
 			OnCollisionBeginMethod = GetMethod(s_CoreAssemblyImage, "Hazel.Entity:OnCollisionBegin(single)");
 			OnCollisionEndMethod = GetMethod(s_CoreAssemblyImage, "Hazel.Entity:OnCollisionEnd(single)");
+			OnTriggerBeginMethod = GetMethod(s_CoreAssemblyImage, "Hazel.Entity:OnTriggerBegin(single)");
+			OnTriggerEndMethod = GetMethod(s_CoreAssemblyImage, "Hazel.Entity:OnTriggerEnd(single)");
 			OnCollision2DBeginMethod = GetMethod(s_CoreAssemblyImage, "Hazel.Entity:OnCollision2DBegin(single)");
 			OnCollision2DEndMethod = GetMethod(s_CoreAssemblyImage, "Hazel.Entity:OnCollision2DEnd(single)");
 		}
@@ -428,6 +434,28 @@ namespace Hazel {
 		}
 	}
 
+	void ScriptEngine::OnTriggerBegin(UUID sceneID, UUID entityID)
+	{
+		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		if (entityInstance.ScriptClass->OnTriggerBeginMethod)
+		{
+			float value = 5.0f;
+			void* args[] = { &value };
+			CallMethod(entityInstance.GetInstance(), entityInstance.ScriptClass->OnTriggerBeginMethod, args);
+		}
+	}
+
+	void ScriptEngine::OnTriggerEnd(UUID sceneID, UUID entityID)
+	{
+		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		if (entityInstance.ScriptClass->OnTriggerEndMethod)
+		{
+			float value = 5.0f;
+			void* args[] = { &value };
+			CallMethod(entityInstance.GetInstance(), entityInstance.ScriptClass->OnTriggerEndMethod, args);
+		}
+	}
+
 	bool ScriptEngine::IsEntityModuleValid(Entity entity)
 	{
 		return entity.HasComponent<ScriptComponent>() && ModuleExists(entity.GetComponent<ScriptComponent>().ModuleName);
@@ -586,11 +614,8 @@ namespace Hazel {
 		HZ_CORE_ASSERT(entityInstance.ScriptClass);
 		entityInstance.Handle = Instantiate(*entityInstance.ScriptClass);
 
-		MonoProperty* entityIDPropery = mono_class_get_property_from_name(entityInstance.ScriptClass->Class, "ID");
-		mono_property_get_get_method(entityIDPropery);
-		MonoMethod* entityIDSetMethod = mono_property_get_set_method(entityIDPropery);
 		void* param[] = { &id };
-		CallMethod(entityInstance.GetInstance(), entityIDSetMethod, param);
+		CallMethod(entityInstance.GetInstance(), entityInstance.ScriptClass->Constructor, param);
 
 		// Set all public fields to appropriate values
 		ScriptModuleFieldMap& moduleFieldMap = entityInstanceData.ModuleFieldMap;

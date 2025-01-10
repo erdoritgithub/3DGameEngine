@@ -135,7 +135,6 @@ namespace Hazel {
 							ImGui::CloseCurrentPopup();
 						}
 					}
-
 					if (!m_SelectionContext.HasComponent<RigidBodyComponent>())
 					{
 						if (ImGui::Button("Rigidbody"))
@@ -144,7 +143,6 @@ namespace Hazel {
 							ImGui::CloseCurrentPopup();
 						}
 					}
-
 					if (!m_SelectionContext.HasComponent<PhysicsMaterialComponent>())
 					{
 						if (ImGui::Button("Physics Material"))
@@ -153,7 +151,6 @@ namespace Hazel {
 							ImGui::CloseCurrentPopup();
 						}
 					}
-
 					if (!m_SelectionContext.HasComponent<BoxColliderComponent>())
 					{
 						if (ImGui::Button("Box Collider"))
@@ -162,7 +159,6 @@ namespace Hazel {
 							ImGui::CloseCurrentPopup();
 						}
 					}
-
 					if (!m_SelectionContext.HasComponent<SphereColliderComponent>())
 					{
 						if (ImGui::Button("Sphere Collider"))
@@ -171,7 +167,14 @@ namespace Hazel {
 							ImGui::CloseCurrentPopup();
 						}
 					}
-
+					if (!m_SelectionContext.HasComponent<SphereColliderComponent>())
+					{
+						if (ImGui::Button("Capsule Collider"))
+						{
+							m_SelectionContext.AddComponent<CapsuleColliderComponent>();
+							ImGui::CloseCurrentPopup();
+						}
+					}
 					if (!m_SelectionContext.HasComponent<MeshColliderComponent>())
 					{
 						if (ImGui::Button("Mesh Collider"))
@@ -180,7 +183,6 @@ namespace Hazel {
 							ImGui::CloseCurrentPopup();
 						}
 					}
-
 					ImGui::EndPopup();
 				}
 			}
@@ -378,17 +380,21 @@ namespace Hazel {
 	static bool Property(const char* label, bool& value)
 	{
 		bool modified = false;
+
 		ImGui::Text(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
+
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
 		itoa(s_Counter++, s_IDBuffer + 2, 16);
 		if (ImGui::Checkbox(s_IDBuffer, &value))
 			modified = true;
+
 		ImGui::PopItemWidth();
 		ImGui::NextColumn();
+
 		return modified;
 	}
 
@@ -712,76 +718,6 @@ namespace Hazel {
 				EndPropertyGrid();
 			});
 
-		DrawComponent<RigidBodyComponent>("Rigidbody", entity, [](RigidBodyComponent& rbc)
-			{
-				// Rigidbody Type
-				const char* rbTypeStrings[] = { "Static", "Dynamic" };
-				const char* currentType = rbTypeStrings[(int)rbc.BodyType];
-				if (ImGui::BeginCombo("Type", currentType))
-				{
-					for (int type = 0; type < 2; type++)
-					{
-						bool is_selected = (currentType == rbTypeStrings[type]);
-						if (ImGui::Selectable(rbTypeStrings[type], is_selected))
-						{
-							currentType = rbTypeStrings[type];
-							rbc.BodyType = (RigidBodyComponent::Type)type;
-						}
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-				if (rbc.BodyType == RigidBodyComponent::Type::Dynamic)
-				{
-					BeginPropertyGrid();
-					Property("Mass", rbc.Mass);
-
-					Property("Is Kinematic", rbc.IsKinematic);
-					EndPropertyGrid();
-
-					if (ImGui::TreeNode("RigidBodyConstraints", "Constraints"))
-					{
-						BeginPropertyGrid();
-						Property("Position: X", rbc.LockPositionX);
-						Property("Position: Y", rbc.LockPositionY);
-						Property("Position: Z", rbc.LockPositionZ);
-						Property("Rotation: X", rbc.LockRotationX);
-						Property("Rotation: Y", rbc.LockRotationY);
-						Property("Rotation: Z", rbc.LockRotationZ);
-						EndPropertyGrid();
-
-						ImGui::TreePop();
-					}
-
-				}
-			});
-
-		DrawComponent<PhysicsMaterialComponent>("Physics Material", entity, [](PhysicsMaterialComponent& pmc)
-			{
-				BeginPropertyGrid();
-				Property("Static Friction", pmc.StaticFriction);
-				Property("Dynamic Friction", pmc.DynamicFriction);
-				Property("Bounciness", pmc.Bounciness);
-				EndPropertyGrid();
-			});
-
-		DrawComponent<BoxColliderComponent>("Box Collider", entity, [](BoxColliderComponent& bcc)
-			{
-				BeginPropertyGrid();
-				Property("Size", bcc.Size);
-				//Property("Offset", bcc.Offset);
-				EndPropertyGrid();
-			});
-
-		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](SphereColliderComponent& scc)
-			{
-				BeginPropertyGrid();
-				Property("Radius", scc.Radius);
-				EndPropertyGrid();
-			});
-
-
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](SpriteRendererComponent& mc)
 			{
 			});
@@ -940,7 +876,94 @@ namespace Hazel {
 				EndPropertyGrid();
 			});
 
-		DrawComponent<MeshColliderComponent>("Mesh Collider", entity, [](MeshColliderComponent& mc)
+		DrawComponent<RigidBodyComponent>("Rigidbody", entity, [](RigidBodyComponent& rbc)
+			{
+				// Rigidbody Type
+				const char* rbTypeStrings[] = { "Static", "Dynamic" };
+				const char* currentType = rbTypeStrings[(int)rbc.BodyType];
+				if (ImGui::BeginCombo("Type", currentType))
+				{
+					for (int type = 0; type < 2; type++)
+					{
+						bool is_selected = (currentType == rbTypeStrings[type]);
+						if (ImGui::Selectable(rbTypeStrings[type], is_selected))
+						{
+							currentType = rbTypeStrings[type];
+							rbc.BodyType = (RigidBodyComponent::Type)type;
+						}
+						if (is_selected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+
+				if (rbc.BodyType == RigidBodyComponent::Type::Dynamic)
+				{
+					BeginPropertyGrid();
+					Property("Mass", rbc.Mass);
+					Property("Is Kinematic", rbc.IsKinematic);
+					EndPropertyGrid();
+
+					if (ImGui::TreeNode("RigidBodyConstraints", "Constraints"))
+					{
+						BeginPropertyGrid();
+						Property("Position: X", rbc.LockPositionX);
+						Property("Position: Y", rbc.LockPositionY);
+						Property("Position: Z", rbc.LockPositionZ);
+						Property("Rotation: X", rbc.LockRotationX);
+						Property("Rotation: Y", rbc.LockRotationY);
+						Property("Rotation: Z", rbc.LockRotationZ);
+						EndPropertyGrid();
+
+						ImGui::TreePop();
+					}
+				}
+			});
+
+		DrawComponent<PhysicsMaterialComponent>("Physics Material", entity, [](PhysicsMaterialComponent& pmc)
+			{
+				BeginPropertyGrid();
+
+				Property("Static Friction", pmc.StaticFriction);
+				Property("Dynamic Friction", pmc.DynamicFriction);
+				Property("Bounciness", pmc.Bounciness);
+
+				EndPropertyGrid();
+			});
+
+		DrawComponent<BoxColliderComponent>("Box Collider", entity, [](BoxColliderComponent& bcc)
+			{
+				BeginPropertyGrid();
+
+				Property("Size", bcc.Size);
+				//Property("Offset", bcc.Offset);
+				Property("Is Trigger", bcc.IsTrigger);
+
+				EndPropertyGrid();
+			});
+
+		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](SphereColliderComponent& scc)
+			{
+				BeginPropertyGrid();
+
+				Property("Radius", scc.Radius);
+				Property("Is Trigger", scc.IsTrigger);
+
+				EndPropertyGrid();
+			});
+
+		DrawComponent<CapsuleColliderComponent>("Capsule Collider", entity, [](CapsuleColliderComponent& ccc)
+			{
+				BeginPropertyGrid();
+
+				Property("Radius", ccc.Radius);
+				Property("Height", ccc.Height);
+				Property("Is Trigger", ccc.IsTrigger);
+
+				EndPropertyGrid();
+			});
+
+		DrawComponent<MeshColliderComponent>("Mesh Collider", entity, [](MeshColliderComponent& mcc)
 			{
 				ImGui::Columns(3);
 				ImGui::SetColumnWidth(0, 100);
@@ -949,8 +972,8 @@ namespace Hazel {
 				ImGui::Text("File Path");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(-1);
-				if (mc.CollisionMesh)
-					ImGui::InputText("##meshfilepath", (char*)mc.CollisionMesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+				if (mcc.CollisionMesh)
+					ImGui::InputText("##meshfilepath", (char*)mcc.CollisionMesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
 				else
 					ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
 				ImGui::PopItemWidth();
@@ -959,8 +982,10 @@ namespace Hazel {
 				{
 					std::string file = Application::Get().OpenFile();
 					if (!file.empty())
-						mc.CollisionMesh = Ref<Mesh>::Create(file);
+						mcc.CollisionMesh = Ref<Mesh>::Create(file);
 				}
+
+				Property("Is Trigger", mcc.IsTrigger);
 			});
 
 	}

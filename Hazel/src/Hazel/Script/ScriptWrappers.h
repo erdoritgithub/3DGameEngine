@@ -2,7 +2,7 @@
 
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Core/KeyCodes.h"
-#include "Hazel/Physics/Physics3D.h"
+#include "Hazel/Physics/Physics.h"
 
 #include <glm/glm.hpp>
 

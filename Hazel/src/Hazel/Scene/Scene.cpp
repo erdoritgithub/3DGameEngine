@@ -18,7 +18,7 @@
 // Box2D
 #include <box2d/box2d.h>
 
-#include "Hazel/Physics/Physics3D.h"
+#include "Hazel/Physics/Physics.h"
 
 namespace Hazel {
 
@@ -139,7 +139,7 @@ namespace Hazel {
 		{
 			SceneParams sceneDesc;
 			sceneDesc.Gravity = glm::vec3(0.0F, -9.81F, 0.0F);
-			Physics3D::CreateScene(sceneDesc);
+			Physics::CreateScene(sceneDesc);
 		}
 
 		Init();
@@ -213,7 +213,7 @@ namespace Hazel {
 			}
 		}
 
-		Physics3D::Simulate();
+		Physics::Simulate();
 	}
 
 	void Scene::OnRenderRuntime(Timestep ts)
@@ -427,7 +427,7 @@ namespace Hazel {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
-				Physics3D::CreateActor(e, view.size());
+				Physics::CreateActor(e, view.size());
 			}
 		}
 
@@ -437,7 +437,7 @@ namespace Hazel {
 	void Scene::OnRuntimeStop()
 	{
 		delete[] m_Physics2DBodyEntityBuffer;
-		Physics3D::DestroyScene();
+		Physics::DestroyScene();
 		m_IsPlaying = false;
 	}
 

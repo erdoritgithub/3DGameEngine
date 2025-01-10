@@ -11,7 +11,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Hazel/Physics/Physics3D.h"
+#include "Hazel/Physics/Physics.h"
 
 namespace Hazel {
 
@@ -701,7 +701,7 @@ namespace Hazel {
 			{
 				if (ImGui::MenuItem("Connect To PVD"))
 				{
-					Physics3D::ConnectVisualDebugger();
+					Physics::ConnectVisualDebugger();
 				}
 				ImGui::EndMenu();
 			}

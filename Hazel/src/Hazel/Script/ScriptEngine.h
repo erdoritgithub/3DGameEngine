@@ -121,6 +121,8 @@ namespace Hazel {
 		static void OnCollisionBegin(UUID sceneID, UUID entityID);
 		static void OnCollisionEnd(Entity entity);
 		static void OnCollisionEnd(UUID sceneID, UUID entityID);
+		static void OnTriggerBegin(UUID sceneID, UUID entityID);
+		static void OnTriggerEnd(UUID sceneID, UUID entityID);
 
 		static bool IsEntityModuleValid(Entity entity);
 

@@ -161,6 +161,9 @@ namespace Hazel {
 	{
 		glm::vec3 Size = { 1.0F, 1.0F, 1.0F };
 		glm::vec3 Offset = { 0.0F, 0.0F, 0.0F };
+
+		bool IsTrigger = false;
+
 		BoxColliderComponent() = default;
 		BoxColliderComponent(const BoxColliderComponent& other) = default;
 	};
@@ -168,6 +171,8 @@ namespace Hazel {
 	struct SphereColliderComponent
 	{
 		float Radius = 1.0F;
+		bool IsTrigger = false;
+
 		SphereColliderComponent() = default;
 		SphereColliderComponent(const SphereColliderComponent& other) = default;
 	};
@@ -176,6 +181,8 @@ namespace Hazel {
 	{
 		float Radius = 0.5F;
 		float Height = 1.0F;
+		bool IsTrigger = false;
+
 		CapsuleColliderComponent() = default;
 		CapsuleColliderComponent(const CapsuleColliderComponent& other) = default;
 	};
@@ -183,12 +190,15 @@ namespace Hazel {
 	struct MeshColliderComponent
 	{
 		Ref<Hazel::Mesh> CollisionMesh;
+		bool IsTrigger = false;
+
 		MeshColliderComponent() = default;
 		MeshColliderComponent(const MeshColliderComponent& other) = default;
 		MeshColliderComponent(const Ref<Hazel::Mesh>& mesh)
 			: CollisionMesh(mesh)
 		{
 		}
+
 		operator Ref<Hazel::Mesh>() { return CollisionMesh; }
 	};
 

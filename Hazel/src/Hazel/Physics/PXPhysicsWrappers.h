@@ -22,6 +22,6 @@ namespace Hazel
 		static void ConnectVisualDebugger();
 		static void DisconnectVisualDebugger();
 	private:
-		friend class Physics3D;
+		friend class Physics;
 	};
 }

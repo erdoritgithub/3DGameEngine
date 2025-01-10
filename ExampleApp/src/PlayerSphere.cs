@@ -31,6 +31,8 @@ namespace Example
 
             AddCollisionBeginCallback(OnPlayerCollisionBegin);
             AddCollisionEndCallback(OnPlayerCollisionEnd);
+            AddTriggerBeginCallback(OnPlayerTriggerBegin);
+            AddTriggerEndCallback(OnPlayerTriggerEnd);
         }
 
         void OnPlayerCollisionBegin(float value)
@@ -41,6 +43,16 @@ namespace Example
         void OnPlayerCollisionEnd(float value)
         {
             m_CollisionCounter--;
+        }
+
+        void OnPlayerTriggerBegin(float value)
+        {
+            Console.WriteLine("OnPlayerTriggerBegin");
+        }
+
+        void OnPlayerTriggerEnd(float value)
+        {
+            Console.WriteLine("OnPlayerTriggerEnd");
         }
 
         void OnUpdate(float ts)
