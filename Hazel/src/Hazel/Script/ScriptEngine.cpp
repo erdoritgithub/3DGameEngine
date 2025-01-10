@@ -428,6 +428,11 @@ namespace Hazel {
 		}
 	}
 
+	bool ScriptEngine::IsEntityModuleValid(Entity entity)
+	{
+		return entity.HasComponent<ScriptComponent>() && ModuleExists(entity.GetComponent<ScriptComponent>().ModuleName);
+	}
+
 	void ScriptEngine::OnScriptComponentDestroyed(UUID sceneID, UUID entityID)
 	{
 		HZ_CORE_ASSERT(s_EntityInstanceMap.find(sceneID) != s_EntityInstanceMap.end());

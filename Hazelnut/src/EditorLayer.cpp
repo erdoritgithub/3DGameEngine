@@ -101,7 +101,7 @@ namespace Hazel {
 		m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
 		m_PlayButtonTex = Texture2D::Create("assets/editor/PlayButton.png");
 
-		m_EditorScene = Ref<Scene>::Create();
+		m_EditorScene = Ref<Scene>::Create("EditorScene", true);
 		UpdateWindowTitle("Untitled Scene");
 		ScriptEngine::SetSceneContext(m_EditorScene);
 		m_SceneHierarchyPanel = CreateScope<SceneHierarchyPanel>(m_EditorScene);
@@ -115,7 +115,7 @@ namespace Hazel {
 
 	void EditorLayer::OnDetach()
 	{
-		m_EditorScene->OnShutdown();
+		
 	}
 
 	void EditorLayer::OnScenePlay()
@@ -701,7 +701,7 @@ namespace Hazel {
 			{
 				if (ImGui::MenuItem("Connect To PVD"))
 				{
-					Physics3D::ConnectToPhysXDebugger();
+					Physics3D::ConnectVisualDebugger();
 				}
 				ImGui::EndMenu();
 			}
