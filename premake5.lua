@@ -28,24 +28,24 @@ IncludeDir["Box2D"] = "Hazel/vendor/Box2D/include"
 IncludeDir["entt"] = "Hazel/vendor/entt/include"
 IncludeDir["FastNoise"] = "Hazel/vendor/FastNoise"
 IncludeDir["mono"] = "Hazel/vendor/mono/include"
-IncludeDir["PhysX"] = "Hazel/vendor/PhysX/physx/include"
+IncludeDir["PhysX"] = "Hazel/vendor/PhysX/include"
 
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/mono-2.0-sgen.lib"
-LibraryDir["PhysX_LowLevel"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/LowLevel_static_64.lib"
-LibraryDir["PhysX_LowLevelAABB"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/LowLevelAABB_static_64.lib"
-LibraryDir["PhysX_LowLevelDynamics"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/LowLevelDynamics_static_64.lib"
-LibraryDir["PhysX"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysX_64.lib"
-LibraryDir["PhysXCharacterKinematic"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXCharacterKinematic_static_64.lib"
-LibraryDir["PhysXCommon"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXCommon_64.lib"
-LibraryDir["PhysXCooking"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXCooking_64.lib"
-LibraryDir["PhysXExtensions"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXExtensions_static_64.lib"
-LibraryDir["PhysXFoundation"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXFoundation_64.lib"
-LibraryDir["PhysXPvd"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXPvdSDK_static_64.lib"
-LibraryDir["PhysXTask"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXTask_static_64.lib"
-LibraryDir["PhysXVehicle"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/PhysXVehicle_static_64.lib"
-LibraryDir["PhysX_SceneQuery"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/SceneQuery_static_64.lib"
-LibraryDir["PhysX_SimulationController"] = "vendor/PhysX/physx/bin/win.x86_64.vc143.mt/debug/SimulationController_static_64.lib"
+LibraryDir["PhysX_LowLevel"] = "vendor/PhysX/lib/%{cfg.buildcfg}/LowLevel.lib"
+LibraryDir["PhysX_LowLevelAABB"] = "vendor/PhysX/lib/%{cfg.buildcfg}/LowLevelAABB.lib"
+LibraryDir["PhysX_LowLevelDynamics"] = "vendor/PhysX/lib/%{cfg.buildcfg}/LowLevelDynamics.lib"
+LibraryDir["PhysX"] = "vendor/PhysX/lib/%{cfg.buildcfg}/PhysX_static_64.lib"
+LibraryDir["PhysXCharacterKinematic"] = "vendor/PhysX/lib/%{cfg.buildcfg}/PhysXCharacterKinematic_static_64.lib"
+LibraryDir["PhysXCommon"] = "vendor/PhysX/lib/%{cfg.buildcfg}/PhysXCommon_static_64.lib"
+LibraryDir["PhysXCooking"] = "vendor/PhysX/lib/%{cfg.buildcfg}/PhysXCooking_static_64.lib"
+LibraryDir["PhysXExtensions"] = "vendor/PhysX/lib/%{cfg.buildcfg}/PhysXExtensions_static_64.lib"
+LibraryDir["PhysXFoundation"] = "vendor/PhysX/lib/%{cfg.buildcfg}/PhysXFoundation_static_64.lib"
+LibraryDir["PhysXPvd"] = "vendor/PhysX/lib/%{cfg.buildcfg}/PhysXPvdSDK_static_64.lib"
+LibraryDir["PhysXTask"] = "vendor/PhysX/lib/%{cfg.buildcfg}/PhysXTask.lib"
+LibraryDir["PhysXVehicle"] = "vendor/PhysX/lib/%{cfg.buildcfg}/PhysXVehicle_static_64.lib"
+LibraryDir["PhysX_SceneQuery"] = "vendor/PhysX/lib/%{cfg.buildcfg}/SceneQuery.lib"
+LibraryDir["PhysX_SimulationController"] = "vendor/PhysX/lib/%{cfg.buildcfg}/SimulationController.lib"
 
 
 group "Dependencies"
@@ -109,9 +109,9 @@ project "Hazel"
 		"Box2D",
         "opengl32.lib",
 		"%{LibraryDir.mono}",
-		-- "%{LibraryDir.PhysX_LowLevel}",
-		-- "%{LibraryDir.PhysX_LowLevelAABB}",
-		-- "%{LibraryDir.PhysX_LowLevelDynamics}",
+		"%{LibraryDir.PhysX_LowLevel}",
+		"%{LibraryDir.PhysX_LowLevelAABB}",
+		"%{LibraryDir.PhysX_LowLevelDynamics}",
 		"%{LibraryDir.PhysX}",
 		"%{LibraryDir.PhysXCharacterKinematic}",
 		"%{LibraryDir.PhysXCommon}",
@@ -119,10 +119,10 @@ project "Hazel"
 		"%{LibraryDir.PhysXExtensions}",
 		"%{LibraryDir.PhysXFoundation}",
 		"%{LibraryDir.PhysXPvd}",
-		-- "%{LibraryDir.PhysXTask}",
-		-- "%{LibraryDir.PhysXVehicle}",
-		-- "%{LibraryDir.PhysX_SceneQuery}",
-		-- "%{LibraryDir.PhysX_SimulationController}"
+		"%{LibraryDir.PhysXTask}",
+		"%{LibraryDir.PhysXVehicle}",
+		"%{LibraryDir.PhysX_SceneQuery}",
+		"%{LibraryDir.PhysX_SimulationController}"
     }
 
     filter "files:Hazel/vendor/FastNoise/**.cpp or files:Hazel/vendor/yaml-cpp/src/**.cpp"

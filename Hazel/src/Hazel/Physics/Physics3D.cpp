@@ -9,12 +9,11 @@
 
 namespace Hazel {
 	// TODO: Kinematic Actors
-	// TODO: Rotation/Position Locking
 	// TODO: Collision "layers"
 	// TODO: Expose more of the API to scripts
 	// TODO: Connect/Disconnect PVD
-	// TODO: Collider Shape Rendering
-	// TODO: Relative Transformations for scripts
+	// TODO: Collision Shape Rendering
+
 	static physx::PxSimulationFilterShader s_DefaultFilterShader = physx::PxDefaultSimulationFilterShader;
 	static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform)
 	{
@@ -53,12 +52,18 @@ namespace Hazel {
 #endif
 		s_PXPhysicsFactory = PxCreatePhysics(PX_PHYSICS_VERSION, *s_PXFoundation, physx::PxTolerancesScale(), true, s_PXPvd);
 		HZ_CORE_ASSERT(s_PXPhysicsFactory, "PxCreatePhysics Failed!");
+
+		s_PXCookingFactory = PxCreateCooking(PX_PHYSICS_VERSION, *s_PXFoundation, s_PXPhysicsFactory->getTolerancesScale());
+		HZ_CORE_ASSERT(s_PXCookingFactory, "PxCreatePhysics Failed!");
+
 	}
+
 	void Physics3D::Shutdown()
 	{
 		s_PXPhysicsFactory->release();
 		s_PXFoundation->release();
 	}
+
 	physx::PxSceneDesc Physics3D::CreateSceneDesc()
 	{
 		physx::PxSceneDesc sceneDesc(s_PXPhysicsFactory->getTolerancesScale());
@@ -73,10 +78,12 @@ namespace Hazel {
 			sceneDesc.filterShader = HazelFilterShader;
 		return sceneDesc;
 	}
+
 	physx::PxScene* Physics3D::CreateScene(const physx::PxSceneDesc& sceneDesc)
 	{
 		return s_PXPhysicsFactory->createScene(sceneDesc);
 	}
+
 	physx::PxRigidActor* Physics3D::CreateAndAddActor(physx::PxScene* scene, const RigidBodyComponent& rigidbody, const glm::mat4& transform)
 	{
 		physx::PxRigidActor* actor = nullptr;
@@ -99,10 +106,49 @@ namespace Hazel {
 		scene->addActor(*actor);
 		return actor;
 	}
+
 	physx::PxMaterial* Physics3D::CreateMaterial(float staticFriction, float dynamicFriction, float restitution)
 	{
 		return s_PXPhysicsFactory->createMaterial(staticFriction, dynamicFriction, restitution);
 	}
+
+	physx::PxConvexMesh* Physics3D::CreateMeshCollider(const Ref<Mesh>& mesh)
+	{
+		const auto& vertices = mesh->GetStaticVertices();
+		const auto& indices = mesh->GetIndices();
+		physx::PxConvexMeshDesc convexDesc;
+		convexDesc.points.count = vertices.size();
+		convexDesc.points.stride = sizeof(Vertex);
+		convexDesc.points.data = vertices.data();
+		convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+		physx::PxDefaultMemoryOutputStream buf;
+		physx::PxConvexMeshCookingResult::Enum result;
+		if (!s_PXCookingFactory->cookConvexMesh(convexDesc, buf, &result))
+			return nullptr;
+		physx::PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
+		return s_PXPhysicsFactory->createConvexMesh(input);
+	}
+	/*physx::PxTriangleMesh* Physics3D::CreateMeshCollider(const Ref<Mesh>& mesh)
+	{
+		const auto& vertices = mesh->GetStaticVertices();
+		const auto& indices = mesh->GetIndices();
+		physx::PxTriangleMeshDesc meshDesc;
+		meshDesc.points.count = vertices.size();
+		meshDesc.points.stride = sizeof(Vertex);
+		meshDesc.points.data = vertices.data();
+		meshDesc.triangles.count = indices.size();
+		meshDesc.triangles.stride = sizeof(Index);
+		meshDesc.triangles.data = indices.data();
+		physx::PxDefaultMemoryOutputStream writeBuffer;
+		physx::PxTriangleMeshCookingResult::Enum result;
+		bool status = s_PXCookingFactory->cookTriangleMesh(meshDesc, writeBuffer, &result);
+		if (!status)
+			return nullptr;
+		physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+		return s_PXPhysicsFactory->createTriangleMesh(readBuffer);
+	}*/
+
+
 	physx::PxTransform Physics3D::CreatePose(const glm::mat4& transform)
 	{
 		auto [translation, rotationQuat, scale] = GetTransformDecomposition(transform);
@@ -132,4 +178,5 @@ namespace Hazel {
 	physx::PxFoundation* Physics3D::s_PXFoundation;
 	physx::PxPhysics* Physics3D::s_PXPhysicsFactory;
 	physx::PxPvd* Physics3D::s_PXPvd;
+	physx::PxCooking* Physics3D::s_PXCookingFactory;
 }

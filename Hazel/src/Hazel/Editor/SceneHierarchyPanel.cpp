@@ -172,6 +172,15 @@ namespace Hazel {
 						}
 					}
 
+					if (!m_SelectionContext.HasComponent<MeshColliderComponent>())
+					{
+						if (ImGui::Button("Mesh Collider"))
+						{
+							m_SelectionContext.AddComponent<MeshColliderComponent>();
+							ImGui::CloseCurrentPopup();
+						}
+					}
+
 					ImGui::EndPopup();
 				}
 			}
@@ -727,6 +736,18 @@ namespace Hazel {
 				{
 					BeginPropertyGrid();
 					Property("Mass", rbc.Mass);
+
+					if (ImGui::TreeNode("RigidBodyConstraints", "Constraints"))
+					{
+						Property("Position: X", rbc.LockPositionX);
+						Property("Position: Y", rbc.LockPositionY);
+						Property("Position: Z", rbc.LockPositionZ);
+						Property("Rotation: X", rbc.LockRotationX);
+						Property("Rotation: Y", rbc.LockRotationY);
+						Property("Rotation: Z", rbc.LockRotationZ);
+						ImGui::TreePop();
+					}
+
 					EndPropertyGrid();
 				}
 			});
@@ -912,6 +933,29 @@ namespace Hazel {
 				Property("Friction", cc2dc.Friction);
 
 				EndPropertyGrid();
+			});
+
+		DrawComponent<MeshColliderComponent>("Mesh Collider", entity, [](MeshColliderComponent& mc)
+			{
+				ImGui::Columns(3);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnWidth(1, 300);
+				ImGui::SetColumnWidth(2, 40);
+				ImGui::Text("File Path");
+				ImGui::NextColumn();
+				ImGui::PushItemWidth(-1);
+				if (mc.CollisionMesh)
+					ImGui::InputText("##meshfilepath", (char*)mc.CollisionMesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+				else
+					ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
+				ImGui::PopItemWidth();
+				ImGui::NextColumn();
+				if (ImGui::Button("...##openmesh"))
+				{
+					std::string file = Application::Get().OpenFile();
+					if (!file.empty())
+						mc.CollisionMesh = Ref<Mesh>::Create(file);
+				}
 			});
 
 	}

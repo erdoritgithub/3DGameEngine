@@ -178,4 +178,17 @@ namespace Hazel {
 		CapsuleColliderComponent() = default;
 		CapsuleColliderComponent(const CapsuleColliderComponent& other) = default;
 	};
+
+	struct MeshColliderComponent
+	{
+		Ref<Hazel::Mesh> CollisionMesh;
+		MeshColliderComponent() = default;
+		MeshColliderComponent(const MeshColliderComponent& other) = default;
+		MeshColliderComponent(const Ref<Hazel::Mesh>& mesh)
+			: CollisionMesh(mesh)
+		{
+		}
+		operator Ref<Hazel::Mesh>() { return CollisionMesh; }
+	};
+
 }

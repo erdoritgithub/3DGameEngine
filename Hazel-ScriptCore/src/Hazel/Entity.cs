@@ -55,7 +55,6 @@ namespace Hazel
             return new Entity(entityID);
         }
 
-        // TODO: Components!
         public Matrix4 GetTransform()
         {
             Matrix4 mat4Instance;

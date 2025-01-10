@@ -323,6 +323,15 @@ namespace Hazel {
 			auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << (int)rigidbodyComponent.BodyType;
 			out << YAML::Key << "Mass" << YAML::Value << rigidbodyComponent.Mass;
+			out << YAML::Key << "Constraints";
+			out << YAML::BeginMap; // Constraints
+			out << YAML::Key << "LockPositionX" << YAML::Value << rigidbodyComponent.LockPositionX;
+			out << YAML::Key << "LockPositionY" << YAML::Value << rigidbodyComponent.LockPositionY;
+			out << YAML::Key << "LockPositionZ" << YAML::Value << rigidbodyComponent.LockPositionZ;
+			out << YAML::Key << "LockRotationX" << YAML::Value << rigidbodyComponent.LockRotationX;
+			out << YAML::Key << "LockRotationY" << YAML::Value << rigidbodyComponent.LockRotationY;
+			out << YAML::Key << "LockRotationZ" << YAML::Value << rigidbodyComponent.LockRotationZ;
+			out << YAML::EndMap;
 			out << YAML::EndMap; // RigidBodyComponent
 		}
 		if (entity.HasComponent<PhysicsMaterialComponent>())
@@ -353,6 +362,15 @@ namespace Hazel {
 			auto& sphereColliderComponent = entity.GetComponent<SphereColliderComponent>();
 			out << YAML::Key << "Radius" << YAML::Value << sphereColliderComponent.Radius;
 			out << YAML::EndMap; // SphereColliderComponent
+		}
+
+		if (entity.HasComponent<MeshColliderComponent>())
+		{
+			out << YAML::Key << "MeshColliderComponent";
+			out << YAML::BeginMap; // MeshColliderComponent
+			auto mesh = entity.GetComponent<MeshColliderComponent>().CollisionMesh;
+			out << YAML::Key << "AssetPath" << YAML::Value << mesh->GetFilePath();
+			out << YAML::EndMap; // MeshColliderComponent
 		}
 
 		out << YAML::EndMap; // Entity
@@ -598,6 +616,14 @@ namespace Hazel {
 					auto& component = deserializedEntity.AddComponent<RigidBodyComponent>();
 					component.BodyType = (RigidBodyComponent::Type)rigidBodyComponent["BodyType"].as<int>();
 					component.Mass = rigidBodyComponent["Mass"].as<float>();
+
+					component.LockPositionX = rigidBodyComponent["LockPositionX"] ? rigidBodyComponent["LockPositionX"].as<bool>() : false;
+					component.LockPositionY = rigidBodyComponent["LockPositionY"] ? rigidBodyComponent["LockPositionY"].as<bool>() : false;
+					component.LockPositionZ = rigidBodyComponent["LockPositionZ"] ? rigidBodyComponent["LockPositionZ"].as<bool>() : false;
+					component.LockRotationX = rigidBodyComponent["LockRotationX"] ? rigidBodyComponent["LockRotationX"].as<bool>() : false;
+					component.LockRotationY = rigidBodyComponent["LockRotationY"] ? rigidBodyComponent["LockRotationY"].as<bool>() : false;
+					component.LockRotationZ = rigidBodyComponent["LockRotationZ"] ? rigidBodyComponent["LockRotationZ"].as<bool>() : false;
+
 				}
 
 				auto physicsMaterialComponent = entity["PhysicsMaterialComponent"];
@@ -622,6 +648,14 @@ namespace Hazel {
 				{
 					auto& component = deserializedEntity.AddComponent<SphereColliderComponent>();
 					component.Radius = sphereColliderComponent["Radius"].as<float>();
+				}
+
+				auto meshColliderComponent = entity["MeshColliderComponent"];
+				if (meshColliderComponent)
+				{
+					std::string meshPath = meshColliderComponent["AssetPath"].as<std::string>();
+					deserializedEntity.AddComponent<MeshColliderComponent>(Ref<Mesh>::Create(meshPath));
+					HZ_CORE_INFO("  Mesh Collider Asset Path: {0}", meshPath);
 				}
 
 			}
