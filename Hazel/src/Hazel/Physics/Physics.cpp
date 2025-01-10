@@ -133,6 +133,7 @@ namespace Hazel {
 	void Physics::DestroyScene()
 	{
 		delete[] s_EntityStorageBuffer;
+		s_EntityStorageBuffer = nullptr;
 		s_SimulatedEntities.clear();
 		s_Scene->release();
 		s_Scene = nullptr;

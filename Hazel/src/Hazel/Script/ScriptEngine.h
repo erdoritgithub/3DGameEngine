@@ -2,7 +2,9 @@
 
 #include "Hazel/Core/Core.h"
 #include "Hazel/Core/Timestep.h"
+
 #include <string>
+
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/Entity.h"
 
@@ -12,6 +14,7 @@ extern "C" {
 }
 
 namespace Hazel {
+
 	enum class FieldType
 	{
 		None = 0, Float, Int, UnsignedInt, String, Vec2, Vec3, Vec4
@@ -23,11 +26,14 @@ namespace Hazel {
 	struct EntityInstance
 	{
 		EntityScriptClass* ScriptClass = nullptr;
+
 		uint32_t Handle = 0;
 		Scene* SceneInstance = nullptr;
+
 		MonoObject* GetInstance();
 	};
 
+	// TODO: This needs to somehow work for strings...
 	struct PublicField
 	{
 		std::string Name;
@@ -70,7 +76,6 @@ namespace Hazel {
 		}
 
 		void SetStoredValueRaw(void* src);
-
 	private:
 		EntityInstance* m_EntityInstance;
 		MonoClassField* m_MonoClassField;
@@ -83,10 +88,10 @@ namespace Hazel {
 		void GetRuntimeValue_Internal(void* outValue) const;
 
 		friend class ScriptEngine;
-
 	};
 
 	using ScriptModuleFieldMap = std::unordered_map<std::string, std::unordered_map<std::string, PublicField>>;
+
 	struct EntityInstanceData
 	{
 		EntityInstance Instance;
@@ -102,31 +107,29 @@ namespace Hazel {
 		static void Shutdown();
 
 		static void OnSceneDestruct(UUID sceneID);
+
 		static void LoadHazelRuntimeAssembly(const std::string& path);
 		static void ReloadAssembly(const std::string& path);
+
 		static void SetSceneContext(const Ref<Scene>& scene);
 		static const Ref<Scene>& GetCurrentSceneContext();
+
 		static void CopyEntityScriptData(UUID dst, UUID src);
 
 		static void OnCreateEntity(Entity entity);
-		static void OnCreateEntity(UUID sceneID, UUID entityID);
-		static void OnUpdateEntity(UUID sceneID, UUID entityID, Timestep ts);
+		static void OnUpdateEntity(Entity entity, Timestep ts);
 
 		static void OnCollision2DBegin(Entity entity);
-		static void OnCollision2DBegin(UUID sceneID, UUID entityID);
 		static void OnCollision2DEnd(Entity entity);
-		static void OnCollision2DEnd(UUID sceneID, UUID entityID);
-
 		static void OnCollisionBegin(Entity entity);
-		static void OnCollisionBegin(UUID sceneID, UUID entityID);
 		static void OnCollisionEnd(Entity entity);
-		static void OnCollisionEnd(UUID sceneID, UUID entityID);
-		static void OnTriggerBegin(UUID sceneID, UUID entityID);
-		static void OnTriggerEnd(UUID sceneID, UUID entityID);
+		static void OnTriggerBegin(Entity entity);
+		static void OnTriggerEnd(Entity entity);
 
 		static bool IsEntityModuleValid(Entity entity);
 
 		static void OnScriptComponentDestroyed(UUID sceneID, UUID entityID);
+
 		static bool ModuleExists(const std::string& moduleName);
 		static void InitScriptEntity(Entity entity);
 		static void ShutdownScriptEntity(Entity entity, const std::string& moduleName);
@@ -137,6 +140,6 @@ namespace Hazel {
 
 		// Debug
 		static void OnImGuiRender();
-
 	};
+
 }

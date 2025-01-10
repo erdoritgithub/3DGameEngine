@@ -1,5 +1,6 @@
 #include "hzpch.h"
 #include "ScriptEngine.h"
+
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
@@ -350,19 +351,14 @@ namespace Hazel {
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
-		OnCreateEntity(entity.m_Scene->GetUUID(), entity.GetComponent<IDComponent>().ID);
-	}
-
-	void ScriptEngine::OnCreateEntity(UUID sceneID, UUID entityID)
-	{
-		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		EntityInstance& entityInstance = GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID()).Instance;
 		if (entityInstance.ScriptClass->OnCreateMethod)
 			CallMethod(entityInstance.GetInstance(), entityInstance.ScriptClass->OnCreateMethod);
 	}
 
-	void ScriptEngine::OnUpdateEntity(UUID sceneID, UUID entityID, Timestep ts)
+	void ScriptEngine::OnUpdateEntity(Entity entity, Timestep ts)
 	{
-		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		EntityInstance& entityInstance = GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID()).Instance;
 		if (entityInstance.ScriptClass->OnUpdateMethod)
 		{
 			void* args[] = { &ts };
@@ -372,12 +368,7 @@ namespace Hazel {
 
 	void ScriptEngine::OnCollision2DBegin(Entity entity)
 	{
-		OnCollision2DBegin(entity.m_Scene->GetUUID(), entity.GetComponent<IDComponent>().ID);
-	}
-
-	void ScriptEngine::OnCollision2DBegin(UUID sceneID, UUID entityID)
-	{
-		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		EntityInstance& entityInstance = GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID()).Instance;
 		if (entityInstance.ScriptClass->OnCollision2DBeginMethod)
 		{
 			float value = 5.0f;
@@ -388,12 +379,7 @@ namespace Hazel {
 
 	void ScriptEngine::OnCollision2DEnd(Entity entity)
 	{
-		OnCollision2DEnd(entity.m_Scene->GetUUID(), entity.GetComponent<IDComponent>().ID);
-	}
-
-	void ScriptEngine::OnCollision2DEnd(UUID sceneID, UUID entityID)
-	{
-		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		EntityInstance& entityInstance = GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID()).Instance;
 		if (entityInstance.ScriptClass->OnCollision2DEndMethod)
 		{
 			float value = 5.0f;
@@ -404,12 +390,7 @@ namespace Hazel {
 
 	void ScriptEngine::OnCollisionBegin(Entity entity)
 	{
-		OnCollisionBegin(entity.m_Scene->GetUUID(), entity.GetComponent<IDComponent>().ID);
-	}
-
-	void ScriptEngine::OnCollisionBegin(UUID sceneID, UUID entityID)
-	{
-		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		EntityInstance& entityInstance = GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID()).Instance;
 		if (entityInstance.ScriptClass->OnCollisionBeginMethod)
 		{
 			float value = 5.0f;
@@ -420,12 +401,7 @@ namespace Hazel {
 
 	void ScriptEngine::OnCollisionEnd(Entity entity)
 	{
-		OnCollisionEnd(entity.m_Scene->GetUUID(), entity.GetComponent<IDComponent>().ID);
-	}
-
-	void ScriptEngine::OnCollisionEnd(UUID sceneID, UUID entityID)
-	{
-		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		EntityInstance& entityInstance = GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID()).Instance;
 		if (entityInstance.ScriptClass->OnCollisionEndMethod)
 		{
 			float value = 5.0f;
@@ -434,9 +410,9 @@ namespace Hazel {
 		}
 	}
 
-	void ScriptEngine::OnTriggerBegin(UUID sceneID, UUID entityID)
+	void ScriptEngine::OnTriggerBegin(Entity entity)
 	{
-		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		EntityInstance& entityInstance = GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID()).Instance;
 		if (entityInstance.ScriptClass->OnTriggerBeginMethod)
 		{
 			float value = 5.0f;
@@ -445,9 +421,9 @@ namespace Hazel {
 		}
 	}
 
-	void ScriptEngine::OnTriggerEnd(UUID sceneID, UUID entityID)
+	void ScriptEngine::OnTriggerEnd(Entity entity)
 	{
-		EntityInstance& entityInstance = GetEntityInstanceData(sceneID, entityID).Instance;
+		EntityInstance& entityInstance = GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID()).Instance;
 		if (entityInstance.ScriptClass->OnTriggerEndMethod)
 		{
 			float value = 5.0f;
@@ -777,5 +753,7 @@ namespace Hazel {
 		}
 		ImGui::End();
 	}
+
+
 
 }

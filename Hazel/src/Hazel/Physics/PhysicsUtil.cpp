@@ -95,18 +95,17 @@ namespace Hazel {
 	{
 		Entity& a = *(Entity*)pairs->triggerActor->userData;
 		Entity& b = *(Entity*)pairs->otherActor->userData;
-		if (pairs->status & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
+		if (pairs->status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 		{
-			if (ScriptEngine::IsEntityModuleValid(a)) ScriptEngine::OnTriggerBegin(a.GetSceneUUID(), a.GetUUID());
-			if (ScriptEngine::IsEntityModuleValid(b)) ScriptEngine::OnTriggerBegin(b.GetSceneUUID(), b.GetUUID());
+			if (ScriptEngine::IsEntityModuleValid(a)) ScriptEngine::OnTriggerBegin(a);
+			if (ScriptEngine::IsEntityModuleValid(b)) ScriptEngine::OnTriggerBegin(b);
 		}
-		else if (pairs->status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
+		else if (pairs->status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 		{
-			if (ScriptEngine::IsEntityModuleValid(a)) ScriptEngine::OnTriggerEnd(a.GetSceneUUID(), a.GetUUID());
-			if (ScriptEngine::IsEntityModuleValid(b)) ScriptEngine::OnTriggerEnd(b.GetSceneUUID(), b.GetUUID());
+			if (ScriptEngine::IsEntityModuleValid(a)) ScriptEngine::OnTriggerEnd(a);
+			if (ScriptEngine::IsEntityModuleValid(b)) ScriptEngine::OnTriggerEnd(b);
 		}
 
-		PX_UNUSED(count);
 	}
 	void ContactListener::onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count)
 	{
