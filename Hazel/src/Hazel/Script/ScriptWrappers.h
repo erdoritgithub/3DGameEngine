@@ -18,9 +18,13 @@ namespace Hazel {
 
 		// Input
 		bool Hazel_Input_IsKeyPressed(KeyCode key);
+		bool Hazel_Input_IsMouseButtonPressed(MouseButton button);
 		void Hazel_Input_GetMousePosition(glm::vec2* outPosition);
 		void Hazel_Input_SetCursorMode(CursorMode mode);
 		CursorMode Hazel_Input_GetCursorMode();
+
+		// Physics
+		bool Hazel_Physics_Raycast(glm::vec3* origin, glm::vec3* direction, float maxDistance, RaycastHit* hit);
 
 		// Entity
 		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform);

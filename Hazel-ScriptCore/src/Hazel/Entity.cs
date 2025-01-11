@@ -15,7 +15,6 @@ namespace Hazel
         private Action<float> m_TriggerBeginCallbacks;
         private Action<float> m_TriggerEndCallbacks;
 
-
         protected Entity() { ID = 0; }
 
         internal Entity(ulong id)
@@ -25,8 +24,8 @@ namespace Hazel
 
         ~Entity()
         {
-           
         }
+
         public T CreateComponent<T>() where T : Component, new()
         {
             CreateComponent_Native(ID, typeof(T));
@@ -54,6 +53,12 @@ namespace Hazel
         public Entity FindEntityByTag(string tag)
         {
             ulong entityID = FindEntityByTag_Native(tag);
+            return new Entity(entityID);
+        }
+
+        public Entity FindEntityByID(ulong entityID)
+        {
+            // TODO: Verify the entity id
             return new Entity(entityID);
         }
 
@@ -93,11 +98,11 @@ namespace Hazel
         {
             m_TriggerBeginCallbacks += callback;
         }
+
         public void AddTriggerEndCallback(Action<float> callback)
         {
             m_TriggerEndCallbacks += callback;
         }
-
 
         private void OnCollisionBegin(float data)
         {
@@ -116,6 +121,7 @@ namespace Hazel
             if (m_TriggerBeginCallbacks != null)
                 m_TriggerBeginCallbacks.Invoke(data);
         }
+
         private void OnTriggerEnd(float data)
         {
             if (m_TriggerEndCallbacks != null)
@@ -134,13 +140,10 @@ namespace Hazel
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void CreateComponent_Native(ulong entityID, Type type);
-
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool HasComponent_Native(ulong entityID, Type type);
-
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void GetTransform_Native(ulong entityID, out Matrix4 matrix);
-
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void SetTransform_Native(ulong entityID, ref Matrix4 matrix);
         [MethodImpl(MethodImplOptions.InternalCall)]

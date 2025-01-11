@@ -28,6 +28,14 @@ namespace Hazel {
 		glm::vec3 Gravity = { 0.0F, -9.81F, 0.0F };
 	};
 
+	struct RaycastHit
+	{
+		uint64_t EntityID;
+		glm::vec3 Position;
+		glm::vec3 Normal;
+		float Distance;
+	};
+
 	class Physics
 	{
 	public:
@@ -40,6 +48,7 @@ namespace Hazel {
 		static void Simulate(Timestep ts);
 
 		static void DestroyScene();
+		static void* GetPhysicsScene();
 
 		static void ConnectVisualDebugger();
 		static void DisconnectVisualDebugger();

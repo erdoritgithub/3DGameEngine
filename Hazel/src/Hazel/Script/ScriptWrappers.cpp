@@ -6,6 +6,7 @@
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Physics/PhysicsUtil.h"
+#include "Hazel/Physics/PXPhysicsWrappers.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -62,6 +63,11 @@ namespace Hazel {
 			return Input::IsKeyPressed(key);
 		}
 
+		bool Hazel_Input_IsMouseButtonPressed(MouseButton button)
+		{
+			return Input::IsMouseButtonPressed(button);
+		}
+
 		void Hazel_Input_GetMousePosition(glm::vec2* outPosition)
 		{
 			auto [x, y] = Input::GetMousePosition();
@@ -78,6 +84,10 @@ namespace Hazel {
 			return Input::GetCursorMode();
 		}
 
+		bool Hazel_Physics_Raycast(glm::vec3* origin, glm::vec3* direction, float maxDistance, RaycastHit* hit)
+		{
+			return PXPhysicsWrappers::Raycast(*origin, *direction, maxDistance, hit);
+		}
 
 		////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
@@ -152,7 +162,7 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			auto& transformComponent = entity.GetComponent<TransformComponent>();
 			auto [position, rotation, scale] = GetTransformDecomposition(transformComponent.Transform);
-			*outDirection = glm::rotate(glm::normalize(rotation), *inAbsoluteDirection);
+			*outDirection = glm::rotate(rotation, *inAbsoluteDirection);
 		}
 		void Hazel_TransformComponent_GetRotation(uint64_t entityID, glm::vec3* outRotation)
 		{

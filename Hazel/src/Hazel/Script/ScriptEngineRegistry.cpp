@@ -45,6 +45,7 @@ namespace Hazel {
 	{
 		InitComponentTypes();
 		mono_add_internal_call("Hazel.Noise::PerlinNoise_Native", Hazel::Script::Hazel_Noise_PerlinNoise);
+		mono_add_internal_call("Hazel.Physics::Raycast_Native", Hazel::Script::Hazel_Physics_Raycast);
 		mono_add_internal_call("Hazel.Entity::GetTransform_Native", Hazel::Script::Hazel_Entity_GetTransform);
 		mono_add_internal_call("Hazel.Entity::SetTransform_Native", Hazel::Script::Hazel_Entity_SetTransform);
 		mono_add_internal_call("Hazel.Entity::CreateComponent_Native", Hazel::Script::Hazel_Entity_CreateComponent);
@@ -68,6 +69,8 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.RigidBodyComponent::AddTorque_Native", Hazel::Script::Hazel_RigidBodyComponent_AddTorque);
 		mono_add_internal_call("Hazel.RigidBodyComponent::GetLinearVelocity_Native", Hazel::Script::Hazel_RigidBodyComponent_GetLinearVelocity);
 		mono_add_internal_call("Hazel.RigidBodyComponent::SetLinearVelocity_Native", Hazel::Script::Hazel_RigidBodyComponent_SetLinearVelocity);
+		mono_add_internal_call("Hazel.Input::IsMouseButtonPressed_Native", Hazel::Script::Hazel_Input_IsMouseButtonPressed);
+
 		mono_add_internal_call("Hazel.Input::IsKeyPressed_Native", Hazel::Script::Hazel_Input_IsKeyPressed);
 		mono_add_internal_call("Hazel.Input::GetMousePosition_Native", Hazel::Script::Hazel_Input_GetMousePosition);
 		mono_add_internal_call("Hazel.Input::SetCursorMode_Native", Hazel::Script::Hazel_Input_SetCursorMode);
@@ -93,12 +96,6 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.Mesh::GetMaterialCount_Native", Hazel::Script::Hazel_Mesh_GetMaterialCount);
 		mono_add_internal_call("Hazel.MeshFactory::CreatePlane_Native", Hazel::Script::Hazel_MeshFactory_CreatePlane);
 
-		// static bool IsKeyPressed(KeyCode key) { return s_Instance->IsKeyPressedImpl(key); }
-		// 
-		// static bool IsMouseButtonPressed(MouseCode button) { return s_Instance->IsMouseButtonPressedImpl(button); }
-		// static std::pair<float, float> GetMousePosition() { return s_Instance->GetMousePositionImpl(); }
-		// static float GetMouseX() { return s_Instance->GetMouseXImpl(); }
-		// static float GetMouseY() { return s_Instance->GetMouseYImpl(); }
 	}
 
 }
