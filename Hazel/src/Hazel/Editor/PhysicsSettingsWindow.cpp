@@ -1,7 +1,8 @@
 #include "hzpch.h"
 #include "PhysicsSettingsWindow.h"
-#include "Hazel/Physics/Physics.h"
+#include "Hazel/Physics/PhysicsLayer.h"
 #include "imgui.h"
+
 namespace Hazel {
 	static int32_t s_SelectedLayer = -1;
 	static char s_NewLayerNameBuffer[50];
@@ -35,6 +36,8 @@ namespace Hazel {
 			}
 			ImGui::EndPopup();
 		}
+
+		uint32_t buttonId = 1;
 		for (const auto& layer : PhysicsLayerManager::GetLayers())
 		{
 			if (ImGui::Button(layer.Name.c_str()))
@@ -44,10 +47,12 @@ namespace Hazel {
 			if (layer.Name != "Default")
 			{
 				ImGui::SameLine();
+				ImGui::PushID(buttonId++);
 				if (ImGui::Button("X"))
 				{
 					PhysicsLayerManager::RemoveLayer(layer.LayerID);
 				}
+				ImGui::PopID();
 			}
 		}
 	}

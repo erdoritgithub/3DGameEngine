@@ -4,7 +4,7 @@
 #include "Entity.h"
 #include "Components.h"
 #include "Hazel/Script/ScriptEngine.h"
-#include "Hazel/Physics/Physics.h"
+#include "Hazel/Physics/PhysicsLayer.h"
 
 #include "Hazel/Physics/PXPhysicsWrappers.h"
 #include "Hazel/Renderer/MeshFactory.h"
