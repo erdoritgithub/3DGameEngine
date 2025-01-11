@@ -1,7 +1,8 @@
 #include "hzpch.h"
-
 #include "ScriptWrappers.h"
+
 #include "Hazel/Core/Math/Noise.h"
+
 #include "Hazel/Scene/Scene.h"
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Scene/Components.h"
@@ -11,10 +12,12 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-
 #include <glm/gtc/type_ptr.hpp>
+
 #include <mono/jit/jit.h>
+
 #include <box2d/box2d.h>
+
 #include <PhysX/PxPhysicsAPI.h>
 
 #include <imgui.h>
@@ -25,7 +28,6 @@ namespace Hazel {
 }
 
 namespace Hazel {
-
 	namespace Script {
 
 		enum class ComponentID
@@ -43,21 +45,26 @@ namespace Hazel {
 			glm::vec4 perspective;
 			glm::quat orientation;
 			glm::decompose(transform, scale, orientation, translation, skew, perspective);
+
 			return { translation, orientation, scale };
 		}
+
 
 		////////////////////////////////////////////////////////////////
 		// Math ////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
+
 		float Hazel_Noise_PerlinNoise(float x, float y)
 		{
 			return Noise::PerlinNoise(x, y);
 		}
 
 		////////////////////////////////////////////////////////////////
+
 		////////////////////////////////////////////////////////////////
 		// Input ///////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
+
 		bool Hazel_Input_IsKeyPressed(KeyCode key)
 		{
 			return Input::IsKeyPressed(key);
@@ -89,166 +96,108 @@ namespace Hazel {
 			return PXPhysicsWrappers::Raycast(*origin, *direction, maxDistance, hit);
 		}
 
+		static void AddCollidersToArray(MonoArray* array, const std::vector<physx::PxOverlapHit>& hits)
+		{
+			uint32_t arrayIndex = 0;
+			for (const auto& hit : hits)
+			{
+				Entity& entity = *(Entity*)hit.actor->userData;
+
+				if (entity.HasComponent<BoxColliderComponent>())
+				{
+					auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+					void* data[] = {
+						&entity.GetUUID(),
+						&boxCollider.IsTrigger,
+						&boxCollider.Size,
+						&boxCollider.Offset
+					};
+
+					MonoObject* obj = ScriptEngine::Construct("Hazel.BoxCollider:.ctor(ulong,bool,Vector3,Vector3)", true, data);
+					mono_array_set(array, MonoObject*, arrayIndex++, obj);
+				}
+
+				if (entity.HasComponent<SphereColliderComponent>())
+				{
+					auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+
+					void* data[] = {
+						&entity.GetUUID(),
+						&sphereCollider.IsTrigger,
+						&sphereCollider.Radius
+					};
+
+					MonoObject* obj = ScriptEngine::Construct("Hazel.SphereCollider:.ctor(ulong,bool,float)", true, data);
+					mono_array_set(array, MonoObject*, arrayIndex++, obj);
+				}
+
+				if (entity.HasComponent<CapsuleColliderComponent>())
+				{
+					auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+					void* data[] = {
+						&entity.GetUUID(),
+						&capsuleCollider.IsTrigger,
+						&capsuleCollider.Radius,
+						&capsuleCollider.Height
+					};
+
+					MonoObject* obj = ScriptEngine::Construct("Hazel.CapsuleCollider:.ctor(ulong,bool,float,float)", true, data);
+					mono_array_set(array, MonoObject*, arrayIndex++, obj);
+				}
+
+				if (entity.HasComponent<MeshColliderComponent>())
+				{
+					auto& meshCollider = entity.GetComponent<MeshColliderComponent>();
+
+					Ref<Mesh>* mesh = new Ref<Mesh>(meshCollider.CollisionMesh);
+					void* data[] = {
+						&entity.GetUUID(),
+						&meshCollider.IsTrigger,
+						&mesh
+					};
+
+					MonoObject* obj = ScriptEngine::Construct("Hazel.MeshCollider:.ctor(ulong,bool,intptr)", true, data);
+					mono_array_set(array, MonoObject*, arrayIndex++, obj);
+				}
+			}
+		}
+
 		MonoArray* Hazel_Physics_OverlapBox(glm::vec3* origin, glm::vec3* halfSize)
 		{
 			MonoArray* outColliders = nullptr;
-			uint32_t arrayIndex = 0;
 			std::vector<physx::PxOverlapHit> buffer;
+
 			if (PXPhysicsWrappers::OverlapBox(*origin, *halfSize, buffer))
 			{
-				// TODO: Exclude MeshColliders for now
-				uintptr_t count = buffer.size();
-				for (const auto& hit : buffer)
-				{
-					Entity& entity = *(Entity*)hit.actor->userData;
-					if (!entity.HasComponent<BoxColliderComponent>() && !entity.HasComponent<SphereColliderComponent>() && !entity.HasComponent<CapsuleColliderComponent>())
-					{
-						if (entity.HasComponent<MeshColliderComponent>())
-						{
-							count--;
-						}
-					}
-				}
-				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), count);
-				for (const auto& hit : buffer)
-				{
-					if (arrayIndex >= count)
-						break;
-					Entity& entity = *(Entity*)hit.actor->userData;
-					if (entity.HasComponent<BoxColliderComponent>())
-					{
-						auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
-						void* data[] = {
-							&entity.GetUUID(),
-							&boxCollider.IsTrigger,
-							&boxCollider.Size,
-							&boxCollider.Offset
-						};
-						MonoObject* obj = ScriptEngine::Construct("Hazel.BoxCollider:.ctor(ulong,bool,Vector3,Vector3)", true, data);
-						mono_array_set(outColliders, MonoObject*, arrayIndex++, obj);
-					}
-					if (entity.HasComponent<SphereColliderComponent>())
-					{
-						auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
-						void* data[] = {
-							&entity.GetUUID(),
-							&sphereCollider.IsTrigger,
-							&sphereCollider.Radius
-						};
-						MonoObject* obj = ScriptEngine::Construct("Hazel.SphereCollider:.ctor(ulong,bool,float)", true, data);
-						mono_array_set(outColliders, MonoObject*, arrayIndex++, obj);
-					}
-					if (entity.HasComponent<CapsuleColliderComponent>())
-					{
-						auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-						void* data[] = {
-							&entity.GetUUID(),
-							&capsuleCollider.IsTrigger,
-							&capsuleCollider.Radius,
-							&capsuleCollider.Height
-						};
-						MonoObject* obj = ScriptEngine::Construct("Hazel.CapsuleCollider:.ctor(ulong,bool,float,float)", true, data);
-						mono_array_set(outColliders, MonoObject*, arrayIndex++, obj);
-					}
-					/*if (entity.HasComponent<MeshColliderComponent>())
-					{
-						auto& meshCollider = entity.GetComponent<MeshColliderComponent>();
-						MonoString* filepath = mono_string_new(mono_domain_get(), meshCollider.CollisionMesh->GetFilePath().c_str());
-						void* data[] = {
-							&entity.GetUUID(),
-							&meshCollider.IsTrigger,
-							&filepath
-						};
-						MonoObject* obj = ScriptEngine::Construct("Hazel.MeshCollider:.ctor(ulong,bool,string)", true, data);
-						mono_array_set(outColliders, MonoObject*, arrayIndex++, obj);
-					}*/
-				}
+				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), buffer.size());
+				AddCollidersToArray(outColliders, buffer);
 			}
+
 			return outColliders;
 		}
 
 		MonoArray* Hazel_Physics_OverlapSphere(glm::vec3* origin, float radius)
 		{
 			MonoArray* outColliders = nullptr;
-			uint32_t arrayIndex = 0;
 			std::vector<physx::PxOverlapHit> buffer;
+
 			if (PXPhysicsWrappers::OverlapSphere(*origin, radius, buffer))
 			{
-				// TODO: Exclude MeshColliders for now
-				uintptr_t count = buffer.size();
-				for (const auto& hit : buffer)
-				{
-					Entity& entity = *(Entity*)hit.actor->userData;
-					if (!entity.HasComponent<BoxColliderComponent>() && !entity.HasComponent<SphereColliderComponent>() && !entity.HasComponent<CapsuleColliderComponent>())
-					{
-						if (entity.HasComponent<MeshColliderComponent>())
-						{
-							count--;
-						}
-					}
-				}
-				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), count);
-				for (const auto& hit : buffer)
-				{
-					if (arrayIndex >= count)
-						break;
-					Entity& entity = *(Entity*)hit.actor->userData;
-					if (entity.HasComponent<BoxColliderComponent>())
-					{
-						auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
-						void* data[] = {
-							&entity.GetUUID(),
-							&boxCollider.IsTrigger,
-							&boxCollider.Size,
-							&boxCollider.Offset
-						};
-						MonoObject* obj = ScriptEngine::Construct("Hazel.BoxCollider:.ctor(ulong,bool,Vector3,Vector3)", true, data);
-						mono_array_set(outColliders, MonoObject*, arrayIndex++, obj);
-					}
-					if (entity.HasComponent<SphereColliderComponent>())
-					{
-						auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
-						void* data[] = {
-							&entity.GetUUID(),
-							&sphereCollider.IsTrigger,
-							&sphereCollider.Radius
-						};
-						MonoObject* obj = ScriptEngine::Construct("Hazel.SphereCollider:.ctor(ulong,bool,float)", true, data);
-						mono_array_set(outColliders, MonoObject*, arrayIndex++, obj);
-					}
-					if (entity.HasComponent<CapsuleColliderComponent>())
-					{
-						auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-						void* data[] = {
-							&entity.GetUUID(),
-							&capsuleCollider.IsTrigger,
-							&capsuleCollider.Radius,
-							&capsuleCollider.Height
-						};
-						MonoObject* obj = ScriptEngine::Construct("Hazel.CapsuleCollider:.ctor(ulong,bool,float,float)", true, data);
-						mono_array_set(outColliders, MonoObject*, arrayIndex++, obj);
-					}
-					/*if (entity.HasComponent<MeshColliderComponent>())
-					{
-						auto& meshCollider = entity.GetComponent<MeshColliderComponent>();
-						MonoString* filepath = mono_string_new(mono_domain_get(), meshCollider.CollisionMesh->GetFilePath().c_str());
-						void* data[] = {
-							&entity.GetUUID(),
-							&meshCollider.IsTrigger,
-							&filepath
-						};
-						MonoObject* obj = ScriptEngine::Construct("Hazel.MeshCollider:.ctor(ulong,bool,string)", true, data);
-						mono_array_set(outColliders, MonoObject*, arrayIndex++, obj);
-					}*/
-				}
+				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), buffer.size());
+				AddCollidersToArray(outColliders, buffer);
 			}
+
 			return outColliders;
 		}
 
 		////////////////////////////////////////////////////////////////
+
 		////////////////////////////////////////////////////////////////
 		// Entity //////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
+
 		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
@@ -279,6 +228,7 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
 			s_CreateComponentFuncs[monoType](entity);
@@ -294,7 +244,6 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
 			bool result = s_HasComponentFuncs[monoType](entity);
-
 			return result;
 		}
 
@@ -302,6 +251,7 @@ namespace Hazel {
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			HZ_CORE_ASSERT(scene, "No active scene!");
+
 			Entity entity = scene->FindEntityByTag(mono_string_to_utf8(tag));
 			if (entity)
 				return entity.GetComponent<IDComponent>().ID;
@@ -315,17 +265,21 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			auto& transformComponent = entity.GetComponent<TransformComponent>();
+
 			auto [position, rotation, scale] = GetTransformDecomposition(transformComponent.Transform);
 			*outDirection = glm::rotate(rotation, *inAbsoluteDirection);
 		}
+
 		void Hazel_TransformComponent_GetRotation(uint64_t entityID, glm::vec3* outRotation)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			auto& transformComponent = entity.GetComponent<TransformComponent>();
 			auto [position, rotationQuat, scale] = GetTransformDecomposition(transformComponent.Transform);
@@ -378,6 +332,7 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
 			auto& component = entity.GetComponent<RigidBody2DComponent>();
@@ -391,6 +346,7 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
 			auto& component = entity.GetComponent<RigidBody2DComponent>();
@@ -406,6 +362,7 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
 			auto& component = entity.GetComponent<RigidBody2DComponent>();
@@ -420,9 +377,11 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
+
 			if (component.IsKinematic)
 			{
 				HZ_CORE_WARN("Cannot add a force to a kinematic actor! EntityID({0})", entityID);
@@ -431,8 +390,8 @@ namespace Hazel {
 
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-
 			HZ_CORE_ASSERT(dynamicActor);
+
 			HZ_CORE_ASSERT(force);
 			dynamicActor->addForce({ force->x, force->y, force->z }, (physx::PxForceMode::Enum)forceMode);
 		}
@@ -443,6 +402,7 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
@@ -455,11 +415,10 @@ namespace Hazel {
 
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-
 			HZ_CORE_ASSERT(dynamicActor);
+
 			HZ_CORE_ASSERT(torque);
 			dynamicActor->addTorque({ torque->x, torque->y, torque->z }, (physx::PxForceMode::Enum)forceMode);
-
 		}
 
 		void Hazel_RigidBodyComponent_GetLinearVelocity(uint64_t entityID, glm::vec3* outVelocity)
@@ -468,15 +427,16 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
+
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-
 			HZ_CORE_ASSERT(dynamicActor);
-			HZ_CORE_ASSERT(outVelocity);
 
+			HZ_CORE_ASSERT(outVelocity);
 			physx::PxVec3 velocity = dynamicActor->getLinearVelocity();
 			*outVelocity = { velocity.x, velocity.y, velocity.z };
 		}
@@ -487,15 +447,16 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
+
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-
 			HZ_CORE_ASSERT(dynamicActor);
-			HZ_CORE_ASSERT(velocity);
 
+			HZ_CORE_ASSERT(velocity);
 			dynamicActor->setLinearVelocity({ velocity->x, velocity->y, velocity->z });
 		}
 
@@ -505,10 +466,11 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
-
 			auto& component = entity.GetComponent<RigidBodyComponent>();
+
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
 			HZ_CORE_ASSERT(dynamicActor);
@@ -518,7 +480,6 @@ namespace Hazel {
 				* physx::PxQuat(glm::radians(rotation->y), { 0.0F, 1.0F, 0.0F })
 				* physx::PxQuat(glm::radians(rotation->z), { 0.0F, 0.0F, 1.0F }));
 			dynamicActor->setGlobalPose(transform);
-
 		}
 
 		uint32_t Hazel_RigidBodyComponent_GetLayer(uint64_t entityID)
@@ -527,6 +488,7 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
@@ -539,12 +501,15 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
+
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
 			HZ_CORE_ASSERT(dynamicActor);
+
 			return dynamicActor->getMass();
 		}
 
@@ -554,12 +519,15 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
+
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
 			HZ_CORE_ASSERT(dynamicActor);
+
 			component.Mass = mass;
 			physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, mass);
 		}
@@ -613,6 +581,7 @@ namespace Hazel {
 			Ref<Texture2D>& instance = *_this;
 
 			uint32_t dataSize = count * sizeof(glm::vec4) / 4;
+
 			instance->Lock();
 			Buffer buffer = instance->GetWriteableBuffer();
 			HZ_CORE_ASSERT(dataSize <= buffer.Size);
@@ -627,6 +596,7 @@ namespace Hazel {
 				*pixels++ = (uint32_t)(value.z * 255.0f);
 				*pixels++ = (uint32_t)(value.w * 255.0f);
 			}
+
 			instance->Unlock();
 		}
 
@@ -639,12 +609,6 @@ namespace Hazel {
 		{
 			Ref<Material>& instance = *(Ref<Material>*)_this;
 			instance->Set(mono_string_to_utf8(uniform), value);
-		}
-
-		void Hazel_MaterialInstance_SetVector4(Ref<MaterialInstance>* _this, MonoString* uniform, glm::vec4* value)
-		{
-			Ref<MaterialInstance>& instance = *(Ref<MaterialInstance>*)_this;
-			instance->Set(mono_string_to_utf8(uniform), *value);
 		}
 
 		void Hazel_Material_SetTexture(Ref<Material>* _this, MonoString* uniform, Ref<Texture2D>* texture)
@@ -670,6 +634,12 @@ namespace Hazel {
 			instance->Set(mono_string_to_utf8(uniform), *value);
 		}
 
+		void Hazel_MaterialInstance_SetVector4(Ref<MaterialInstance>* _this, MonoString* uniform, glm::vec4* value)
+		{
+			Ref<MaterialInstance>& instance = *(Ref<MaterialInstance>*)_this;
+			instance->Set(mono_string_to_utf8(uniform), *value);
+		}
+
 		void Hazel_MaterialInstance_SetTexture(Ref<MaterialInstance>* _this, MonoString* uniform, Ref<Texture2D>* texture)
 		{
 			Ref<MaterialInstance>& instance = *(Ref<MaterialInstance>*)_this;
@@ -681,6 +651,7 @@ namespace Hazel {
 			// TODO: Implement properly with MeshFactory class!
 			return new Ref<Mesh>(new Mesh("assets/models/Plane1m.obj"));
 		}
+
 		////////////////////////////////////////////////////////////////
 
 	}

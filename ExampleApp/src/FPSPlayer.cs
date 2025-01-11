@@ -84,15 +84,17 @@ namespace FPSExample
 
             if (Input.IsKeyPressed(KeyCode.L))
             {
-                Collider[] colliders = Physics.OverlapSphere(m_Transform.Transform.Translation, 1.0F);
+                Collider[] colliders = Physics.OverlapBox(m_Transform.Transform.Translation, new Vector3(1.0F));
                 Console.WriteLine(colliders.Length);
                 foreach (Collider c in colliders)
                 {
                     Console.WriteLine("EntityID: {0}", c.EntityID);
                     Console.WriteLine("IsTrigger: {0}", c.IsTrigger);
-                    Console.WriteLine("IsBox: {0}", c.Is<BoxCollider>());
-                    Console.WriteLine("IsSphere: {0}", c.Is<SphereCollider>());
-                    Console.WriteLine("IsCapsule: {0}", c.Is<CapsuleCollider>());
+                    Console.WriteLine("IsBox: {0}", c is BoxCollider);
+                    Console.WriteLine("IsSphere: {0}", c is SphereCollider);
+                    Console.WriteLine("IsCapsule: {0}", c is CapsuleCollider);
+                    Console.WriteLine("IsMesh: {0}", c is MeshCollider);
+
                 }
             }
 
