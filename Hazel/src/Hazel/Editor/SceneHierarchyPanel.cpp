@@ -6,6 +6,8 @@
 #include "Hazel/Core/Application.h"
 #include "Hazel/Renderer/Mesh.h"
 #include "Hazel/Script/ScriptEngine.h"
+
+#include "Hazel/Physics/Physics.h"
 #include "Hazel/Physics/PXPhysicsWrappers.h"
 #include "Hazel/Renderer/MeshFactory.h"
 
@@ -884,7 +886,10 @@ namespace Hazel {
 				// Rigidbody Type
 				const char* rbTypeStrings[] = { "Static", "Dynamic" };
 				const char* currentType = rbTypeStrings[(int)rbc.BodyType];
-				if (ImGui::BeginCombo("Type", currentType))
+
+				ImGui::TextUnformatted("Type");
+				ImGui::SameLine();
+				if (ImGui::BeginCombo("##TypeSelection", currentType))
 				{
 					for (int type = 0; type < 2; type++)
 					{
@@ -899,6 +904,27 @@ namespace Hazel {
 					}
 					ImGui::EndCombo();
 				}
+
+				const std::vector<std::string>& layerNames = PhysicsLayerManager::GetLayerNames();
+				const char* currentLayer = layerNames[rbc.Layer].c_str();
+				ImGui::TextUnformatted("Layer");
+				ImGui::SameLine();
+				if (ImGui::BeginCombo("##LayerSelection", currentLayer))
+				{
+					for (uint32_t layer = 0; layer < PhysicsLayerManager::GetLayerCount(); layer++)
+					{
+						bool is_selected = (currentLayer == layerNames[layer]);
+						if (ImGui::Selectable(layerNames[layer].c_str(), is_selected))
+						{
+							currentLayer = layerNames[layer].c_str();
+							rbc.Layer = layer;
+						}
+						if (is_selected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+
 
 				if (rbc.BodyType == RigidBodyComponent::Type::Dynamic)
 				{

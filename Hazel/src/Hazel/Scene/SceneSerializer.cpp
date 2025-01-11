@@ -4,6 +4,8 @@
 #include "Entity.h"
 #include "Components.h"
 #include "Hazel/Script/ScriptEngine.h"
+#include "Hazel/Physics/Physics.h"
+
 #include "Hazel/Physics/PXPhysicsWrappers.h"
 #include "Hazel/Renderer/MeshFactory.h"
 
@@ -333,6 +335,7 @@ namespace Hazel {
 			out << YAML::Key << "BodyType" << YAML::Value << (int)rigidbodyComponent.BodyType;
 			out << YAML::Key << "Mass" << YAML::Value << rigidbodyComponent.Mass;
 			out << YAML::Key << "IsKinematic" << YAML::Value << rigidbodyComponent.IsKinematic;
+			out << YAML::Key << "Layer" << YAML::Value << rigidbodyComponent.Layer;
 
 			out << YAML::Key << "Constraints";
 			out << YAML::BeginMap; // Constraints
@@ -450,6 +453,27 @@ namespace Hazel {
 
 			});
 		out << YAML::EndSeq;
+
+		out << YAML::Key << "PhysicsLayers";
+		out << YAML::Value << YAML::BeginSeq;
+		for (uint32_t i = 0; i < PhysicsLayerManager::GetLayerCount(); i++)
+		{
+			const PhysicsLayer& layer = PhysicsLayerManager::GetLayerInfo(i);
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << YAML::Value << layer.Name;
+			out << YAML::Key << "CollidesWith" << YAML::Value;
+			out << YAML::BeginSeq;
+			for (const auto& collidingLayer : PhysicsLayerManager::GetLayerCollisions(layer.LayerID))
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << YAML::Value << collidingLayer.Name;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+
 		out << YAML::EndMap;
 
 		std::ofstream fout(filepath);
@@ -658,6 +682,7 @@ namespace Hazel {
 					component.BodyType = (RigidBodyComponent::Type)rigidBodyComponent["BodyType"].as<int>();
 					component.Mass = rigidBodyComponent["Mass"].as<float>();
 					component.IsKinematic = rigidBodyComponent["IsKinematic"] ? rigidBodyComponent["IsKinematic"].as<bool>() : false;
+					component.Layer = rigidBodyComponent["Layer"] ? rigidBodyComponent["Layer"].as<uint32_t>() : 0;
 
 					component.LockPositionX = rigidBodyComponent["Constraints"]["LockPositionX"].as<bool>();
 					component.LockPositionY = rigidBodyComponent["Constraints"]["LockPositionY"].as<bool>();
@@ -718,6 +743,30 @@ namespace Hazel {
 
 			}
 		}
+
+		auto physicsLayers = data["PhysicsLayers"];
+		if (physicsLayers)
+		{
+			PhysicsLayerManager::ClearLayers();
+			for (auto layer : physicsLayers)
+			{
+				PhysicsLayerManager::AddLayer(layer["Name"].as<std::string>());
+			}
+			for (auto layer : physicsLayers)
+			{
+				const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayerInfo(layer["Name"].as<std::string>());
+				auto collidesWith = layer["CollidesWith"];
+				if (collidesWith)
+				{
+					for (auto collisionLayer : collidesWith)
+					{
+						const auto& otherLayer = PhysicsLayerManager::GetLayerInfo(collisionLayer["Name"].as<std::string>());
+						PhysicsLayerManager::SetLayerCollision(layerInfo.LayerID, otherLayer.LayerID, true);
+					}
+				}
+			}
+		}
+
 		return true;
 	}
 
