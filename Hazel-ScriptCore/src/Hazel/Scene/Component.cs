@@ -10,6 +10,7 @@ namespace Hazel
     {
         public Entity Entity { get; set; }
     }
+
     public class TagComponent : Component
     {
         public string Tag
@@ -44,6 +45,20 @@ namespace Hazel
                 SetTransform_Native(Entity.ID, ref value);
             }
         }
+
+        public Vector3 Rotation
+        {
+            get
+            {
+                GetRotation_Native(Entity.ID, out Vector3 rotation);
+                return rotation;
+            }
+            set
+            {
+                SetRotation_Native(Entity.ID, ref value);
+            }
+        }
+
         public Vector3 Forward
         {
             get
@@ -52,6 +67,7 @@ namespace Hazel
                 return result;
             }
         }
+
         public Vector3 Right
         {
             get
@@ -76,6 +92,11 @@ namespace Hazel
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void GetRelativeDirection_Native(ulong entityID, out Vector3 result, ref Vector3 direction);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void GetRotation_Native(ulong entityID, out Vector3 result);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SetRotation_Native(ulong entityID, ref Vector3 rotation);
     }
     public class MeshComponent : Component
     {
@@ -175,6 +196,11 @@ namespace Hazel
             SetLinearVelocity_Native(Entity.ID, ref velocity);
         }
 
+        public void Rotate(Vector3 rotation)
+        {
+            Rotate_Native(Entity.ID, ref rotation);
+        }
+
         // TODO: Add SetMaxLinearVelocity() as well
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void AddForce_Native(ulong entityID, ref Vector3 force, ForceMode forceMode);
@@ -184,6 +210,8 @@ namespace Hazel
         internal static extern void GetLinearVelocity_Native(ulong entityID, out Vector3 velocity);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void SetLinearVelocity_Native(ulong entityID, ref Vector3 velocity);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void Rotate_Native(ulong entityID, ref Vector3 rotation);
     }
 
 }

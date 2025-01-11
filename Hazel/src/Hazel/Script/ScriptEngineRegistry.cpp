@@ -54,34 +54,45 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.TransformComponent::GetTransform_Native", Hazel::Script::Hazel_Entity_GetTransform);
 		mono_add_internal_call("Hazel.TransformComponent::SetTransform_Native", Hazel::Script::Hazel_Entity_SetTransform);
 		mono_add_internal_call("Hazel.TransformComponent::GetRelativeDirection_Native", Hazel::Script::Hazel_TransformComponent_GetRelativeDirection);
+		mono_add_internal_call("Hazel.TransformComponent::GetRotation_Native", Hazel::Script::Hazel_TransformComponent_GetRotation);
+		mono_add_internal_call("Hazel.TransformComponent::SetRotation_Native", Hazel::Script::Hazel_TransformComponent_SetRotation);
+
 		mono_add_internal_call("Hazel.MeshComponent::GetMesh_Native", Hazel::Script::Hazel_MeshComponent_GetMesh);
 		mono_add_internal_call("Hazel.MeshComponent::SetMesh_Native", Hazel::Script::Hazel_MeshComponent_SetMesh);
 		mono_add_internal_call("Hazel.RigidBody2DComponent::ApplyLinearImpulse_Native", Hazel::Script::Hazel_RigidBody2DComponent_ApplyLinearImpulse);
 		mono_add_internal_call("Hazel.RigidBody2DComponent::GetLinearVelocity_Native", Hazel::Script::Hazel_RigidBody2DComponent_GetLinearVelocity);
 		mono_add_internal_call("Hazel.RigidBody2DComponent::SetLinearVelocity_Native", Hazel::Script::Hazel_RigidBody2DComponent_SetLinearVelocity);
+		mono_add_internal_call("Hazel.RigidBodyComponent::Rotate_Native", Hazel::Script::Hazel_RigidBodyComponent_Rotate);
 
 		mono_add_internal_call("Hazel.RigidBodyComponent::AddForce_Native", Hazel::Script::Hazel_RigidBodyComponent_AddForce);
 		mono_add_internal_call("Hazel.RigidBodyComponent::AddTorque_Native", Hazel::Script::Hazel_RigidBodyComponent_AddTorque);
 		mono_add_internal_call("Hazel.RigidBodyComponent::GetLinearVelocity_Native", Hazel::Script::Hazel_RigidBodyComponent_GetLinearVelocity);
 		mono_add_internal_call("Hazel.RigidBodyComponent::SetLinearVelocity_Native", Hazel::Script::Hazel_RigidBodyComponent_SetLinearVelocity);
 		mono_add_internal_call("Hazel.Input::IsKeyPressed_Native", Hazel::Script::Hazel_Input_IsKeyPressed);
+		mono_add_internal_call("Hazel.Input::GetMousePosition_Native", Hazel::Script::Hazel_Input_GetMousePosition);
+		mono_add_internal_call("Hazel.Input::SetCursorMode_Native", Hazel::Script::Hazel_Input_SetCursorMode);
+		mono_add_internal_call("Hazel.Input::GetCursorMode_Native", Hazel::Script::Hazel_Input_GetCursorMode);
+
 		mono_add_internal_call("Hazel.Texture2D::Constructor_Native", Hazel::Script::Hazel_Texture2D_Constructor);
 		mono_add_internal_call("Hazel.Texture2D::Destructor_Native", Hazel::Script::Hazel_Texture2D_Destructor);
 		mono_add_internal_call("Hazel.Texture2D::SetData_Native", Hazel::Script::Hazel_Texture2D_SetData);
 		mono_add_internal_call("Hazel.Material::Destructor_Native", Hazel::Script::Hazel_Material_Destructor);
 		mono_add_internal_call("Hazel.Material::SetFloat_Native", Hazel::Script::Hazel_Material_SetFloat);
 		mono_add_internal_call("Hazel.Material::SetTexture_Native", Hazel::Script::Hazel_Material_SetTexture);
+
 		mono_add_internal_call("Hazel.MaterialInstance::Destructor_Native", Hazel::Script::Hazel_MaterialInstance_Destructor);
 		mono_add_internal_call("Hazel.MaterialInstance::SetFloat_Native", Hazel::Script::Hazel_MaterialInstance_SetFloat);
 		mono_add_internal_call("Hazel.MaterialInstance::SetVector3_Native", Hazel::Script::Hazel_MaterialInstance_SetVector3);
 		mono_add_internal_call("Hazel.MaterialInstance::SetVector4_Native", Hazel::Script::Hazel_MaterialInstance_SetVector4);
 		mono_add_internal_call("Hazel.MaterialInstance::SetTexture_Native", Hazel::Script::Hazel_MaterialInstance_SetTexture);
+
 		mono_add_internal_call("Hazel.Mesh::Constructor_Native", Hazel::Script::Hazel_Mesh_Constructor);
 		mono_add_internal_call("Hazel.Mesh::Destructor_Native", Hazel::Script::Hazel_Mesh_Destructor);
 		mono_add_internal_call("Hazel.Mesh::GetMaterial_Native", Hazel::Script::Hazel_Mesh_GetMaterial);
 		mono_add_internal_call("Hazel.Mesh::GetMaterialByIndex_Native", Hazel::Script::Hazel_Mesh_GetMaterialByIndex);
 		mono_add_internal_call("Hazel.Mesh::GetMaterialCount_Native", Hazel::Script::Hazel_Mesh_GetMaterialCount);
 		mono_add_internal_call("Hazel.MeshFactory::CreatePlane_Native", Hazel::Script::Hazel_MeshFactory_CreatePlane);
+
 		// static bool IsKeyPressed(KeyCode key) { return s_Instance->IsKeyPressedImpl(key); }
 		// 
 		// static bool IsMouseButtonPressed(MouseCode button) { return s_Instance->IsMouseButtonPressedImpl(button); }

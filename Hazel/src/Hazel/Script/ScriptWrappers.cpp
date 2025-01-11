@@ -5,18 +5,18 @@
 #include "Hazel/Scene/Scene.h"
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Scene/Components.h"
+#include "Hazel/Physics/PhysicsUtil.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
-#include "Hazel/Core/Input.h"
 #include <mono/jit/jit.h>
-
 #include <box2d/box2d.h>
-
 #include <PhysX/PxPhysicsAPI.h>
+
+#include <imgui.h>
 
 namespace Hazel {
 	extern std::unordered_map<MonoType*, std::function<bool(Entity&)>> s_HasComponentFuncs;
@@ -61,6 +61,23 @@ namespace Hazel {
 		{
 			return Input::IsKeyPressed(key);
 		}
+
+		void Hazel_Input_GetMousePosition(glm::vec2* outPosition)
+		{
+			auto [x, y] = Input::GetMousePosition();
+			*outPosition = { x, y };
+		}
+
+		void Hazel_Input_SetCursorMode(CursorMode mode)
+		{
+			Input::SetCursorMode(mode);
+		}
+
+		CursorMode Hazel_Input_GetCursorMode()
+		{
+			return Input::GetCursorMode();
+		}
+
 
 		////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
@@ -135,7 +152,32 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			auto& transformComponent = entity.GetComponent<TransformComponent>();
 			auto [position, rotation, scale] = GetTransformDecomposition(transformComponent.Transform);
-			*outDirection = glm::rotate(glm::inverse(glm::normalize(rotation)), *inAbsoluteDirection);
+			*outDirection = glm::rotate(glm::normalize(rotation), *inAbsoluteDirection);
+		}
+		void Hazel_TransformComponent_GetRotation(uint64_t entityID, glm::vec3* outRotation)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			HZ_CORE_ASSERT(scene, "No active scene!");
+			const auto& entityMap = scene->GetEntityMap();
+			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+			Entity entity = entityMap.at(entityID);
+			auto& transformComponent = entity.GetComponent<TransformComponent>();
+			auto [position, rotationQuat, scale] = GetTransformDecomposition(transformComponent.Transform);
+			*outRotation = glm::degrees(glm::eulerAngles(rotationQuat));
+		}
+
+		void Hazel_TransformComponent_SetRotation(uint64_t entityID, glm::vec3* inRotation)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			HZ_CORE_ASSERT(scene, "No active scene!");
+			const auto& entityMap = scene->GetEntityMap();
+			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+			Entity entity = entityMap.at(entityID);
+			auto& transformComponent = entity.GetComponent<TransformComponent>();
+			auto [translation, rotationQuat, scale] = GetTransformDecomposition(transformComponent.Transform);
+			transformComponent.Transform = glm::translate(glm::mat4(1.0F), translation) *
+				glm::toMat4(glm::quat(glm::radians(*inRotation))) *
+				glm::scale(glm::mat4(1.0F), scale);
 		}
 
 		void* Hazel_MeshComponent_GetMesh(uint64_t entityID)
@@ -287,6 +329,23 @@ namespace Hazel {
 			HZ_CORE_ASSERT(velocity);
 
 			dynamicActor->setLinearVelocity({ velocity->x, velocity->y, velocity->z });
+		}
+
+		void Hazel_RigidBodyComponent_Rotate(uint64_t entityID, glm::vec3* rotation)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			HZ_CORE_ASSERT(scene, "No active scene!");
+			const auto& entityMap = scene->GetEntityMap();
+			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+			Entity entity = entityMap.at(entityID);
+			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
+			auto& component = entity.GetComponent<RigidBodyComponent>();
+			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
+			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
+			HZ_CORE_ASSERT(dynamicActor);
+			glm::mat4 transform = FromPhysXTransform(dynamicActor->getGlobalPose());
+			transform *= glm::toMat4(glm::quat(glm::radians(*rotation)));
+			dynamicActor->setGlobalPose(ToPhysXTransform(transform));
 		}
 
 		Ref<Mesh>* Hazel_Mesh_Constructor(MonoString* filepath)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Hazel/Script/ScriptEngine.h"
-#include "Hazel/Core/KeyCodes.h"
+#include "Hazel/Core/Input.h"
 #include "Hazel/Physics/Physics.h"
 
 #include <glm/glm.hpp>
@@ -18,6 +18,9 @@ namespace Hazel {
 
 		// Input
 		bool Hazel_Input_IsKeyPressed(KeyCode key);
+		void Hazel_Input_GetMousePosition(glm::vec2* outPosition);
+		void Hazel_Input_SetCursorMode(CursorMode mode);
+		CursorMode Hazel_Input_GetCursorMode();
 
 		// Entity
 		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform);
@@ -28,6 +31,8 @@ namespace Hazel {
 		uint64_t Hazel_Entity_FindEntityByTag(MonoString* tag);
 
 		void Hazel_TransformComponent_GetRelativeDirection(uint64_t entityID, glm::vec3* outDirection, glm::vec3* inAbsoluteDirection);
+		void Hazel_TransformComponent_GetRotation(uint64_t entityID, glm::vec3* outRotation);
+		void Hazel_TransformComponent_SetRotation(uint64_t entityID, glm::vec3* inRotation);
 
 		void* Hazel_MeshComponent_GetMesh(uint64_t entityID);
 		void Hazel_MeshComponent_SetMesh(uint64_t entityID, Ref<Mesh>* inMesh);
@@ -40,6 +45,7 @@ namespace Hazel {
 		void Hazel_RigidBodyComponent_AddTorque(uint64_t entityID, glm::vec3* torque, ForceMode forceMode);
 		void Hazel_RigidBodyComponent_GetLinearVelocity(uint64_t entityID, glm::vec3* outVelocity);
 		void Hazel_RigidBodyComponent_SetLinearVelocity(uint64_t entityID, glm::vec3* velocity);
+		void Hazel_RigidBodyComponent_Rotate(uint64_t entityID, glm::vec3* rotation);
 
 
 		// Renderer

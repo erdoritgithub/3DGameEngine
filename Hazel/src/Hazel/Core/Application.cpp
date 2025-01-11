@@ -10,6 +10,8 @@
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Physics/Physics.h"
 
+#include "Input.h"
+
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <Windows.h>
@@ -98,6 +100,17 @@ namespace Hazel {
 			float time = GetTime();
 			m_TimeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
+
+			/*if (Input::GetCursorMode() == CursorMode::Locked)
+			{
+				if (Input::GetMouseX() == m_Window->GetWidth() - 10)
+				{
+					glfwSetCursorPos(static_cast<GLFWwindow*>(m_Window->GetNativeWindow()),
+						10,
+						Input::GetMouseY());
+				}
+			}*/
+
 		}
 		OnShutdown();
 	}
