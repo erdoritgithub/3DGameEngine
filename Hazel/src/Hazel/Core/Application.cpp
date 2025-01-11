@@ -101,16 +101,6 @@ namespace Hazel {
 			m_TimeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
-			/*if (Input::GetCursorMode() == CursorMode::Locked)
-			{
-				if (Input::GetMouseX() == m_Window->GetWidth() - 10)
-				{
-					glfwSetCursorPos(static_cast<GLFWwindow*>(m_Window->GetNativeWindow()),
-						10,
-						Input::GetMouseY());
-				}
-			}*/
-
 		}
 		OnShutdown();
 	}

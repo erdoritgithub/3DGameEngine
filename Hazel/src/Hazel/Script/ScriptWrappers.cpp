@@ -172,10 +172,12 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
-			auto& transformComponent = entity.GetComponent<TransformComponent>();
-			auto [translation, rotationQuat, scale] = GetTransformDecomposition(transformComponent.Transform);
-			transformComponent.Transform = glm::translate(glm::mat4(1.0F), translation) *
+			glm::mat4& transform = entity.Transform();
+
+			auto [translation, rotationQuat, scale] = GetTransformDecomposition(transform);
+			transform = glm::translate(glm::mat4(1.0F), translation) *
 				glm::toMat4(glm::quat(glm::radians(*inRotation))) *
 				glm::scale(glm::mat4(1.0F), scale);
 		}
@@ -339,13 +341,18 @@ namespace Hazel {
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
+
 			auto& component = entity.GetComponent<RigidBodyComponent>();
 			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
 			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
 			HZ_CORE_ASSERT(dynamicActor);
-			glm::mat4 transform = FromPhysXTransform(dynamicActor->getGlobalPose());
-			transform *= glm::toMat4(glm::quat(glm::radians(*rotation)));
-			dynamicActor->setGlobalPose(ToPhysXTransform(transform));
+
+			physx::PxTransform transform = dynamicActor->getGlobalPose();
+			transform.q *= (physx::PxQuat(glm::radians(rotation->x), { 1.0F, 0.0F, 0.0F })
+				* physx::PxQuat(glm::radians(rotation->y), { 0.0F, 1.0F, 0.0F })
+				* physx::PxQuat(glm::radians(rotation->z), { 0.0F, 0.0F, 1.0F }));
+			dynamicActor->setGlobalPose(transform);
+
 		}
 
 		Ref<Mesh>* Hazel_Mesh_Constructor(MonoString* filepath)
