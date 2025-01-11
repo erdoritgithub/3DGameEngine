@@ -65,7 +65,7 @@ namespace Hazel {
 	void PXPhysicsWrappers::SetCollisionFilters(const physx::PxRigidActor& actor, uint32_t physicsLayer)
 	{
 
-		const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayerInfo(physicsLayer);
+		const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayer(physicsLayer);
 		uint32_t collisionBitField = 0;
 
 		for (const auto& collisionLayerInfo : PhysicsLayerManager::GetLayerCollisions(physicsLayer))

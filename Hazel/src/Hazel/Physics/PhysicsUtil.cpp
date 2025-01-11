@@ -58,10 +58,10 @@ namespace Hazel {
 		{
 			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
 			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_LOST;
-			//return physx::PxFilterFlag::eDEFAULT;
+			return physx::PxFilterFlag::eDEFAULT;
 		}
 
-		//return physx::PxFilterFlag::eSUPPRESS;
+		return physx::PxFilterFlag::eSUPPRESS;
 		return physx::PxFilterFlag::eDEFAULT;
 	}
 	void ContactListener::onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count)

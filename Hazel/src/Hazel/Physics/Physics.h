@@ -45,19 +45,15 @@ namespace Hazel {
 		static const std::vector<PhysicsLayer>& GetLayerCollisions(uint32_t layerId);
 
 		static const std::vector<PhysicsLayer>& GetLayers() { return s_Layers; }
-		static PhysicsLayer& GetLayerInfo(uint32_t layerId);
-		static PhysicsLayer& GetLayerInfo(const std::string& layerName);
+		static PhysicsLayer& GetLayer(uint32_t layerId);
+		static PhysicsLayer& GetLayer(const std::string& layerName);
 
 		static uint32_t GetLayerCount() { return s_Layers.size(); }
 		static bool ShouldCollide(uint32_t layer1, uint32_t layer2);
 		static bool IsLayerValid(uint32_t layerId);
-
-		static const std::vector<std::string>& GetLayerNames();
 		static void ClearLayers();
 
 	private:
-		static void Init();
-		static void Shutdown();
 		static uint32_t GetNextLayerID();
 
 	private:
@@ -65,8 +61,6 @@ namespace Hazel {
 		static std::unordered_map<uint32_t, std::vector<PhysicsLayer>> s_LayerCollisions;
 		static PhysicsLayer s_NullLayer;
 
-	private:
-		friend class Physics;
 	};
 
 	class Physics
