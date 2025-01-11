@@ -46,14 +46,10 @@ namespace FPSExample
         void OnUpdate(float ts)
         {
             if (Input.IsKeyPressed(KeyCode.Escape) && Input.GetCursorMode() == CursorMode.Locked)
-            {
                 Input.SetCursorMode(CursorMode.Normal);
-            }
 
-            /*if (Input.IsMouseButtonPressed(MouseButton.Left) && Input.GetCursorMode() == CursorMode.Normal)
-            {
+            if (Input.IsMouseButtonPressed(MouseButton.Left) && Input.GetCursorMode() == CursorMode.Normal)
                 Input.SetCursorMode(CursorMode.Locked);
-            }*/
 
             m_CurrentSpeed = Input.IsKeyPressed(KeyCode.LeftControl) ? RunSpeed : WalkingSpeed;
 
@@ -84,6 +80,20 @@ namespace FPSExample
             if (Input.IsKeyPressed(KeyCode.H) && Physics.Raycast(m_CameraTransform.Transform.Translation + (m_CameraTransform.Forward * 5.0F), m_CameraTransform.Forward, 20.0F, out hitInfo))
             {
                 FindEntityByID(hitInfo.EntityID).GetComponent<MeshComponent>().Mesh.GetMaterial(0).Set("u_AlbedoColor", new Vector3(1.0f, 0.0f, 0.0f));
+            }
+
+            if (Input.IsKeyPressed(KeyCode.L))
+            {
+                Collider[] colliders = Physics.OverlapSphere(m_Transform.Transform.Translation, 1.0F);
+                Console.WriteLine(colliders.Length);
+                foreach (Collider c in colliders)
+                {
+                    Console.WriteLine("EntityID: {0}", c.EntityID);
+                    Console.WriteLine("IsTrigger: {0}", c.IsTrigger);
+                    Console.WriteLine("IsBox: {0}", c.Is<BoxCollider>());
+                    Console.WriteLine("IsSphere: {0}", c.Is<SphereCollider>());
+                    Console.WriteLine("IsCapsule: {0}", c.Is<CapsuleCollider>());
+                }
             }
 
             if (Input.IsKeyPressed(KeyCode.W))

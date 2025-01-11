@@ -8,44 +8,54 @@ namespace Hazel {
 		physx::PxVec3 p = ToPhysXVector(glm::vec3(matrix[3]));
 		return physx::PxTransform(p, r);
 	}
+
 	physx::PxMat44 ToPhysXMatrix(const glm::mat4& matrix)
 	{
 		return *(physx::PxMat44*)&matrix;
 	}
+
 	physx::PxVec3 ToPhysXVector(const glm::vec3& vector)
 	{
 		return physx::PxVec3(vector.x, vector.y, vector.z);
 	}
+
 	physx::PxVec4 ToPhysXVector(const glm::vec4& vector)
 	{
 		return physx::PxVec4(vector.x, vector.y, vector.z, vector.w);
 	}
+
 	physx::PxQuat ToPhysXQuat(const glm::quat& quat)
 	{
 		return physx::PxQuat(quat.x, quat.y, quat.z, quat.w);
 	}
+
 	glm::mat4 FromPhysXTransform(const physx::PxTransform& transform)
 	{
 		glm::quat rotation = FromPhysXQuat(transform.q);
 		glm::vec3 position = FromPhysXVector(transform.p);
 		return glm::translate(glm::mat4(1.0F), position) * glm::toMat4(rotation);
 	}
+
 	glm::mat4 FromPhysXMatrix(const physx::PxMat44& matrix)
 	{
 		return *(glm::mat4*)&matrix;
 	}
+
 	glm::vec3 FromPhysXVector(const physx::PxVec3& vector)
 	{
 		return glm::vec3(vector.x, vector.y, vector.z);
 	}
+
 	glm::vec4 FromPhysXVector(const physx::PxVec4& vector)
 	{
 		return glm::vec4(vector.x, vector.y, vector.z, vector.w);
 	}
+
 	glm::quat FromPhysXQuat(const physx::PxQuat& quat)
 	{
 		return glm::quat(quat.w, quat.x, quat.y, quat.z);
 	}
+
 	physx::PxFilterFlags HazelFilterShader(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0, physx::PxFilterObjectAttributes attributes1, physx::PxFilterData filterData1, physx::PxPairFlags& pairFlags, const void* constantBlock, physx::PxU32 constantBlockSize)
 	{
 		if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
@@ -64,20 +74,31 @@ namespace Hazel {
 		return physx::PxFilterFlag::eSUPPRESS;
 		return physx::PxFilterFlag::eDEFAULT;
 	}
+
 	void ContactListener::onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count)
 	{
 		PX_UNUSED(constraints);
 		PX_UNUSED(count);
 	}
+
 	void ContactListener::onWake(physx::PxActor** actors, physx::PxU32 count)
 	{
-		PX_UNUSED(actors);
-		PX_UNUSED(count);
+		for (uint32_t i = 0; i < count; i++)
+		{
+			physx::PxActor& actor = *actors[i];
+			Entity& entity = *(Entity*)actor.userData;
+			HZ_CORE_INFO("PhysX Actor waking up: ID: {0}, Name: {1}", entity.GetID(), entity.GetComponent<TagComponent>().Tag);
+		}
 	}
+
 	void ContactListener::onSleep(physx::PxActor** actors, physx::PxU32 count)
 	{
-		PX_UNUSED(actors);
-		PX_UNUSED(count);
+		for (uint32_t i = 0; i < count; i++)
+		{
+			physx::PxActor& actor = *actors[i];
+			Entity& entity = *(Entity*)actor.userData;
+			HZ_CORE_INFO("PhysX Actor going to sleep: ID: {0}, Name: {1}", entity.GetID(), entity.GetComponent<TagComponent>().Tag);
+		}
 	}
 	void ContactListener::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs)
 	{

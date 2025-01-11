@@ -25,6 +25,8 @@ namespace Hazel {
 
 		// Physics
 		bool Hazel_Physics_Raycast(glm::vec3* origin, glm::vec3* direction, float maxDistance, RaycastHit* hit);
+		MonoArray* Hazel_Physics_OverlapBox(glm::vec3* origin, glm::vec3* halfSize);
+		MonoArray* Hazel_Physics_OverlapSphere(glm::vec3* origin, float radius);
 
 		// Entity
 		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform);
@@ -50,6 +52,10 @@ namespace Hazel {
 		void Hazel_RigidBodyComponent_GetLinearVelocity(uint64_t entityID, glm::vec3* outVelocity);
 		void Hazel_RigidBodyComponent_SetLinearVelocity(uint64_t entityID, glm::vec3* velocity);
 		void Hazel_RigidBodyComponent_Rotate(uint64_t entityID, glm::vec3* rotation);
+
+		uint32_t Hazel_RigidBodyComponent_GetLayer(uint64_t entityID);
+		float Hazel_RigidBodyComponent_GetMass(uint64_t entityID);
+		void Hazel_RigidBodyComponent_SetMass(uint64_t entityID, float mass);
 
 
 		// Renderer

@@ -64,6 +64,7 @@ namespace Hazel {
 		}
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+		std::string GetID() { return std::to_string(GetUUID()); }
 		UUID GetSceneUUID() { return m_Scene->GetUUID(); }
 	private:
 		Entity(const std::string& name);

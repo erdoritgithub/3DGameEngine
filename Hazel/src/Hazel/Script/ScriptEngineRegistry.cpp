@@ -46,6 +46,9 @@ namespace Hazel {
 		InitComponentTypes();
 		mono_add_internal_call("Hazel.Noise::PerlinNoise_Native", Hazel::Script::Hazel_Noise_PerlinNoise);
 		mono_add_internal_call("Hazel.Physics::Raycast_Native", Hazel::Script::Hazel_Physics_Raycast);
+		mono_add_internal_call("Hazel.Physics::OverlapBox_Native", Hazel::Script::Hazel_Physics_OverlapBox);
+		mono_add_internal_call("Hazel.Physics::OverlapSphere_Native", Hazel::Script::Hazel_Physics_OverlapSphere);
+
 		mono_add_internal_call("Hazel.Entity::GetTransform_Native", Hazel::Script::Hazel_Entity_GetTransform);
 		mono_add_internal_call("Hazel.Entity::SetTransform_Native", Hazel::Script::Hazel_Entity_SetTransform);
 		mono_add_internal_call("Hazel.Entity::CreateComponent_Native", Hazel::Script::Hazel_Entity_CreateComponent);
@@ -63,7 +66,11 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.RigidBody2DComponent::ApplyLinearImpulse_Native", Hazel::Script::Hazel_RigidBody2DComponent_ApplyLinearImpulse);
 		mono_add_internal_call("Hazel.RigidBody2DComponent::GetLinearVelocity_Native", Hazel::Script::Hazel_RigidBody2DComponent_GetLinearVelocity);
 		mono_add_internal_call("Hazel.RigidBody2DComponent::SetLinearVelocity_Native", Hazel::Script::Hazel_RigidBody2DComponent_SetLinearVelocity);
+
 		mono_add_internal_call("Hazel.RigidBodyComponent::Rotate_Native", Hazel::Script::Hazel_RigidBodyComponent_Rotate);
+		mono_add_internal_call("Hazel.RigidBodyComponent::GetLayer_Native", Hazel::Script::Hazel_RigidBodyComponent_GetLayer);
+		mono_add_internal_call("Hazel.RigidBodyComponent::GetMass_Native", Hazel::Script::Hazel_RigidBodyComponent_GetMass);
+		mono_add_internal_call("Hazel.RigidBodyComponent::SetMass_Native", Hazel::Script::Hazel_RigidBodyComponent_SetMass);
 
 		mono_add_internal_call("Hazel.RigidBodyComponent::AddForce_Native", Hazel::Script::Hazel_RigidBodyComponent_AddForce);
 		mono_add_internal_call("Hazel.RigidBodyComponent::AddTorque_Native", Hazel::Script::Hazel_RigidBodyComponent_AddTorque);
