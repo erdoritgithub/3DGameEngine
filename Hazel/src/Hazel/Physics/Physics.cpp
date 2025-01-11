@@ -17,64 +17,137 @@ namespace Hazel {
 	}
 
 	static std::vector<std::string> s_LayerNames;
-	static uint32_t s_LastLayerID = 0;
-	uint32_t PhysicsLayerManager::AddLayer(const std::string& name)
+
+	uint32_t PhysicsLayerManager::AddLayer(const std::string& name, bool setCollisions)
 	{
-		PhysicsLayer layer = { s_LastLayerID, name, BIT(s_LastLayerID) };
-		s_Layers[s_LastLayerID] = layer;
-		s_LastLayerID++;
+		uint32_t layerId = GetNextLayerID();
+		PhysicsLayer layer = { layerId, name, BIT(layerId) };
+		s_Layers.push_back(layer);
+
+		s_LayerCollisions[layerId] = std::vector<PhysicsLayer>();
+		s_LayerCollisions[layerId].reserve(1);
+
+		if (setCollisions)
+		{
+			for (const auto& layer2 : s_Layers)
+			{
+				SetLayerCollision(layer.LayerID, layer2.LayerID, true);
+			}
+		}
+
 		s_LayerNames.push_back(name);
-		// TODO: We might not always want to do this
-		SetLayerCollision(layer.LayerID, layer.LayerID, true);
 		return layer.LayerID;
 	}
 
 	void PhysicsLayerManager::RemoveLayer(uint32_t layerId)
 	{
-		if (s_Layers.find(layerId) != s_Layers.end())
+		if (!IsLayerValid(layerId))
+			return;
+
+		// TODO: Cleanup this code
+
+		std::vector<std::string>::iterator it = s_LayerNames.begin();
+		for (; it != s_LayerNames.end();)
 		{
-			for (std::vector<std::string>::iterator it = s_LayerNames.begin(); it != s_LayerNames.end(); it++)
+			if (*it == GetLayerInfo(layerId).Name)
 			{
-				if (*it == s_Layers[layerId].Name)
+				s_LayerNames.erase(it);
+				break;
+			}
+			else
+			{
+				++it;
+			}
+		}
+
+		for (auto& kv : s_LayerCollisions)
+		{
+			if (kv.first == layerId)
+				continue;
+
+			std::vector<PhysicsLayer>::iterator layerIt = kv.second.begin();
+			for (; layerIt != kv.second.end(); )
+			{
+				if (layerIt->LayerID == layerId)
 				{
-					s_LayerNames.erase(it--);
+					GetLayerInfo(kv.first).CollidesWith &= ~GetLayerInfo(layerId).BitValue;
+					kv.second.erase(layerIt);
+					break;
+				}
+				else
+				{
+					++layerIt;
 				}
 			}
-			s_Layers.erase(layerId);
+		}
+
+		s_LayerCollisions.erase(layerId);
+
+		std::vector<PhysicsLayer>::iterator layerIt = s_Layers.begin();
+		for (; layerIt != s_Layers.end();)
+		{
+			if (layerIt->LayerID == layerId)
+			{
+				s_Layers.erase(layerIt);
+				break;
+			}
+			else
+			{
+				++layerIt;
+			}
 		}
 	}
 
 	void PhysicsLayerManager::SetLayerCollision(uint32_t layerId, uint32_t otherLayer, bool collides)
 	{
-		if (s_LayerCollisions.find(layerId) == s_LayerCollisions.end())
-		{
-			s_LayerCollisions[layerId] = std::vector<PhysicsLayer>();
-			s_LayerCollisions[layerId].reserve(1);
-		}
-		if (s_LayerCollisions.find(otherLayer) == s_LayerCollisions.end())
-		{
-			s_LayerCollisions[otherLayer] = std::vector<PhysicsLayer>();
-			s_LayerCollisions[otherLayer].reserve(1);
-		}
+		if (ShouldCollide(layerId, otherLayer) && collides)
+			return;
+
+		PhysicsLayer& layerInfo = GetLayerInfo(layerId);
+		PhysicsLayer& otherLayerInfo = GetLayerInfo(otherLayer);
+
+		// TODO: Cleanup this code
+
 		if (collides)
 		{
-			s_LayerCollisions[layerId].push_back(GetLayerInfo(otherLayer));
-			s_LayerCollisions[otherLayer].push_back(GetLayerInfo(layerId));
+			s_LayerCollisions[layerId].push_back(otherLayerInfo);
+			layerInfo.CollidesWith |= otherLayerInfo.BitValue;
+
+			if (layerId != otherLayer)
+			{
+				s_LayerCollisions[otherLayer].push_back(layerInfo);
+				otherLayerInfo.CollidesWith |= layerInfo.BitValue;
+			}
 		}
 		else
 		{
-			for (std::vector<PhysicsLayer>::iterator it = s_LayerCollisions[layerId].begin(); it != s_LayerCollisions[layerId].end(); it++)
+			std::vector<PhysicsLayer>::iterator it = s_LayerCollisions[layerId].begin();
+			for (; it != s_LayerCollisions[layerId].end(); )
 			{
 				if (it->LayerID == otherLayer)
 				{
-					s_LayerCollisions[layerId].erase(it--);
+					s_LayerCollisions[layerId].erase(it);
+					layerInfo.CollidesWith &= ~otherLayerInfo.BitValue;
+					break;
+				}
+				else
+				{
+					++it;
 				}
 			}
-			for (std::vector<PhysicsLayer>::iterator it = s_LayerCollisions[otherLayer].begin(); it != s_LayerCollisions[otherLayer].end(); it++)
+
+			it = s_LayerCollisions[otherLayer].begin();
+			for (; it != s_LayerCollisions[otherLayer].end(); )
 			{
 				if (it->LayerID == layerId)
 				{
-					s_LayerCollisions[otherLayer].erase(it--);
+					s_LayerCollisions[otherLayer].erase(it);
+					otherLayerInfo.CollidesWith &= ~layerInfo.BitValue;
+					break;
+				}
+				else
+				{
+					++it;
 				}
 			}
 		}
@@ -86,22 +159,53 @@ namespace Hazel {
 		return s_LayerCollisions[layerId];
 	}
 
-	const PhysicsLayer& PhysicsLayerManager::GetLayerInfo(uint32_t layerId)
+	PhysicsLayer& PhysicsLayerManager::GetLayerInfo(uint32_t layerId)
 	{
-		HZ_CORE_ASSERT(s_Layers.find(layerId) != s_Layers.end());
-		return s_Layers[layerId];
-	}
-
-	const Hazel::PhysicsLayer& PhysicsLayerManager::GetLayerInfo(const std::string& layerName)
-	{
-		for (const auto& kv : s_Layers)
+		//HZ_CORE_ASSERT(s_Layers.find(layerId) != s_Layers.end());
+		for (auto& layer : s_Layers)
 		{
-			if (kv.second.Name == layerName)
+			if (layer.LayerID == layerId)
 			{
-				return kv.second;
+				return layer;
 			}
 		}
-		return {};
+
+		return s_NullLayer;
+	}
+
+	Hazel::PhysicsLayer& PhysicsLayerManager::GetLayerInfo(const std::string& layerName)
+	{
+		for (auto& layer : s_Layers)
+		{
+			if (layer.Name == layerName)
+			{
+				return layer;
+			}
+		}
+
+		return s_NullLayer;
+	}
+
+	bool PhysicsLayerManager::ShouldCollide(uint32_t layer1, uint32_t layer2)
+	{
+		for (const auto& collidingLayer : s_LayerCollisions[layer1])
+		{
+			if (collidingLayer.LayerID == layer2)
+				return true;
+		}
+
+		return false;
+	}
+
+	bool PhysicsLayerManager::IsLayerValid(uint32_t layerId)
+	{
+		for (const auto& layer : s_Layers)
+		{
+			if (layer.LayerID == layerId)
+				return true;
+		}
+
+		return false;
 	}
 
 	const std::vector<std::string>& PhysicsLayerManager::GetLayerNames()
@@ -113,7 +217,6 @@ namespace Hazel {
 	{
 		s_Layers.clear();
 		s_LayerCollisions.clear();
-		s_LastLayerID = 0;
 		s_LayerNames.clear();
 	}
 
@@ -126,8 +229,30 @@ namespace Hazel {
 	{
 	}
 
-	std::unordered_map<uint32_t, PhysicsLayer> PhysicsLayerManager::s_Layers;
+	uint32_t PhysicsLayerManager::GetNextLayerID()
+	{
+		int32_t lastId = -1;
+
+		for (const auto& layer : s_Layers)
+		{
+			if (lastId != -1)
+			{
+				if (layer.LayerID != lastId + 1)
+				{
+					return lastId + 1;
+				}
+			}
+
+			lastId = layer.LayerID;
+		}
+
+		return s_Layers.size();
+	}
+
+	std::vector<PhysicsLayer> PhysicsLayerManager::s_Layers;
 	std::unordered_map<uint32_t, std::vector<PhysicsLayer>> PhysicsLayerManager::s_LayerCollisions;
+	PhysicsLayer PhysicsLayerManager::s_NullLayer = { 0, "NULL", 0, -1 };
+
 	static physx::PxScene* s_Scene;
 	static std::vector<Entity> s_SimulatedEntities;
 	static Entity* s_EntityStorageBuffer;
@@ -137,7 +262,7 @@ namespace Hazel {
 	void Physics::Init()
 	{
 		PXPhysicsWrappers::Initialize();
-		PhysicsLayerManager::Init();
+		PhysicsLayerManager::Init();;
 	}
 
 	void Physics::Shutdown()
@@ -182,10 +307,11 @@ namespace Hazel {
 		// Physics Material
 		physx::PxMaterial* material = PXPhysicsWrappers::CreateMaterial(e.GetComponent<PhysicsMaterialComponent>());
 
+		// Add all colliders
+
 		const auto& transform = e.Transform();
 		auto [translation, rotation, scale] = GetTransformDecomposition(transform);
 
-		// Add all colliders
 		if (e.HasComponent<BoxColliderComponent>())
 		{
 			BoxColliderComponent& collider = e.GetComponent<BoxColliderComponent>();
@@ -220,10 +346,12 @@ namespace Hazel {
 	{
 		constexpr float stepSize = 1.0F / 50.0F;
 		s_SimulationTime += ts.GetMilliseconds();
+
 		if (s_SimulationTime < stepSize)
 			return;
 
 		s_SimulationTime -= stepSize;
+
 		s_Scene->simulate(stepSize);
 		s_Scene->fetchResults(true);
 

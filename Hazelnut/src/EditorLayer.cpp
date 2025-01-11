@@ -3,6 +3,7 @@
 #include "Hazel/ImGui/ImGuizmo.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Script/ScriptEngine.h"
+#include "Hazel/Editor/PhysicsSettingsWindow.h"
 
 #include <filesystem>
 
@@ -697,6 +698,12 @@ namespace Hazel {
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Edit"))
+			{
+				ImGui::MenuItem("Physics Settings", nullptr, &m_ShowPhysicsSettings);
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu("Debug"))
 			{
 				if (ImGui::MenuItem("Connect To PVD"))
@@ -912,6 +919,7 @@ namespace Hazel {
 		ImGui::End();
 
 		ScriptEngine::OnImGuiRender();
+		PhysicsSettingsWindow::OnImGuiRender(&m_ShowPhysicsSettings);
 
 		ImGui::End();
 	}

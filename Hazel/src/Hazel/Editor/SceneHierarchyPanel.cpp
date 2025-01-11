@@ -905,19 +905,24 @@ namespace Hazel {
 					ImGui::EndCombo();
 				}
 
-				const std::vector<std::string>& layerNames = PhysicsLayerManager::GetLayerNames();
-				const char* currentLayer = layerNames[rbc.Layer].c_str();
+				// Layer has been removed, set to Default layer
+				if (!PhysicsLayerManager::IsLayerValid(rbc.Layer))
+					rbc.Layer = 0;
+
+				uint32_t currentLayer = rbc.Layer;
+				const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayerInfo(currentLayer);
+
 				ImGui::TextUnformatted("Layer");
 				ImGui::SameLine();
-				if (ImGui::BeginCombo("##LayerSelection", currentLayer))
+				if (ImGui::BeginCombo("##LayerSelection", layerInfo.Name.c_str()))
 				{
-					for (uint32_t layer = 0; layer < PhysicsLayerManager::GetLayerCount(); layer++)
+					for (const auto& layer : PhysicsLayerManager::GetLayers())
 					{
-						bool is_selected = (currentLayer == layerNames[layer]);
-						if (ImGui::Selectable(layerNames[layer].c_str(), is_selected))
+						bool is_selected = (currentLayer == layer.LayerID);
+						if (ImGui::Selectable(layer.Name.c_str(), is_selected))
 						{
-							currentLayer = layerNames[layer].c_str();
-							rbc.Layer = layer;
+							currentLayer = layer.LayerID;
+							rbc.Layer = layer.LayerID;
 						}
 						if (is_selected)
 							ImGui::SetItemDefaultFocus();

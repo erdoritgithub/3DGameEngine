@@ -152,6 +152,7 @@ namespace Hazel {
 
 		bool m_ViewportPanelMouseOver = false;
 		bool m_ViewportPanelFocused = false;
+		bool m_ShowPhysicsSettings = false;
 
 		enum class SceneState
 		{
