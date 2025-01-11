@@ -963,7 +963,7 @@ namespace Hazel {
 				EndPropertyGrid();
 			});
 
-		DrawComponent<CapsuleColliderComponent>("Capsule Collider", entity, [](CapsuleColliderComponent& ccc)
+		DrawComponent<CapsuleColliderComponent>("Capsule Collider", entity, [=](CapsuleColliderComponent& ccc)
 			{
 				BeginPropertyGrid();
 

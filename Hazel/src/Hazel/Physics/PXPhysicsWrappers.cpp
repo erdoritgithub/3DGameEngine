@@ -2,6 +2,8 @@
 #include "PXPhysicsWrappers.h"
 #include "Physics.h"
 
+#include <glm/gtx/rotate_vector.hpp>
+
 #ifdef HZ_DEBUG
 #define PHYSX_DEBUGGER 0
 #endif
@@ -110,7 +112,7 @@ namespace Hazel {
 		float colliderHeight = collider.Height;
 
 		if (size.x != 0.0F)
-			colliderRadius *= size.x;
+			colliderRadius *= (size.x / 2.0F);
 
 		if (size.y != 0.0F)
 			colliderHeight *= size.y;
@@ -134,8 +136,7 @@ namespace Hazel {
 
 	physx::PxConvexMesh* PXPhysicsWrappers::CreateConvexMesh(MeshColliderComponent& collider)
 	{
-		const auto& vertices = collider.CollisionMesh->GetStaticVertices();
-		const auto& indices = collider.CollisionMesh->GetIndices();
+		std::vector<Vertex> vertices = collider.CollisionMesh->GetStaticVertices();
 
 		physx::PxConvexMeshDesc convexDesc;
 		convexDesc.points.count = vertices.size();
@@ -186,7 +187,7 @@ namespace Hazel {
 				uint32_t vI0 = vertCounter;
 				for (uint32_t vI = 0; vI < polygon.mNbVerts; vI++)
 				{
-					collisionVertices[vertCounter].Position = FromPhysXVector(convexVertices[convexIndices[polygon.mIndexBase + vI]]);
+					collisionVertices[vertCounter].Position = glm::rotate(FromPhysXVector(convexVertices[convexIndices[polygon.mIndexBase + vI]]), glm::radians(90.0F), { 1, 0, 0 });
 					vertCounter++;
 				}
 
