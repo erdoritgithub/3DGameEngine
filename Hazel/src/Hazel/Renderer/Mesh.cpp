@@ -21,6 +21,8 @@
 #include "Hazel/Renderer/Renderer.h"
 #include "Hazel/Renderer/VertexBuffer.h"
 
+#include "Hazel/Physics/PhysicsUtil.h"
+
 #include <filesystem>
 
 namespace Hazel {
@@ -86,10 +88,8 @@ namespace Hazel {
 
 		m_IsAnimated = scene->mAnimations != nullptr;
 		m_MeshShader = m_IsAnimated ? Renderer::GetShaderLibrary()->Get("HazelPBR_Anim") : Renderer::GetShaderLibrary()->Get("HazelPBR_Static");
-
 		m_BaseMaterial = Ref<Material>::Create(m_MeshShader);
 		// m_MaterialInstance = Ref<MaterialInstance>::Create(m_BaseMaterial);
-
 		m_InverseTransform = glm::inverse(Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 
 		uint32_t vertexCount = 0;
@@ -493,8 +493,33 @@ namespace Hazel {
 		}
 
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size() * sizeof(Index));
+
 		PipelineSpecification pipelineSpecification;
 		pipelineSpecification.Layout = vertexLayout;
+		m_Pipeline = Pipeline::Create(pipelineSpecification);
+	}
+
+	Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices)
+		: m_StaticVertices(vertices), m_Indices(indices), m_IsAnimated(false)
+	{
+		Submesh submesh;
+		submesh.BaseVertex = 0;
+		submesh.BaseIndex = 0;
+		submesh.IndexCount = indices.size() * 3;
+		submesh.Transform = glm::mat4(1.0F);
+		m_Submeshes.push_back(submesh);
+
+		m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), m_StaticVertices.size() * sizeof(Vertex));
+		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size() * sizeof(Index));
+
+		PipelineSpecification pipelineSpecification;
+		pipelineSpecification.Layout = {
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float3, "a_Normal" },
+			{ ShaderDataType::Float3, "a_Tangent" },
+			{ ShaderDataType::Float3, "a_Binormal" },
+			{ ShaderDataType::Float2, "a_TexCoord" },
+		};
 		m_Pipeline = Pipeline::Create(pipelineSpecification);
 	}
 
@@ -599,7 +624,6 @@ namespace Hazel {
 		HZ_CORE_ASSERT(NextPositionIndex < nodeAnim->mNumPositionKeys);
 		float DeltaTime = (float)(nodeAnim->mPositionKeys[NextPositionIndex].mTime - nodeAnim->mPositionKeys[PositionIndex].mTime);
 		float Factor = (animationTime - (float)nodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
-		
 		HZ_CORE_ASSERT(Factor <= 1.0f, "Factor must be below 1.0f");
 		Factor = glm::clamp(Factor, 0.0f, 1.0f);
 		const aiVector3D& Start = nodeAnim->mPositionKeys[PositionIndex].mValue;
@@ -624,7 +648,6 @@ namespace Hazel {
 		HZ_CORE_ASSERT(NextRotationIndex < nodeAnim->mNumRotationKeys);
 		float DeltaTime = (float)(nodeAnim->mRotationKeys[NextRotationIndex].mTime - nodeAnim->mRotationKeys[RotationIndex].mTime);
 		float Factor = (animationTime - (float)nodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
-		
 		HZ_CORE_ASSERT(Factor <= 1.0f, "Factor must be below 1.0f");
 		Factor = glm::clamp(Factor, 0.0f, 1.0f);
 		const aiQuaternion& StartRotationQ = nodeAnim->mRotationKeys[RotationIndex].mValue;
@@ -650,7 +673,6 @@ namespace Hazel {
 		HZ_CORE_ASSERT(nextIndex < nodeAnim->mNumScalingKeys);
 		float deltaTime = (float)(nodeAnim->mScalingKeys[nextIndex].mTime - nodeAnim->mScalingKeys[index].mTime);
 		float factor = (animationTime - (float)nodeAnim->mScalingKeys[index].mTime) / deltaTime;
-		
 		HZ_CORE_ASSERT(factor <= 1.0f, "Factor must be below 1.0f");
 		factor = glm::clamp(factor, 0.0f, 1.0f);
 		const auto& start = nodeAnim->mScalingKeys[index].mValue;

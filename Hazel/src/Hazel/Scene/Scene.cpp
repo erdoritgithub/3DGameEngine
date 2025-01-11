@@ -18,6 +18,7 @@
 // Box2D
 #include <box2d/box2d.h>
 
+// PhysX
 #include "Hazel/Physics/Physics.h"
 
 namespace Hazel {
@@ -186,6 +187,7 @@ namespace Hazel {
 		}
 
 		// TODO: Choose what Physics system to use for 2D vs 3D
+
 		// Box2D physics
 		auto sceneView = m_Registry.view<Box2DWorldComponent>();
 		auto& box2DWorld = m_Registry.get<Box2DWorldComponent>(sceneView.front()).World;
@@ -283,13 +285,64 @@ namespace Hazel {
 				meshComponent.Mesh->OnUpdate(ts);
 
 				// TODO: Should we render (logically)
+				SceneRenderer::SubmitMesh(meshComponent, transformComponent);
 
-				if (m_SelectedEntity == entity)
-					SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent);
-				else
-					SceneRenderer::SubmitMesh(meshComponent, transformComponent);
+				/*if (m_SelectedEntity == entity)
+					SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent);*/
 			}
 		}
+
+		{
+			auto view = m_Registry.view<BoxColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& collider = e.GetComponent<BoxColliderComponent>();
+
+				if (m_SelectedEntity == entity)
+					SceneRenderer::SubmitColliderMesh(collider, e.GetComponent<TransformComponent>());
+			}
+		}
+
+		{
+			auto view = m_Registry.view<SphereColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& collider = e.GetComponent<SphereColliderComponent>();
+
+				if (m_SelectedEntity == entity)
+					SceneRenderer::SubmitColliderMesh(collider, e.GetComponent<TransformComponent>());
+			}
+		}
+
+		{
+			auto view = m_Registry.view<CapsuleColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& collider = e.GetComponent<CapsuleColliderComponent>();
+
+				if (m_SelectedEntity == entity)
+					SceneRenderer::SubmitColliderMesh(collider, e.GetComponent<TransformComponent>());
+			}
+		}
+
+		{
+			auto view = m_Registry.view<MeshColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& collider = e.GetComponent<MeshColliderComponent>();
+
+				if (m_SelectedEntity == entity)
+				{
+					SceneRenderer::SubmitColliderMesh(collider, e.GetComponent<TransformComponent>());
+				}
+			}
+		}
+
+
 		SceneRenderer::EndScene();
 		/////////////////////////////////////////////////////////////////////
 
@@ -361,7 +414,6 @@ namespace Hazel {
 				b2Body* body = world->CreateBody(&bodyDef);
 				body->SetFixedRotation(rigidBody2D.FixedRotation);
 				Entity* entityStorage = &m_Physics2DBodyEntityBuffer[physicsBodyEntityBufferIndex++];
-
 				*entityStorage = e;
 				body->SetUserData((void*)entityStorage);
 				rigidBody2D.RuntimeBody = body;
@@ -422,7 +474,6 @@ namespace Hazel {
 
 		{
 			auto view = m_Registry.view<RigidBodyComponent>();
-			
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
@@ -551,7 +602,6 @@ namespace Hazel {
 		CopyComponentIfExists<BoxColliderComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SphereColliderComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<MeshColliderComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-
 	}
 
 	Entity Scene::FindEntityByTag(const std::string& tag)

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <glm/glm.hpp>
 
 #include "Hazel/Core/UUID.h"
@@ -63,7 +64,6 @@ namespace Hazel {
 		ScriptComponent(const std::string& moduleName)
 			: ModuleName(moduleName) {
 		}
-
 	};
 
 	struct CameraComponent
@@ -76,7 +76,6 @@ namespace Hazel {
 
 		operator SceneCamera& () { return Camera; }
 		operator const SceneCamera& () const { return Camera; }
-
 	};
 
 	struct SpriteRendererComponent
@@ -87,7 +86,6 @@ namespace Hazel {
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent& other) = default;
-
 	};
 
 	struct RigidBody2DComponent
@@ -95,8 +93,10 @@ namespace Hazel {
 		enum class Type { Static, Dynamic, Kinematic };
 		Type BodyType;
 		bool FixedRotation = false;
+
 		// Storage for runtime
 		void* RuntimeBody = nullptr;
+
 		RigidBody2DComponent() = default;
 		RigidBody2DComponent(const RigidBody2DComponent& other) = default;
 	};
@@ -111,6 +111,7 @@ namespace Hazel {
 
 		// Storage for runtime
 		void* RuntimeFixture = nullptr;
+
 		BoxCollider2DComponent() = default;
 		BoxCollider2DComponent(const BoxCollider2DComponent& other) = default;
 	};
@@ -125,6 +126,7 @@ namespace Hazel {
 
 		// Storage for runtime
 		void* RuntimeFixture = nullptr;
+
 		CircleCollider2DComponent() = default;
 		CircleCollider2DComponent(const CircleCollider2DComponent& other) = default;
 	};
@@ -142,7 +144,9 @@ namespace Hazel {
 		bool LockRotationX = false;
 		bool LockRotationY = false;
 		bool LockRotationZ = false;
+
 		void* RuntimeActor = nullptr;
+
 		RigidBodyComponent() = default;
 		RigidBodyComponent(const RigidBodyComponent& other) = default;
 	};
@@ -153,6 +157,7 @@ namespace Hazel {
 		float StaticFriction = 1.0F;
 		float DynamicFriction = 1.0F;
 		float Bounciness = 1.0F;
+
 		PhysicsMaterialComponent() = default;
 		PhysicsMaterialComponent(const PhysicsMaterialComponent& other) = default;
 	};
@@ -164,14 +169,20 @@ namespace Hazel {
 
 		bool IsTrigger = false;
 
+		// The mesh that will be drawn in the editor to show the collision bounds
+		Ref<Mesh> DebugMesh;
+
 		BoxColliderComponent() = default;
 		BoxColliderComponent(const BoxColliderComponent& other) = default;
 	};
 
 	struct SphereColliderComponent
 	{
-		float Radius = 1.0F;
+		float Radius = 0.5F;
 		bool IsTrigger = false;
+
+		// The mesh that will be drawn in the editor to show the collision bounds
+		Ref<Mesh> DebugMesh;
 
 		SphereColliderComponent() = default;
 		SphereColliderComponent(const SphereColliderComponent& other) = default;
@@ -183,6 +194,8 @@ namespace Hazel {
 		float Height = 1.0F;
 		bool IsTrigger = false;
 
+		Ref<Mesh> DebugMesh;
+
 		CapsuleColliderComponent() = default;
 		CapsuleColliderComponent(const CapsuleColliderComponent& other) = default;
 	};
@@ -190,6 +203,7 @@ namespace Hazel {
 	struct MeshColliderComponent
 	{
 		Ref<Hazel::Mesh> CollisionMesh;
+		Ref<Hazel::Mesh> ProcessedMesh;
 		bool IsTrigger = false;
 
 		MeshColliderComponent() = default;

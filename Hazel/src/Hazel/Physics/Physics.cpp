@@ -67,23 +67,25 @@ namespace Hazel {
 		// Physics Material
 		physx::PxMaterial* material = PXPhysicsWrappers::CreateMaterial(e.GetComponent<PhysicsMaterialComponent>());
 
+		auto [translation, rotationQuat, scale] = GetTransformDecomposition(e.Transform());
+
 		// Add all colliders
 		if (e.HasComponent<BoxColliderComponent>())
 		{
 			BoxColliderComponent& collider = e.GetComponent<BoxColliderComponent>();
-			PXPhysicsWrappers::AddBoxCollider(*actor, *material, collider);
+			PXPhysicsWrappers::AddBoxCollider(*actor, *material, collider, scale);
 		}
 
 		if (e.HasComponent<SphereColliderComponent>())
 		{
 			SphereColliderComponent& collider = e.GetComponent<SphereColliderComponent>();
-			PXPhysicsWrappers::AddSphereCollider(*actor, *material, collider);
+			PXPhysicsWrappers::AddSphereCollider(*actor, *material, collider, scale);
 		}
 
 		if (e.HasComponent<CapsuleColliderComponent>())
 		{
 			CapsuleColliderComponent& collider = e.GetComponent<CapsuleColliderComponent>();
-			PXPhysicsWrappers::AddCapsuleCollider(*actor, *material, collider);
+			PXPhysicsWrappers::AddCapsuleCollider(*actor, *material, collider, scale);
 		}
 
 		if (e.HasComponent<MeshColliderComponent>())
@@ -134,6 +136,7 @@ namespace Hazel {
 	{
 		delete[] s_EntityStorageBuffer;
 		s_EntityStorageBuffer = nullptr;
+		s_EntityStorageBufferPosition = 0;
 		s_SimulatedEntities.clear();
 		s_Scene->release();
 		s_Scene = nullptr;

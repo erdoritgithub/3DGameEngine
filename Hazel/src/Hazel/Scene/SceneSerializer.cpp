@@ -4,6 +4,8 @@
 #include "Entity.h"
 #include "Components.h"
 #include "Hazel/Script/ScriptEngine.h"
+#include "Hazel/Physics/PXPhysicsWrappers.h"
+#include "Hazel/Renderer/MeshFactory.h"
 
 #include "yaml-cpp/yaml.h"
 
@@ -286,9 +288,11 @@ namespace Hazel {
 		{
 			out << YAML::Key << "RigidBody2DComponent";
 			out << YAML::BeginMap; // RigidBody2DComponent
+
 			auto& rigidbody2DComponent = entity.GetComponent<RigidBody2DComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << (int)rigidbody2DComponent.BodyType;
 			out << YAML::Key << "FixedRotation" << YAML::Value << rigidbody2DComponent.FixedRotation;
+
 			out << YAML::EndMap; // RigidBody2DComponent
 		}
 
@@ -296,11 +300,13 @@ namespace Hazel {
 		{
 			out << YAML::Key << "BoxCollider2DComponent";
 			out << YAML::BeginMap; // BoxCollider2DComponent
+
 			auto& boxCollider2DComponent = entity.GetComponent<BoxCollider2DComponent>();
 			out << YAML::Key << "Offset" << YAML::Value << boxCollider2DComponent.Offset;
 			out << YAML::Key << "Size" << YAML::Value << boxCollider2DComponent.Size;
 			out << YAML::Key << "Density" << YAML::Value << boxCollider2DComponent.Density;
 			out << YAML::Key << "Friction" << YAML::Value << boxCollider2DComponent.Friction;
+
 			out << YAML::EndMap; // BoxCollider2DComponent
 		}
 
@@ -308,11 +314,13 @@ namespace Hazel {
 		{
 			out << YAML::Key << "CircleCollider2DComponent";
 			out << YAML::BeginMap; // CircleCollider2DComponent
+
 			auto& circleCollider2DComponent = entity.GetComponent<CircleCollider2DComponent>();
 			out << YAML::Key << "Offset" << YAML::Value << circleCollider2DComponent.Offset;
 			out << YAML::Key << "Radius" << YAML::Value << circleCollider2DComponent.Radius;
 			out << YAML::Key << "Density" << YAML::Value << circleCollider2DComponent.Density;
 			out << YAML::Key << "Friction" << YAML::Value << circleCollider2DComponent.Friction;
+
 			out << YAML::EndMap; // CircleCollider2DComponent
 		}
 
@@ -320,29 +328,37 @@ namespace Hazel {
 		{
 			out << YAML::Key << "RigidBodyComponent";
 			out << YAML::BeginMap; // RigidBodyComponent
+
 			auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << (int)rigidbodyComponent.BodyType;
 			out << YAML::Key << "Mass" << YAML::Value << rigidbodyComponent.Mass;
 			out << YAML::Key << "IsKinematic" << YAML::Value << rigidbodyComponent.IsKinematic;
+
 			out << YAML::Key << "Constraints";
 			out << YAML::BeginMap; // Constraints
+
 			out << YAML::Key << "LockPositionX" << YAML::Value << rigidbodyComponent.LockPositionX;
 			out << YAML::Key << "LockPositionY" << YAML::Value << rigidbodyComponent.LockPositionY;
 			out << YAML::Key << "LockPositionZ" << YAML::Value << rigidbodyComponent.LockPositionZ;
 			out << YAML::Key << "LockRotationX" << YAML::Value << rigidbodyComponent.LockRotationX;
 			out << YAML::Key << "LockRotationY" << YAML::Value << rigidbodyComponent.LockRotationY;
 			out << YAML::Key << "LockRotationZ" << YAML::Value << rigidbodyComponent.LockRotationZ;
+
 			out << YAML::EndMap;
+
 			out << YAML::EndMap; // RigidBodyComponent
 		}
+
 		if (entity.HasComponent<PhysicsMaterialComponent>())
 		{
 			out << YAML::Key << "PhysicsMaterialComponent";
 			out << YAML::BeginMap; // PhysicsMaterialComponent
+
 			auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
 			out << YAML::Key << "StaticFriction" << YAML::Value << physicsMaterial.StaticFriction;
 			out << YAML::Key << "DynamicFriction" << YAML::Value << physicsMaterial.DynamicFriction;
 			out << YAML::Key << "Bounciness" << YAML::Value << physicsMaterial.Bounciness;
+
 			out << YAML::EndMap;
 		}
 
@@ -350,10 +366,12 @@ namespace Hazel {
 		{
 			out << YAML::Key << "BoxColliderComponent";
 			out << YAML::BeginMap; // BoxColliderComponent
+
 			auto& boxColliderComponent = entity.GetComponent<BoxColliderComponent>();
 			out << YAML::Key << "Offset" << YAML::Value << boxColliderComponent.Offset;
 			out << YAML::Key << "Size" << YAML::Value << boxColliderComponent.Size;
 			out << YAML::Key << "IsTrigger" << YAML::Value << boxColliderComponent.IsTrigger;
+
 			out << YAML::EndMap; // BoxColliderComponent
 		}
 
@@ -361,9 +379,11 @@ namespace Hazel {
 		{
 			out << YAML::Key << "SphereColliderComponent";
 			out << YAML::BeginMap; // SphereColliderComponent
+
 			auto& sphereColliderComponent = entity.GetComponent<SphereColliderComponent>();
 			out << YAML::Key << "Radius" << YAML::Value << sphereColliderComponent.Radius;
 			out << YAML::Key << "IsTrigger" << YAML::Value << sphereColliderComponent.IsTrigger;
+
 			out << YAML::EndMap; // SphereColliderComponent
 		}
 
@@ -371,10 +391,12 @@ namespace Hazel {
 		{
 			out << YAML::Key << "CapsuleColliderComponent";
 			out << YAML::BeginMap; // CapsuleColliderComponent
+
 			auto& capsuleColliderComponent = entity.GetComponent<CapsuleColliderComponent>();
 			out << YAML::Key << "Radius" << YAML::Value << capsuleColliderComponent.Radius;
 			out << YAML::Key << "Height" << YAML::Value << capsuleColliderComponent.Height;
 			out << YAML::Key << "IsTrigger" << YAML::Value << capsuleColliderComponent.IsTrigger;
+
 			out << YAML::EndMap; // CapsuleColliderComponent
 		}
 
@@ -382,9 +404,11 @@ namespace Hazel {
 		{
 			out << YAML::Key << "MeshColliderComponent";
 			out << YAML::BeginMap; // MeshColliderComponent
+
 			auto& meshColliderComponent = entity.GetComponent<MeshColliderComponent>();
 			out << YAML::Key << "AssetPath" << YAML::Value << meshColliderComponent.CollisionMesh->GetFilePath();
 			out << YAML::Key << "IsTrigger" << YAML::Value << meshColliderComponent.IsTrigger;
+
 			out << YAML::EndMap; // MeshColliderComponent
 		}
 
@@ -598,6 +622,7 @@ namespace Hazel {
 					component.Color = spriteRendererComponent["Color"].as<glm::vec4>();
 					component.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
 				}
+
 				auto rigidBody2DComponent = entity["RigidBody2DComponent"];
 				if (rigidBody2DComponent)
 				{
@@ -605,6 +630,7 @@ namespace Hazel {
 					component.BodyType = (RigidBody2DComponent::Type)rigidBody2DComponent["BodyType"].as<int>();
 					component.FixedRotation = rigidBody2DComponent["FixedRotation"] ? rigidBody2DComponent["FixedRotation"].as<bool>() : false;
 				}
+
 				auto boxCollider2DComponent = entity["BoxCollider2DComponent"];
 				if (boxCollider2DComponent)
 				{
@@ -639,7 +665,6 @@ namespace Hazel {
 					component.LockRotationX = rigidBodyComponent["Constraints"]["LockRotationX"].as<bool>();
 					component.LockRotationY = rigidBodyComponent["Constraints"]["LockRotationY"].as<bool>();
 					component.LockRotationZ = rigidBodyComponent["Constraints"]["LockRotationZ"].as<bool>();
-
 				}
 
 				auto physicsMaterialComponent = entity["PhysicsMaterialComponent"];
@@ -658,6 +683,7 @@ namespace Hazel {
 					component.Offset = boxColliderComponent["Offset"].as<glm::vec3>();
 					component.Size = boxColliderComponent["Size"].as<glm::vec3>();
 					component.IsTrigger = boxColliderComponent["IsTrigger"] ? boxColliderComponent["IsTrigger"].as<bool>() : false;
+					component.DebugMesh = MeshFactory::CreateBox(component.Size);
 				}
 
 				auto sphereColliderComponent = entity["SphereColliderComponent"];
@@ -665,8 +691,8 @@ namespace Hazel {
 				{
 					auto& component = deserializedEntity.AddComponent<SphereColliderComponent>();
 					component.Radius = sphereColliderComponent["Radius"].as<float>();
-
 					component.IsTrigger = sphereColliderComponent["IsTrigger"] ? sphereColliderComponent["IsTrigger"].as<bool>() : false;
+					component.DebugMesh = MeshFactory::CreateSphere(component.Radius);
 				}
 
 				auto capsuleColliderComponent = entity["CapsuleColliderComponent"];
@@ -676,6 +702,7 @@ namespace Hazel {
 					component.Radius = capsuleColliderComponent["Radius"].as<float>();
 					component.Height = capsuleColliderComponent["Height"].as<float>();
 					component.IsTrigger = capsuleColliderComponent["IsTrigger"] ? capsuleColliderComponent["IsTrigger"].as<bool>() : false;
+					component.DebugMesh = MeshFactory::CreateCapsule(component.Radius, component.Height);
 				}
 
 				auto meshColliderComponent = entity["MeshColliderComponent"];
@@ -684,6 +711,8 @@ namespace Hazel {
 					std::string meshPath = meshColliderComponent["AssetPath"].as<std::string>();
 					auto& component = deserializedEntity.AddComponent<MeshColliderComponent>(Ref<Mesh>::Create(meshPath));
 					component.IsTrigger = meshColliderComponent["IsTrigger"] ? meshColliderComponent["IsTrigger"].as<bool>() : false;
+					PXPhysicsWrappers::CreateConvexMesh(component);
+
 					HZ_CORE_INFO("  Mesh Collider Asset Path: {0}", meshPath);
 				}
 
