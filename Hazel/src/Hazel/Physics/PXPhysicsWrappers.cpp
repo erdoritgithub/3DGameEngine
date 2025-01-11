@@ -3,7 +3,7 @@
 #include "Physics.h"
 
 #ifdef HZ_DEBUG
-#define PHYSX_DEBUGGER 1
+#define PHYSX_DEBUGGER 0
 #endif
 
 namespace Hazel {
@@ -12,7 +12,7 @@ namespace Hazel {
 	static physx::PxDefaultAllocator s_Allocator;
 	static physx::PxFoundation* s_Foundation;
 	static physx::PxPhysics* s_Physics;
-	static physx::PxPvd* s_VisualDebugger;
+	static physx::PxPvd* s_VisualDebugger = nullptr;
 	static physx::PxCooking* s_CookingFactory;
 
 	static physx::PxSimulationFilterShader s_FilterShader = physx::PxDefaultSimulationFilterShader;
@@ -153,7 +153,7 @@ namespace Hazel {
 
 		if (!collider.ProcessedMesh)
 		{
-			// Based On: https://github.com/EpicGames/UnrealEngine/blob/08ee319f80ef47dbf0988e14b546b65214838ec4/Engine/Source/ThirdParty/PhysX3/NvCloth/samples/SampleBase/renderer/ConvexRenderMesh.cpp
+			// Based On: https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/ThirdParty/PhysX3/NvCloth/samples/SampleBase/renderer/ConvexRenderMesh.cpp
 
 			const uint32_t nbPolygons = mesh->getNbPolygons();
 			const physx::PxVec3* convexVertices = mesh->getVertices();

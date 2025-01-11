@@ -336,9 +336,8 @@ namespace Hazel {
 				auto& collider = e.GetComponent<MeshColliderComponent>();
 
 				if (m_SelectedEntity == entity)
-				{
 					SceneRenderer::SubmitColliderMesh(collider, e.GetComponent<TransformComponent>());
-				}
+
 			}
 		}
 
