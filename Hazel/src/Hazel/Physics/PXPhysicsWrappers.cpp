@@ -11,7 +11,6 @@ namespace Hazel {
 	static physx::PxDefaultAllocator s_Allocator;
 	static physx::PxFoundation* s_Foundation;
 	static physx::PxPhysics* s_Physics;
-	static physx::PxPvd* s_VisualDebugger = nullptr;
 	static physx::PxCooking* s_CookingFactory;
 	static physx::PxOverlapHit s_OverlapBuffer[OVERLAP_MAX_COLLIDERS];
 
@@ -24,16 +23,16 @@ namespace Hazel {
 		const char* errorMessage = NULL;
 		switch (code)
 		{
-		case physx::PxErrorCode::eNO_ERROR:	errorMessage = "No Error"; break;
-		case physx::PxErrorCode::eDEBUG_INFO: errorMessage = "Info"; break;
-		case physx::PxErrorCode::eDEBUG_WARNING:	errorMessage = "Warning"; break;
-		case physx::PxErrorCode::eINVALID_PARAMETER: errorMessage = "Invalid Parameter"; break;
-		case physx::PxErrorCode::eINVALID_OPERATION: errorMessage = "Invalid Operation"; break;
-		case physx::PxErrorCode::eOUT_OF_MEMORY: errorMessage = "Out Of Memory"; break;
-		case physx::PxErrorCode::eINTERNAL_ERROR: errorMessage = "Internal Error"; break;
-		case physx::PxErrorCode::eABORT: errorMessage = "Abort"; break;
-		case physx::PxErrorCode::ePERF_WARNING:	errorMessage = "Performance Warning"; break;
-		case physx::PxErrorCode::eMASK_ALL:	errorMessage = "Unknown Error"; break;
+		case physx::PxErrorCode::eNO_ERROR:				errorMessage = "No Error"; break;
+		case physx::PxErrorCode::eDEBUG_INFO:			errorMessage = "Info"; break;
+		case physx::PxErrorCode::eDEBUG_WARNING:		errorMessage = "Warning"; break;
+		case physx::PxErrorCode::eINVALID_PARAMETER:	errorMessage = "Invalid Parameter"; break;
+		case physx::PxErrorCode::eINVALID_OPERATION:	errorMessage = "Invalid Operation"; break;
+		case physx::PxErrorCode::eOUT_OF_MEMORY:		errorMessage = "Out Of Memory"; break;
+		case physx::PxErrorCode::eINTERNAL_ERROR:		errorMessage = "Internal Error"; break;
+		case physx::PxErrorCode::eABORT:				errorMessage = "Abort"; break;
+		case physx::PxErrorCode::ePERF_WARNING:			errorMessage = "Performance Warning"; break;
+		case physx::PxErrorCode::eMASK_ALL:				errorMessage = "Unknown Error"; break;
 		}
 		switch (code)
 		{
@@ -63,7 +62,7 @@ namespace Hazel {
 	{
 		physx::PxSceneDesc sceneDesc(s_Physics->getTolerancesScale());
 
-		sceneDesc.gravity = ToPhysXVector(sceneParams.Gravity);
+		sceneDesc.gravity = { 0.0F, Physics::GetGravity(), 0.0F };// ToPhysXVector(sceneParams.Gravity);
 		sceneDesc.cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(1);
 		sceneDesc.filterShader = HazelFilterShader;
 		sceneDesc.simulationEventCallback = &s_ContactListener;
@@ -154,11 +153,8 @@ namespace Hazel {
 		float colliderRadius = collider.Radius;
 		float colliderHeight = collider.Height;
 
-		if (size.x != 0.0F)
-			colliderRadius *= (size.x / 2.0F);
-
-		if (size.y != 0.0F)
-			colliderHeight *= size.y;
+		if (size.x != 0.0F) colliderRadius *= (size.x / 2.0F);
+		if (size.y != 0.0F) colliderHeight *= size.y;
 
 		physx::PxCapsuleGeometry capsuleGeometry = physx::PxCapsuleGeometry(colliderRadius, colliderHeight / 2.0F);
 		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(actor, capsuleGeometry, material);
@@ -332,12 +328,7 @@ namespace Hazel {
 		s_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_Allocator, s_ErrorCallback);
 		HZ_CORE_ASSERT(s_Foundation, "PxCreateFoundation Failed!");
 
-#if PHYSX_DEBUGGER
-		s_VisualDebugger = PxCreatePvd(*s_Foundation);
-		ConnectVisualDebugger();
-#endif
-
-		s_Physics = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Foundation, physx::PxTolerancesScale(), true, s_VisualDebugger);
+		s_Physics = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Foundation, physx::PxTolerancesScale(), true);
 		HZ_CORE_ASSERT(s_Physics, "PxCreatePhysics Failed!");
 
 		s_CookingFactory = PxCreateCooking(PX_PHYSICS_VERSION, *s_Foundation, s_Physics->getTolerancesScale());
@@ -348,26 +339,6 @@ namespace Hazel {
 	{
 		s_Physics->release();
 		s_Foundation->release();
-	}
-
-	// TODO: Consider removing this now that we have our own collider visualization
-	void PXPhysicsWrappers::ConnectVisualDebugger()
-	{
-#if PHYSX_DEBUGGER
-		if (s_VisualDebugger->isConnected(false))
-			s_VisualDebugger->disconnect();
-
-		physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate("localhost", 5425, 10);
-		s_VisualDebugger->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);
-#endif
-	}
-
-	void PXPhysicsWrappers::DisconnectVisualDebugger()
-	{
-#if PHYSX_DEBUGGER
-		if (s_VisualDebugger->isConnected(false))
-			s_VisualDebugger->disconnect();
-#endif
 	}
 
 }

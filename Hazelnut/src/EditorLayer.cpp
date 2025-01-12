@@ -711,16 +711,6 @@ namespace Hazel {
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Debug"))
-			{
-				if (ImGui::MenuItem("Connect To PVD"))
-				{
-					Physics::ConnectVisualDebugger();
-				}
-
-				ImGui::EndMenu();
-			}
-
 			ImGui::EndMenuBar();
 		}
 

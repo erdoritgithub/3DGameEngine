@@ -51,10 +51,13 @@ namespace Hazel {
 		void Hazel_RigidBody2DComponent_GetLinearVelocity(uint64_t entityID, glm::vec2* outVelocity);
 		void Hazel_RigidBody2DComponent_SetLinearVelocity(uint64_t entityID, glm::vec2* velocity);
 
+		RigidBodyComponent::Type Hazel_RigidBodyComponent_GetBodyType(uint64_t entityID);
 		void Hazel_RigidBodyComponent_AddForce(uint64_t entityID, glm::vec3* force, ForceMode foceMode);
 		void Hazel_RigidBodyComponent_AddTorque(uint64_t entityID, glm::vec3* torque, ForceMode forceMode);
 		void Hazel_RigidBodyComponent_GetLinearVelocity(uint64_t entityID, glm::vec3* outVelocity);
 		void Hazel_RigidBodyComponent_SetLinearVelocity(uint64_t entityID, glm::vec3* velocity);
+		void Hazel_RigidBodyComponent_GetAngularVelocity(uint64_t entityID, glm::vec3* outVelocity);
+		void Hazel_RigidBodyComponent_SetAngularVelocity(uint64_t entityID, glm::vec3* velocity);
 		void Hazel_RigidBodyComponent_Rotate(uint64_t entityID, glm::vec3* rotation);
 
 		uint32_t Hazel_RigidBodyComponent_GetLayer(uint64_t entityID);
