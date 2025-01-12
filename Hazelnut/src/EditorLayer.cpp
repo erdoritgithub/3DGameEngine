@@ -917,7 +917,7 @@ namespace Hazel {
 		ImGui::End();
 
 		ScriptEngine::OnImGuiRender();
-		PhysicsSettingsWindow::OnImGuiRender(&m_ShowPhysicsSettings);
+		PhysicsSettingsWindow::OnImGuiRender(m_ShowPhysicsSettings);
 
 		ImGui::End();
 	}

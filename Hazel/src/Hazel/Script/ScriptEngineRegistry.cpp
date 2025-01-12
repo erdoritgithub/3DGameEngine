@@ -7,7 +7,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Hazel/Scene/Entity.h"
 #include "ScriptWrappers.h"
-#include <iostream>
 
 namespace Hazel {
 	std::unordered_map<MonoType*, std::function<bool(Entity&)>> s_HasComponentFuncs;

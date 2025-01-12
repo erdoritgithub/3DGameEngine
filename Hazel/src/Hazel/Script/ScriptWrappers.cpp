@@ -85,14 +85,14 @@ namespace Hazel {
 		}
 
 		// Helper function for the Overlap functions below
-		static void AddCollidersToArray(MonoArray* array, const std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS>& hits, uint32_t count)
+		static void AddCollidersToArray(MonoArray* array, const std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS>& hits, uint32_t count, uint32_t arrayLength)
 		{
 			uint32_t arrayIndex = 0;
 			for (uint32_t i = 0; i < count; i++)
 			{
 				Entity& entity = *(Entity*)hits[i].actor->userData;
 
-				if (entity.HasComponent<BoxColliderComponent>())
+				if (entity.HasComponent<BoxColliderComponent>() && arrayIndex < arrayLength)
 				{
 					auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
 
@@ -107,7 +107,7 @@ namespace Hazel {
 					mono_array_set(array, MonoObject*, arrayIndex++, obj);
 				}
 
-				if (entity.HasComponent<SphereColliderComponent>())
+				if (entity.HasComponent<SphereColliderComponent>() && arrayIndex < arrayLength)
 				{
 					auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
 
@@ -121,7 +121,7 @@ namespace Hazel {
 					mono_array_set(array, MonoObject*, arrayIndex++, obj);
 				}
 
-				if (entity.HasComponent<CapsuleColliderComponent>())
+				if (entity.HasComponent<CapsuleColliderComponent>() && arrayIndex < arrayLength)
 				{
 					auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
 
@@ -136,7 +136,7 @@ namespace Hazel {
 					mono_array_set(array, MonoObject*, arrayIndex++, obj);
 				}
 
-				if (entity.HasComponent<MeshColliderComponent>())
+				if (entity.HasComponent<MeshColliderComponent>() && arrayIndex < arrayLength)
 				{
 					auto& meshCollider = entity.GetComponent<MeshColliderComponent>();
 
@@ -162,7 +162,7 @@ namespace Hazel {
 			if (PXPhysicsWrappers::OverlapBox(*origin, *halfSize, s_OverlapBuffer, &count))
 			{
 				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), count);
-				AddCollidersToArray(outColliders, s_OverlapBuffer, count);
+				AddCollidersToArray(outColliders, s_OverlapBuffer, count, count);
 			}
 			return outColliders;
 		}
@@ -176,7 +176,7 @@ namespace Hazel {
 			if (PXPhysicsWrappers::OverlapCapsule(*origin, radius, halfHeight, s_OverlapBuffer, &count))
 			{
 				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), count);
-				AddCollidersToArray(outColliders, s_OverlapBuffer, count);
+				AddCollidersToArray(outColliders, s_OverlapBuffer, count, count);
 			}
 
 			return outColliders;
@@ -191,7 +191,7 @@ namespace Hazel {
 			if (PXPhysicsWrappers::OverlapSphere(*origin, radius, s_OverlapBuffer, &count))
 			{
 				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), count);
-				AddCollidersToArray(outColliders, s_OverlapBuffer, count);
+				AddCollidersToArray(outColliders, s_OverlapBuffer, count, count);
 			}
 
 			return outColliders;
@@ -206,7 +206,7 @@ namespace Hazel {
 			{
 				if (count > arrayLength)
 					count = arrayLength;
-				AddCollidersToArray(outColliders, s_OverlapBuffer, count);
+				AddCollidersToArray(outColliders, s_OverlapBuffer, count, arrayLength);
 			}
 			return count;
 		}
@@ -220,7 +220,7 @@ namespace Hazel {
 			{
 				if (count > arrayLength)
 					count = arrayLength;
-				AddCollidersToArray(outColliders, s_OverlapBuffer, count);
+				AddCollidersToArray(outColliders, s_OverlapBuffer, count, arrayLength);
 			}
 			return count;
 		}
@@ -234,7 +234,7 @@ namespace Hazel {
 			{
 				if (count > arrayLength)
 					count = arrayLength;
-				AddCollidersToArray(outColliders, s_OverlapBuffer, count);
+				AddCollidersToArray(outColliders, s_OverlapBuffer, count, arrayLength);
 			}
 			return count;
 		}

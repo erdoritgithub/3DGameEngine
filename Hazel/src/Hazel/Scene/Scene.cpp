@@ -138,9 +138,7 @@ namespace Hazel {
 
 		if (!isEditorScene)
 		{
-			SceneParams sceneDesc;
-			sceneDesc.Gravity = glm::vec3(0.0F, -9.81F, 0.0F);
-			Physics::CreateScene(sceneDesc);
+			Physics::CreateScene();
 		}
 
 		Init();

@@ -23,9 +23,19 @@ namespace Hazel {
 		All = Static | Dynamic | Kinematic
 	};
 
-	struct SceneParams
+	enum class BroadphaseType
 	{
+		SweepAndPrune,
+		MultiBoxPrune,
+		AutomaticBoxPrune
+		// TODO: GPU?
+	};
+
+	struct PhysicsSettings
+	{
+		float FixedTimestep = 0.02F;
 		glm::vec3 Gravity = { 0.0F, -9.81F, 0.0F };
+		BroadphaseType BroadphaseAlgorithm = BroadphaseType::AutomaticBoxPrune;
 	};
 
 	struct RaycastHit
@@ -43,20 +53,16 @@ namespace Hazel {
 		static void Shutdown();
 		static void ExpandEntityBuffer(uint32_t entityCount);
 
-		static void CreateScene(const SceneParams& params);
+		static void CreateScene();
 		static void CreateActor(Entity e);
-
-		static void SetGravity(float gravity);
-		static float GetGravity();
-
-		static void SetFixedTimestep(float timestep);
-		static float GetFixedTimestep();
 
 		static void Simulate(Timestep ts);
 
 		static void DestroyScene();
 		static void* GetPhysicsScene();
 
+	public:
+		static PhysicsSettings& GetSettings();
 	};
 
 }

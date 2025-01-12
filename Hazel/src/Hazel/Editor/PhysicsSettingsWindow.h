@@ -4,7 +4,7 @@ namespace Hazel {
 	{
 
 	public:
-		static void OnImGuiRender(bool* show);
+		static void OnImGuiRender(bool& show);
 
 	private:
 		static void RenderWorldSettings();
