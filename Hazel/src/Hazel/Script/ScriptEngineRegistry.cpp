@@ -49,6 +49,9 @@ namespace Hazel {
 		mono_add_internal_call("Hazel.Physics::OverlapBox_Native", Hazel::Script::Hazel_Physics_OverlapBox);
 		mono_add_internal_call("Hazel.Physics::OverlapCapsule_Native", Hazel::Script::Hazel_Physics_OverlapCapsule);
 		mono_add_internal_call("Hazel.Physics::OverlapSphere_Native", Hazel::Script::Hazel_Physics_OverlapSphere);
+		mono_add_internal_call("Hazel.Physics::OverlapBoxNonAlloc_Native", Hazel::Script::Hazel_Physics_OverlapBoxNonAlloc);
+		mono_add_internal_call("Hazel.Physics::OverlapCapsuleNonAlloc_Native", Hazel::Script::Hazel_Physics_OverlapCapsuleNonAlloc);
+		mono_add_internal_call("Hazel.Physics::OverlapSphereNonAlloc_Native", Hazel::Script::Hazel_Physics_OverlapSphereNonAlloc);
 
 		mono_add_internal_call("Hazel.Entity::GetTransform_Native", Hazel::Script::Hazel_Entity_GetTransform);
 		mono_add_internal_call("Hazel.Entity::SetTransform_Native", Hazel::Script::Hazel_Entity_SetTransform);

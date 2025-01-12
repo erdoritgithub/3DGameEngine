@@ -28,6 +28,9 @@ namespace Hazel {
 		MonoArray* Hazel_Physics_OverlapBox(glm::vec3* origin, glm::vec3* halfSize);
 		MonoArray* Hazel_Physics_OverlapCapsule(glm::vec3* origin, float radius, float halfHeight);
 		MonoArray* Hazel_Physics_OverlapSphere(glm::vec3* origin, float radius);
+		int32_t Hazel_Physics_OverlapBoxNonAlloc(glm::vec3* origin, glm::vec3* halfSize, MonoArray* outColliders);
+		int32_t Hazel_Physics_OverlapCapsuleNonAlloc(glm::vec3* origin, float radius, float halfHeight, MonoArray* outColliders);
+		int32_t Hazel_Physics_OverlapSphereNonAlloc(glm::vec3* origin, float radius, MonoArray* outColliders);
 
 		// Entity
 		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform);

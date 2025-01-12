@@ -30,6 +30,15 @@ namespace Hazel
             }
         }
 
+        public override string ToString()
+        {
+            string type = "Collider";
+            if (this is BoxCollider) type = "BoxCollider";
+            else if (this is SphereCollider) type = "SphereCollider";
+            else if (this is CapsuleCollider) type = "CapsuleCollider";
+            else if (this is MeshCollider) type = "MeshCollider";
+            return "Collider(" + type + ", " + EntityID + ", " + IsTrigger + ")";
+        }
     }
 
     public class BoxCollider : Collider
