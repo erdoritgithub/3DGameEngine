@@ -133,6 +133,17 @@ namespace Hazel {
 		return physx::PxBroadPhaseType::eABP;
 	}
 
+	static physx::PxFrictionType::Enum HazelToPhysXFrictionType(FrictionType type)
+	{
+		switch (type)
+		{
+		case Hazel::FrictionType::Patch:			return physx::PxFrictionType::ePATCH;
+		case Hazel::FrictionType::OneDirectional:	return physx::PxFrictionType::eONE_DIRECTIONAL;
+		case Hazel::FrictionType::TwoDirectional:	return physx::PxFrictionType::eTWO_DIRECTIONAL;
+		}
+		return physx::PxFrictionType::ePATCH;
+	}
+
 	physx::PxScene* PXPhysicsWrappers::CreateScene()
 	{
 		physx::PxSceneDesc sceneDesc(s_Physics->getTolerancesScale());
@@ -143,6 +154,7 @@ namespace Hazel {
 		sceneDesc.cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(1);
 		sceneDesc.filterShader = HazelFilterShader;
 		sceneDesc.simulationEventCallback = &s_ContactListener;
+		sceneDesc.frictionType = HazelToPhysXFrictionType(settings.FrictionModel);
 
 		HZ_CORE_ASSERT(sceneDesc.isValid());
 		return s_Physics->createScene(sceneDesc);

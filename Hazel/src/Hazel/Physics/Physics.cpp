@@ -3,6 +3,7 @@
 #include "PXPhysicsWrappers.h"
 
 #include "PhysicsLayer.h"
+#include <PhysX/extensions/PxBroadPhaseExt.h>
 
 namespace Hazel {
 
@@ -68,6 +69,20 @@ namespace Hazel {
 	{
 		HZ_CORE_ASSERT(s_Scene == nullptr, "Scene already has a Physics Scene!");
 		s_Scene = PXPhysicsWrappers::CreateScene();
+
+		if (s_Settings.BroadphaseAlgorithm != BroadphaseType::AutomaticBoxPrune)
+		{
+			physx::PxBounds3* regionBounds;
+			physx::PxBounds3 globalBounds(ToPhysXVector(s_Settings.WorldBoundsMin), ToPhysXVector(s_Settings.WorldBoundsMax));
+			uint32_t regionCount = physx::PxBroadPhaseExt::createRegionsFromWorldBounds(regionBounds, globalBounds, s_Settings.WorldBoundsSubdivisions);
+
+			for (uint32_t i = 0; i < regionCount; i++)
+			{
+				physx::PxBroadPhaseRegion region;
+				region.bounds = regionBounds[i];
+				s_Scene->addBroadPhaseRegion(region);
+			}
+		}
 	}
 
 	void Physics::CreateActor(Entity e)
