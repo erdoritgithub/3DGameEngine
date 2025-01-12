@@ -21,7 +21,7 @@ namespace Hazel {
 		Button5 = 5,
 		Left = Button0,
 		Right = Button1,
-		Middle = Button3
+		Middle = Button2
 	} Button;
 
 	inline std::ostream& operator<<(std::ostream& os, MouseButton button)
@@ -32,9 +32,9 @@ namespace Hazel {
 
 	class Input
 	{
-
 	public:
 		static bool IsKeyPressed(KeyCode keycode);
+
 		static bool IsMouseButtonPressed(MouseButton button);
 		static float GetMouseX();
 		static float GetMouseY();
@@ -42,6 +42,6 @@ namespace Hazel {
 
 		static void SetCursorMode(CursorMode mode);
 		static CursorMode GetCursorMode();
-
 	};
+
 }

@@ -94,7 +94,6 @@ namespace FPSExample
                     Console.WriteLine("IsSphere: {0}", c is SphereCollider);
                     Console.WriteLine("IsCapsule: {0}", c is CapsuleCollider);
                     Console.WriteLine("IsMesh: {0}", c is MeshCollider);
-
                 }
             }
 

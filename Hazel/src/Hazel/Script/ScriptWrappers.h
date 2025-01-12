@@ -26,6 +26,7 @@ namespace Hazel {
 		// Physics
 		bool Hazel_Physics_Raycast(glm::vec3* origin, glm::vec3* direction, float maxDistance, RaycastHit* hit);
 		MonoArray* Hazel_Physics_OverlapBox(glm::vec3* origin, glm::vec3* halfSize);
+		MonoArray* Hazel_Physics_OverlapCapsule(glm::vec3* origin, float radius, float halfHeight);
 		MonoArray* Hazel_Physics_OverlapSphere(glm::vec3* origin, float radius);
 
 		// Entity

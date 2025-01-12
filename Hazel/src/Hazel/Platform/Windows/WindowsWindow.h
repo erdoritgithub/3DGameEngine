@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Hazel/Core/Window.h"
 
 #include <GLFW/glfw3.h>
@@ -10,6 +11,7 @@ namespace Hazel {
 	public:
 		WindowsWindow(const WindowProps& props);
 		virtual ~WindowsWindow();
+
 		void OnUpdate() override;
 
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
@@ -27,16 +29,12 @@ namespace Hazel {
 		virtual void SetTitle(const std::string& title) override;
 
 		inline void* GetNativeWindow() const { return m_Window; }
-
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
-
 	private:
 		GLFWwindow* m_Window;
 		GLFWcursor* m_ImGuiMouseCursors[9] = { 0 };
-
-		EventCallbackFn m_EventCallbackFn;
 
 		struct WindowData
 		{

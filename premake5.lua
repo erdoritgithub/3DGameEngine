@@ -143,7 +143,11 @@ project "Hazel"
         symbols "On"
                 
     filter "configurations:Release"
-        defines "HZ_RELEASE"
+		defines
+		{
+			"HZ_RELEASE",
+			"NDEBUG" -- This is apparently not defined in release mode? PhysX requires it to be defined
+		}
         optimize "On"
 
     filter "configurations:Dist"

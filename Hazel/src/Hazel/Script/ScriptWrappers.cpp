@@ -5,7 +5,6 @@
 
 #include "Hazel/Scene/Scene.h"
 #include "Hazel/Scene/Entity.h"
-#include "Hazel/Scene/Components.h"
 #include "Hazel/Physics/PhysicsUtil.h"
 #include "Hazel/Physics/PXPhysicsWrappers.h"
 
@@ -20,8 +19,6 @@
 
 #include <PhysX/PxPhysicsAPI.h>
 
-#include <imgui.h>
-
 namespace Hazel {
 	extern std::unordered_map<MonoType*, std::function<bool(Entity&)>> s_HasComponentFuncs;
 	extern std::unordered_map<MonoType*, std::function<void(Entity&)>> s_CreateComponentFuncs;
@@ -29,15 +26,6 @@ namespace Hazel {
 
 namespace Hazel {
 	namespace Script {
-
-		enum class ComponentID
-		{
-			None = 0,
-			Transform = 1,
-			Mesh = 2,
-			Script = 3,
-			SpriteRenderer = 4
-		};
 
 		static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform)
 		{
@@ -96,12 +84,13 @@ namespace Hazel {
 			return PXPhysicsWrappers::Raycast(*origin, *direction, maxDistance, hit);
 		}
 
-		static void AddCollidersToArray(MonoArray* array, const std::vector<physx::PxOverlapHit>& hits)
+		// Helper function for the Overlap functions below
+		static void AddCollidersToArray(MonoArray* array, const std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS>& hits, uint32_t count)
 		{
 			uint32_t arrayIndex = 0;
-			for (const auto& hit : hits)
+			for (uint32_t i = 0; i < count; i++)
 			{
-				Entity& entity = *(Entity*)hit.actor->userData;
+				Entity& entity = *(Entity*)hits[i].actor->userData;
 
 				if (entity.HasComponent<BoxColliderComponent>())
 				{
@@ -164,15 +153,30 @@ namespace Hazel {
 			}
 		}
 
+		static std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS> s_OverlapBuffer;
 		MonoArray* Hazel_Physics_OverlapBox(glm::vec3* origin, glm::vec3* halfSize)
 		{
 			MonoArray* outColliders = nullptr;
-			std::vector<physx::PxOverlapHit> buffer;
-
-			if (PXPhysicsWrappers::OverlapBox(*origin, *halfSize, buffer))
+			memset(s_OverlapBuffer.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(physx::PxOverlapHit));
+			uint32_t count;
+			if (PXPhysicsWrappers::OverlapBox(*origin, *halfSize, s_OverlapBuffer, &count))
 			{
-				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), buffer.size());
-				AddCollidersToArray(outColliders, buffer);
+				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), count);
+				AddCollidersToArray(outColliders, s_OverlapBuffer, count);
+			}
+			return outColliders;
+		}
+
+		MonoArray* Hazel_Physics_OverlapCapsule(glm::vec3* origin, float radius, float halfHeight)
+		{
+			MonoArray* outColliders = nullptr;
+			memset(s_OverlapBuffer.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(physx::PxOverlapHit));
+
+			uint32_t count;
+			if (PXPhysicsWrappers::OverlapCapsule(*origin, radius, halfHeight, s_OverlapBuffer, &count))
+			{
+				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), count);
+				AddCollidersToArray(outColliders, s_OverlapBuffer, count);
 			}
 
 			return outColliders;
@@ -181,12 +185,13 @@ namespace Hazel {
 		MonoArray* Hazel_Physics_OverlapSphere(glm::vec3* origin, float radius)
 		{
 			MonoArray* outColliders = nullptr;
-			std::vector<physx::PxOverlapHit> buffer;
+			memset(s_OverlapBuffer.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(physx::PxOverlapHit));
 
-			if (PXPhysicsWrappers::OverlapSphere(*origin, radius, buffer))
+			uint32_t count;
+			if (PXPhysicsWrappers::OverlapSphere(*origin, radius, s_OverlapBuffer, &count))
 			{
-				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), buffer.size());
-				AddCollidersToArray(outColliders, buffer);
+				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), count);
+				AddCollidersToArray(outColliders, s_OverlapBuffer, count);
 			}
 
 			return outColliders;

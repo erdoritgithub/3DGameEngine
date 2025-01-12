@@ -111,12 +111,10 @@ namespace Hazel {
 
 		SceneSerializer serializer(m_EditorScene);
 		serializer.Deserialize("assets/scenes/FPSDemo.hsc");
-
 	}
 
 	void EditorLayer::OnDetach()
 	{
-		
 	}
 
 	void EditorLayer::OnScenePlay()
@@ -146,6 +144,7 @@ namespace Hazel {
 		m_SelectionContext.clear();
 		ScriptEngine::SetSceneContext(m_EditorScene);
 		m_SceneHierarchyPanel->SetContext(m_EditorScene);
+
 		Input::SetCursorMode(CursorMode::Normal);
 	}
 
@@ -172,8 +171,8 @@ namespace Hazel {
 		{
 		case SceneState::Edit:
 		{
-			//if (m_ViewportPanelFocused)
-			m_EditorCamera.OnUpdate(ts);
+			if (m_ViewportPanelFocused)
+				m_EditorCamera.OnUpdate(ts);
 
 			m_EditorScene->OnRenderEditor(ts, m_EditorCamera);
 
@@ -366,6 +365,7 @@ namespace Hazel {
 		if (entity.HasComponent<MeshComponent>())
 		{
 			auto& meshComp = entity.GetComponent<MeshComponent>();
+
 			if (meshComp.Mesh)
 			{
 				selection.Mesh = &meshComp.Mesh->GetSubmeshes()[0];
@@ -570,20 +570,25 @@ namespace Hazel {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.8f, 0.8f, 0.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
 		ImGui::Begin("Toolbar");
+
+	
 		if (m_SceneState == SceneState::Edit)
 		{
 			if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
 			{
+				HZ_CORE_INFO("Edit State");
 				OnScenePlay();
 			}
 		}
 		else if (m_SceneState == SceneState::Play)
 		{
-			if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
+			if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
 			{
+				HZ_CORE_INFO("Play State");
 				OnSceneStop();
 			}
 		}
+		
 		ImGui::SameLine();
 		if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.6f)))
 		{
@@ -702,6 +707,7 @@ namespace Hazel {
 			if (ImGui::BeginMenu("Edit"))
 			{
 				ImGui::MenuItem("Physics Settings", nullptr, &m_ShowPhysicsSettings);
+
 				ImGui::EndMenu();
 			}
 
@@ -711,6 +717,7 @@ namespace Hazel {
 				{
 					Physics::ConnectVisualDebugger();
 				}
+
 				ImGui::EndMenu();
 			}
 
@@ -974,6 +981,16 @@ namespace Hazel {
 				break;
 			}
 		}
+
+		if (Input::IsKeyPressed(HZ_KEY_LEFT_ALT))
+		{
+			if (Input::IsKeyPressed(HZ_KEY_SPACE)) {
+				if (m_SceneState == SceneState::Play) {
+					OnSceneStop();
+				}
+			}
+		}
+		
 
 		if (Input::IsKeyPressed(HZ_KEY_LEFT_CONTROL))
 		{
