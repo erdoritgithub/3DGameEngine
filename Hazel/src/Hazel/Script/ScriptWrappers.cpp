@@ -27,17 +27,6 @@ namespace Hazel {
 namespace Hazel {
 	namespace Script {
 
-		static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform)
-		{
-			glm::vec3 scale, translation, skew;
-			glm::vec4 perspective;
-			glm::quat orientation;
-			glm::decompose(transform, scale, orientation, translation, skew, perspective);
-
-			return { translation, orientation, scale };
-		}
-
-
 		////////////////////////////////////////////////////////////////
 		// Math ////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
@@ -245,30 +234,6 @@ namespace Hazel {
 		// Entity //////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
 
-		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform)
-		{
-			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			HZ_CORE_ASSERT(scene, "No active scene!");
-			const auto& entityMap = scene->GetEntityMap();
-			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
-
-			Entity entity = entityMap.at(entityID);
-			auto& transformComponent = entity.GetComponent<TransformComponent>();
-			memcpy(outTransform, glm::value_ptr(transformComponent.Transform), sizeof(glm::mat4));
-		}
-
-		void Hazel_Entity_SetTransform(uint64_t entityID, glm::mat4* inTransform)
-		{
-			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			HZ_CORE_ASSERT(scene, "No active scene!");
-			const auto& entityMap = scene->GetEntityMap();
-			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
-
-			Entity entity = entityMap.at(entityID);
-			auto& transformComponent = entity.GetComponent<TransformComponent>();
-			memcpy(glm::value_ptr(transformComponent.Transform), inTransform, sizeof(glm::mat4));
-		}
-
 		void Hazel_Entity_CreateComponent(uint64_t entityID, void* type)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
@@ -306,7 +271,7 @@ namespace Hazel {
 			return 0;
 		}
 
-		void Hazel_TransformComponent_GetRelativeDirection(uint64_t entityID, glm::vec3* outDirection, glm::vec3* inAbsoluteDirection)
+		void Hazel_TransformComponent_GetTransform(uint64_t entityID, ScriptTransform* outTransform)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			HZ_CORE_ASSERT(scene, "No active scene!");
@@ -314,13 +279,14 @@ namespace Hazel {
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
 			Entity entity = entityMap.at(entityID);
-			auto& transformComponent = entity.GetComponent<TransformComponent>();
-
-			auto [position, rotation, scale] = GetTransformDecomposition(transformComponent.Transform);
-			*outDirection = glm::rotate(rotation, *inAbsoluteDirection);
+			Transform& transform = entity.GetComponent<TransformComponent>();
+			*outTransform = {
+				transform.GetTranslation(), transform.GetRotation(), transform.GetScale(),
+				transform.GetUpDirection(), transform.GetRightDirection(), transform.GetForwardDirection()
+			};
 		}
 
-		void Hazel_TransformComponent_GetRotation(uint64_t entityID, glm::vec3* outRotation)
+		void Hazel_TransformComponent_SetTransform(uint64_t entityID, ScriptTransform* inTransform)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			HZ_CORE_ASSERT(scene, "No active scene!");
@@ -328,25 +294,10 @@ namespace Hazel {
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
 			Entity entity = entityMap.at(entityID);
-			auto& transformComponent = entity.GetComponent<TransformComponent>();
-			auto [position, rotationQuat, scale] = GetTransformDecomposition(transformComponent.Transform);
-			*outRotation = glm::degrees(glm::eulerAngles(rotationQuat));
-		}
-
-		void Hazel_TransformComponent_SetRotation(uint64_t entityID, glm::vec3* inRotation)
-		{
-			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			HZ_CORE_ASSERT(scene, "No active scene!");
-			const auto& entityMap = scene->GetEntityMap();
-			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
-
-			Entity entity = entityMap.at(entityID);
-			glm::mat4& transform = entity.Transform();
-
-			auto [translation, rotationQuat, scale] = GetTransformDecomposition(transform);
-			transform = glm::translate(glm::mat4(1.0F), translation) *
-				glm::toMat4(glm::quat(glm::radians(*inRotation))) *
-				glm::scale(glm::mat4(1.0F), scale);
+			Transform& transform = entity.GetComponent<TransformComponent>();
+			transform.SetTranslation(inTransform->Translation);
+			transform.SetRotation(inTransform->Rotation);
+			transform.SetScale(inTransform->Scale);
 		}
 
 		void* Hazel_MeshComponent_GetMesh(uint64_t entityID)

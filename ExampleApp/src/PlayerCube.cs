@@ -65,12 +65,12 @@ namespace Example
             linearVelocity.Clamp(new Vector2(-MaxSpeed.X, -1000), MaxSpeed);
             m_PhysicsBody.SetLinearVelocity(linearVelocity);
 
-            if (Input.IsKeyPressed(KeyCode.R))
-            {
-                Matrix4 transform = GetTransform();
-                transform.Translation = new Vector3(0.0f);
-                SetTransform(transform);
-            }
+            //if (Input.IsKeyPressed(KeyCode.R))
+            //{
+            //    Matrix4 transform = GetTransform();
+            //    transform.Translation = new Vector3(0.0f);
+            //    SetTransform(transform);
+            //}
 
         }
     }

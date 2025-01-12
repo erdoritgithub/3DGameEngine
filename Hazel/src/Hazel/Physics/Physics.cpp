@@ -7,16 +7,6 @@
 
 namespace Hazel {
 
-	static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform)
-	{
-		glm::vec3 scale, translation, skew;
-		glm::vec4 perspective;
-		glm::quat orientation;
-		glm::decompose(transform, scale, orientation, translation, skew, perspective);
-
-		return { translation, orientation, scale };
-	}
-
 	static physx::PxScene* s_Scene;
 	static std::vector<Entity> s_SimulatedEntities;
 	static Entity* s_EntityStorageBuffer;
@@ -103,7 +93,7 @@ namespace Hazel {
 
 		RigidBodyComponent& rigidbody = e.GetComponent<RigidBodyComponent>();
 
-		physx::PxRigidActor* actor = PXPhysicsWrappers::CreateActor(rigidbody, e.Transform());
+		physx::PxRigidActor* actor = PXPhysicsWrappers::CreateActor(rigidbody, e.Transformation());
 		if (rigidbody.BodyType == RigidBodyComponent::Type::Dynamic)
 			s_SimulatedEntities.push_back(e);
 
@@ -116,31 +106,30 @@ namespace Hazel {
 
 		physx::PxMaterial* material = PXPhysicsWrappers::CreateMaterial(e.GetComponent<PhysicsMaterialComponent>());
 
-		const auto& transform = e.Transform();
-		auto [translation, rotation, scale] = GetTransformDecomposition(transform);
+		const Transform& transform = e.Transformation();
 
 		if (e.HasComponent<BoxColliderComponent>())
 		{
 			BoxColliderComponent& collider = e.GetComponent<BoxColliderComponent>();
-			PXPhysicsWrappers::AddBoxCollider(*actor, *material, collider, scale);
+			PXPhysicsWrappers::AddBoxCollider(*actor, *material, collider, transform.GetScale());
 		}
 
 		if (e.HasComponent<SphereColliderComponent>())
 		{
 			SphereColliderComponent& collider = e.GetComponent<SphereColliderComponent>();
-			PXPhysicsWrappers::AddSphereCollider(*actor, *material, collider, scale);
+			PXPhysicsWrappers::AddSphereCollider(*actor, *material, collider, transform.GetScale());
 		}
 
 		if (e.HasComponent<CapsuleColliderComponent>())
 		{
 			CapsuleColliderComponent& collider = e.GetComponent<CapsuleColliderComponent>();
-			PXPhysicsWrappers::AddCapsuleCollider(*actor, *material, collider, scale);
+			PXPhysicsWrappers::AddCapsuleCollider(*actor, *material, collider, transform.GetScale());
 		}
 
 		if (e.HasComponent<MeshColliderComponent>())
 		{
 			MeshColliderComponent& collider = e.GetComponent<MeshColliderComponent>();
-			PXPhysicsWrappers::AddMeshCollider(*actor, *material, collider, scale);
+			PXPhysicsWrappers::AddMeshCollider(*actor, *material, collider, transform.GetScale());
 		}
 
 		if (!PhysicsLayerManager::IsLayerValid(rigidbody.Layer))
@@ -172,12 +161,13 @@ namespace Hazel {
 
 		for (Entity& e : s_SimulatedEntities)
 		{
-			auto& transform = e.Transform();
-			auto [translation, rotation, scale] = GetTransformDecomposition(transform);
+			Transform& transform = e.Transformation();
 			RigidBodyComponent& rb = e.GetComponent<RigidBodyComponent>();
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rb.RuntimeActor);
 
-			transform = FromPhysXTransform(actor->getGlobalPose()) * glm::scale(glm::mat4(1.0F), scale);
+			physx::PxTransform actorPose = actor->getGlobalPose();
+			transform.SetTranslation(FromPhysXVector(actorPose.p));
+			transform.SetRotation(FromPhysXQuat(actorPose.q));
 		}
 	}
 

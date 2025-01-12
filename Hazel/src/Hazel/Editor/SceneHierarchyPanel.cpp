@@ -11,6 +11,7 @@
 #include "Hazel/Physics/PXPhysicsWrappers.h"
 #include "Hazel/Renderer/MeshFactory.h"
 
+#include "Hazel/Core/Math/Transform.h"
 #include <assimp/scene.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -582,23 +583,21 @@ namespace Hazel {
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			auto& tc = entity.GetComponent<TransformComponent>();
+			Transform& transform = entity.GetComponent<TransformComponent>();
 			if (ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(TransformComponent).hash_code()), ImGuiTreeNodeFlags_DefaultOpen, "Transform"))
 			{
-				auto [translation, rotationQuat, scale] = GetTransformDecomposition(tc);
-				glm::vec3 rotation = glm::degrees(glm::eulerAngles(rotationQuat));
+				glm::vec3 translation = transform.GetTranslation();
+				glm::vec3 rotation = transform.GetRotation();
+				glm::vec3 scale = transform.GetScale();
 
 				ImGui::Columns(2);
 				ImGui::Text("Translation");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(-1);
 
-				bool updateTransform = false;
-
 				if (ImGui::DragFloat3("##translation", glm::value_ptr(translation), 0.25f))
 				{
-					//tc.Transform[3] = glm::vec4(translation, 1.0f);
-					updateTransform = true;
+					transform.SetTranslation(translation);
 				}
 
 				ImGui::PopItemWidth();
@@ -610,8 +609,7 @@ namespace Hazel {
 
 				if (ImGui::DragFloat3("##rotation", glm::value_ptr(rotation), 0.25f))
 				{
-					updateTransform = true;
-					// tc.Transform[3] = glm::vec4(translation, 1.0f);
+					transform.SetRotation(rotation);
 				}
 
 				ImGui::PopItemWidth();
@@ -623,7 +621,7 @@ namespace Hazel {
 
 				if (ImGui::DragFloat3("##scale", glm::value_ptr(scale), 0.25f))
 				{
-					updateTransform = true;
+					transform.SetScale(scale);
 				}
 
 				ImGui::PopItemWidth();
@@ -631,12 +629,6 @@ namespace Hazel {
 
 				ImGui::Columns(1);
 
-				if (updateTransform)
-				{
-					tc.Transform = glm::translate(glm::mat4(1.0f), translation) *
-						glm::toMat4(glm::quat(glm::radians(rotation))) *
-						glm::scale(glm::mat4(1.0f), scale);
-				}
 
 				ImGui::TreePop();
 			}

@@ -1,13 +1,16 @@
 #pragma once
+
+#include "Hazel/Core/Math/Transform.h"
 #include <PhysX/PxPhysicsAPI.h>
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 namespace Hazel {
 
-	physx::PxTransform ToPhysXTransform(const glm::mat4& matrix);
+	physx::PxTransform ToPhysXTransform(const Transform& transform);
+	physx::PxTransform ToPhysXTransform(const glm::mat4& transform);
 	physx::PxMat44 ToPhysXMatrix(const glm::mat4& matrix);
 	physx::PxVec3 ToPhysXVector(const glm::vec3& vector);
 	physx::PxVec4 ToPhysXVector(const glm::vec4& vector);

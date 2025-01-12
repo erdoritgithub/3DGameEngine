@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -13,6 +12,7 @@ namespace Hazel
     public struct Vector3
     {
         public static Vector3 Zero = new Vector3(0, 0, 0);
+
         public static Vector3 Forward = new Vector3(0, 0, -1);
         public static Vector3 Right = new Vector3(1, 0, 0);
         public static Vector3 Up = new Vector3(0, 1, 0);
@@ -31,6 +31,13 @@ namespace Hazel
             X = x;
             Y = y;
             Z = z;
+        }
+
+        public Vector3(float x, Vector2 yz)
+        {
+            X = x;
+            Y = yz.X;
+            Z = yz.Y;
         }
 
         public Vector3(Vector2 vector)
@@ -58,6 +65,7 @@ namespace Hazel
         {
             return (float)Math.Sqrt(X * X + Y * Y + Z * Z);
         }
+
         public Vector3 Normalized()
         {
             float length = Length();
@@ -145,7 +153,6 @@ namespace Hazel
             get { return new Vector2(Y, Z); }
             set { Y = value.X; Z = value.Y; }
         }
-
 
     }
 }

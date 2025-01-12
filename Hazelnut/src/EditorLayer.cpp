@@ -171,8 +171,8 @@ namespace Hazel {
 		{
 		case SceneState::Edit:
 		{
-			if (m_ViewportPanelFocused)
-				m_EditorCamera.OnUpdate(ts);
+			//if (m_ViewportPanelFocused)
+			m_EditorCamera.OnUpdate(ts);
 
 			m_EditorScene->OnRenderEditor(ts, m_EditorCamera);
 
@@ -196,7 +196,7 @@ namespace Hazel {
 					auto viewProj = m_EditorCamera.GetViewProjection();
 					Renderer2D::BeginScene(viewProj, false);
 					glm::vec4 color = (m_SelectionMode == SelectionMode::Entity) ? glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f } : glm::vec4{ 0.2f, 0.9f, 0.2f, 1.0f };
-					Renderer::DrawAABB(selection.Mesh->BoundingBox, selection.Entity.GetComponent<TransformComponent>().Transform * selection.Mesh->Transform, color);
+					Renderer::DrawAABB(selection.Mesh->BoundingBox, selection.Entity.GetComponent<TransformComponent>().Transformation.GetMatrix() * selection.Mesh->Transform, color);
 					Renderer2D::EndScene();
 					Renderer::EndRenderPass();
 				}
@@ -209,13 +209,14 @@ namespace Hazel {
 				if (selection.Entity.HasComponent<BoxCollider2DComponent>())
 				{
 					const auto& size = selection.Entity.GetComponent<BoxCollider2DComponent>().Size;
-					auto [translation, rotationQuat, scale] = GetTransformDecomposition(selection.Entity.GetComponent<TransformComponent>().Transform);
-					glm::vec3 rotation = glm::eulerAngles(rotationQuat);
+					const Transform& transform = selection.Entity.GetComponent<TransformComponent>();
+					glm::vec3 translation = transform.GetTranslation();
+					glm::vec3 rotation = transform.GetRotation();
 
 					Renderer::BeginRenderPass(SceneRenderer::GetFinalRenderPass(), false);
 					auto viewProj = m_EditorCamera.GetViewProjection();
 					Renderer2D::BeginScene(viewProj, false);
-					Renderer2D::DrawRotatedQuad({ translation.x, translation.y }, size * 2.0f, glm::degrees(rotation.z), { 1.0f, 0.0f, 1.0f, 1.0f });
+					Renderer2D::DrawRotatedQuad({ translation.x, translation.y }, size * 2.0f, rotation.z, { 1.0f, 0.0f, 1.0f, 1.0f });
 					Renderer2D::EndScene();
 					Renderer::EndRenderPass();
 				}
@@ -570,25 +571,20 @@ namespace Hazel {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.8f, 0.8f, 0.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
 		ImGui::Begin("Toolbar");
-
-	
 		if (m_SceneState == SceneState::Edit)
 		{
 			if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
 			{
-				HZ_CORE_INFO("Edit State");
 				OnScenePlay();
 			}
 		}
 		else if (m_SceneState == SceneState::Play)
 		{
-			if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
+			if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
 			{
-				HZ_CORE_INFO("Play State");
 				OnSceneStop();
 			}
 		}
-		
 		ImGui::SameLine();
 		if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.6f)))
 		{
@@ -642,7 +638,7 @@ namespace Hazel {
 
 			bool snap = Input::IsKeyPressed(HZ_KEY_LEFT_CONTROL);
 
-			auto& entityTransform = selection.Entity.Transform();
+			auto& entityTransform = selection.Entity.Transformation();
 			float snapValue = GetSnapValue();
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 			if (m_SelectionMode == SelectionMode::Entity)
@@ -651,13 +647,13 @@ namespace Hazel {
 					glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
 					(ImGuizmo::OPERATION)m_GizmoType,
 					ImGuizmo::LOCAL,
-					glm::value_ptr(entityTransform),
+					entityTransform.GetMatrixPointer(),
 					nullptr,
 					snap ? snapValues : nullptr);
 			}
 			else
 			{
-				glm::mat4 transformBase = entityTransform * selection.Mesh->Transform;
+				glm::mat4 transformBase = entityTransform.GetMatrix() * selection.Mesh->Transform;
 				ImGuizmo::Manipulate(glm::value_ptr(m_EditorCamera.GetViewMatrix()),
 					glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
 					(ImGuizmo::OPERATION)m_GizmoType,
@@ -666,7 +662,7 @@ namespace Hazel {
 					nullptr,
 					snap ? snapValues : nullptr);
 
-				selection.Mesh->Transform = glm::inverse(entityTransform) * transformBase;
+				selection.Mesh->Transform = glm::inverse(entityTransform.GetMatrix()) * transformBase;
 			}
 		}
 
@@ -972,16 +968,6 @@ namespace Hazel {
 			}
 		}
 
-		if (Input::IsKeyPressed(HZ_KEY_LEFT_ALT))
-		{
-			if (Input::IsKeyPressed(HZ_KEY_SPACE)) {
-				if (m_SceneState == SceneState::Play) {
-					OnSceneStop();
-				}
-			}
-		}
-		
-
 		if (Input::IsKeyPressed(HZ_KEY_LEFT_CONTROL))
 		{
 			switch (e.GetKeyCode())
@@ -1050,8 +1036,8 @@ namespace Hazel {
 					{
 						auto& submesh = submeshes[i];
 						Ray ray = {
-							glm::inverse(entity.Transform() * submesh.Transform) * glm::vec4(origin, 1.0f),
-							glm::inverse(glm::mat3(entity.Transform()) * glm::mat3(submesh.Transform)) * direction
+							glm::inverse(entity.Transformation().GetMatrix() * submesh.Transform) * glm::vec4(origin, 1.0f),
+							glm::inverse(glm::mat3(entity.Transformation().GetMatrix()) * glm::mat3(submesh.Transform)) * direction
 						};
 
 						float t;

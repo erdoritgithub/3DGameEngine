@@ -6,6 +6,7 @@
 #include "Hazel/Renderer/Texture.h"
 #include "Hazel/Renderer/Mesh.h"
 #include "Hazel/Scene/SceneCamera.h"
+#include "Hazel/Core/Math/Transform.h"
 
 namespace Hazel {
 
@@ -30,16 +31,16 @@ namespace Hazel {
 
 	struct TransformComponent
 	{
-		glm::mat4 Transform;
+		Transform Transformation;
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& other) = default;
-		TransformComponent(const glm::mat4& transform)
-			: Transform(transform) {
+		TransformComponent(const Transform& transform)
+			: Transformation(transform) {
 		}
 
-		operator glm::mat4& () { return Transform; }
-		operator const glm::mat4& () const { return Transform; }
+		operator Transform& () { return Transformation; }
+		operator const Transform& () const { return Transformation; }
 	};
 
 	struct MeshComponent

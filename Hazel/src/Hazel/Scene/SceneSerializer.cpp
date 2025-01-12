@@ -5,7 +5,6 @@
 #include "Components.h"
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Physics/PhysicsLayer.h"
-
 #include "Hazel/Physics/PXPhysicsWrappers.h"
 #include "Hazel/Renderer/MeshFactory.h"
 
@@ -189,11 +188,10 @@ namespace Hazel {
 			out << YAML::Key << "TransformComponent";
 			out << YAML::BeginMap; // TransformComponent
 
-			auto& transform = entity.GetComponent<TransformComponent>().Transform;
-			auto [pos, rot, scale] = GetTransformDecomposition(transform);
-			out << YAML::Key << "Position" << YAML::Value << pos;
-			out << YAML::Key << "Rotation" << YAML::Value << rot;
-			out << YAML::Key << "Scale" << YAML::Value << scale;
+			auto& transform = entity.GetComponent<TransformComponent>().Transformation;
+			out << YAML::Key << "Position" << YAML::Value << transform.GetTranslation();
+			out << YAML::Key << "Rotation" << YAML::Value << transform.GetRotation();
+			out << YAML::Key << "Scale" << YAML::Value << transform.GetScale();
 
 			out << YAML::EndMap; // TransformComponent
 		}
@@ -441,6 +439,7 @@ namespace Hazel {
 		out << YAML::Key << "Scene";
 		out << YAML::Value << "Scene Name";
 		SerializeEnvironment(out, m_Scene);
+
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
@@ -459,8 +458,10 @@ namespace Hazel {
 		for (uint32_t i = 0; i < PhysicsLayerManager::GetLayerCount(); i++)
 		{
 			const PhysicsLayer& layer = PhysicsLayerManager::GetLayer(i);
+
 			out << YAML::BeginMap;
 			out << YAML::Key << "Name" << YAML::Value << layer.Name;
+
 			out << YAML::Key << "CollidesWith" << YAML::Value;
 			out << YAML::BeginSeq;
 			for (const auto& collidingLayer : PhysicsLayerManager::GetLayerCollisions(layer.LayerID))
@@ -473,7 +474,6 @@ namespace Hazel {
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
-
 		out << YAML::EndMap;
 
 		std::ofstream fout(filepath);
@@ -535,17 +535,18 @@ namespace Hazel {
 				if (transformComponent)
 				{
 					// Entities always have transforms
-					auto& transform = deserializedEntity.GetComponent<TransformComponent>().Transform;
+					auto& transform = deserializedEntity.GetComponent<TransformComponent>().Transformation;
 					glm::vec3 translation = transformComponent["Position"].as<glm::vec3>();
-					glm::quat rotation = transformComponent["Rotation"].as<glm::quat>();
+					glm::vec3 rotation = transformComponent["Rotation"].as<glm::vec3>();
 					glm::vec3 scale = transformComponent["Scale"].as<glm::vec3>();
 
-					transform = glm::translate(glm::mat4(1.0f), translation) *
-						glm::toMat4(rotation) * glm::scale(glm::mat4(1.0f), scale);
+					transform.SetTranslation(translation);
+					transform.SetRotation(rotation);
+					transform.SetScale(scale);
 
 					HZ_CORE_INFO("  Entity Transform:");
 					HZ_CORE_INFO("    Translation: {0}, {1}, {2}", translation.x, translation.y, translation.z);
-					HZ_CORE_INFO("    Rotation: {0}, {1}, {2}, {3}", rotation.w, rotation.x, rotation.y, rotation.z);
+					HZ_CORE_INFO("    Rotation: {0}, {1}, {2}", rotation.x, rotation.y, rotation.z);
 					HZ_CORE_INFO("    Scale: {0}, {1}, {2}", scale.x, scale.y, scale.z);
 				}
 
@@ -748,13 +749,16 @@ namespace Hazel {
 		if (physicsLayers)
 		{
 			PhysicsLayerManager::ClearLayers();
+
 			for (auto layer : physicsLayers)
 			{
 				PhysicsLayerManager::AddLayer(layer["Name"].as<std::string>(), false);
 			}
+
 			for (auto layer : physicsLayers)
 			{
 				const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayer(layer["Name"].as<std::string>());
+
 				auto collidesWith = layer["CollidesWith"];
 				if (collidesWith)
 				{

@@ -3,6 +3,7 @@
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Core/Input.h"
 #include "Hazel/Physics/Physics.h"
+#include "Hazel/Core/Math/Transform.h"
 
 #include <glm/glm.hpp>
 
@@ -13,6 +14,15 @@ extern "C" {
 
 namespace Hazel {
 	namespace Script {
+
+		struct ScriptTransform
+		{
+			glm::vec3 Translation;
+			glm::vec3 Rotation;
+			glm::vec3 Scale;
+			glm::vec3 Up, Right, Forward;
+		};
+
 		// Math
 		float Hazel_Noise_PerlinNoise(float x, float y);
 
@@ -33,16 +43,13 @@ namespace Hazel {
 		int32_t Hazel_Physics_OverlapSphereNonAlloc(glm::vec3* origin, float radius, MonoArray* outColliders);
 
 		// Entity
-		void Hazel_Entity_GetTransform(uint64_t entityID, glm::mat4* outTransform);
-		void Hazel_Entity_SetTransform(uint64_t entityID, glm::mat4* inTransform);
 		
 		void Hazel_Entity_CreateComponent(uint64_t entityID, void* type);
 		bool Hazel_Entity_HasComponent(uint64_t entityID, void* type);
 		uint64_t Hazel_Entity_FindEntityByTag(MonoString* tag);
 
-		void Hazel_TransformComponent_GetRelativeDirection(uint64_t entityID, glm::vec3* outDirection, glm::vec3* inAbsoluteDirection);
-		void Hazel_TransformComponent_GetRotation(uint64_t entityID, glm::vec3* outRotation);
-		void Hazel_TransformComponent_SetRotation(uint64_t entityID, glm::vec3* inRotation);
+		void Hazel_TransformComponent_GetTransform(uint64_t entityID, ScriptTransform* outTransform);
+		void Hazel_TransformComponent_SetTransform(uint64_t entityID, ScriptTransform* inTransform);
 
 		void* Hazel_MeshComponent_GetMesh(uint64_t entityID);
 		void Hazel_MeshComponent_SetMesh(uint64_t entityID, Ref<Mesh>* inMesh);

@@ -11,7 +11,7 @@ Entities:
       Tag: Player
     TransformComponent:
       Position: [2.80803752, 1.5, 0]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [2, 2, 2]
     ScriptComponent:
       ModuleName: FPSExample.FPSPlayer
@@ -54,7 +54,7 @@ Entities:
       Tag: Mesh Collider
     TransformComponent:
       Position: [-2.60455179, 1, -0.00171399117]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
       AssetPath: assets\meshes\Sphere1m.fbx
@@ -82,7 +82,7 @@ Entities:
       Tag: Box
     TransformComponent:
       Position: [0, 1.5, 0]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [2, 2, 2]
     MeshComponent:
       AssetPath: assets\meshes\Cube1m.fbx
@@ -111,7 +111,7 @@ Entities:
       Tag: Sphere
     TransformComponent:
       Position: [-3.98769951, 1, -1.96695328e-06]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
       AssetPath: assets\meshes\Sphere1m.fbx
@@ -139,7 +139,7 @@ Entities:
       Tag: Camera
     TransformComponent:
       Position: [2.80800009, 2.25, 0]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera: some camera data...
@@ -149,7 +149,7 @@ Entities:
       Tag: Box
     TransformComponent:
       Position: [0, 0, 0]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [50, 1, 50]
     MeshComponent:
       AssetPath: assets\meshes\Cube1m.fbx
