@@ -146,6 +146,11 @@ namespace Hazel {
 		enum class Type { Static, Dynamic };
 		Type BodyType;
 		float Mass = 1.0F;
+
+		float LinearDrag = 0.0F;
+		float AngularDrag = 0.05F;
+		bool DisableGravity = false;
+
 		bool IsKinematic = false;
 		uint32_t Layer = 0;
 

@@ -158,14 +158,6 @@ namespace Hazel
             Dynamic
         }
 
-        public enum ForceMode
-        {
-            Force = 0,
-            Impulse,
-            VelocityChange,
-            Acceleration
-        }
-
         public Type BodyType
         {
             get

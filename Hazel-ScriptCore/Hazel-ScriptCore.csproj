@@ -21,7 +21,8 @@
     <OutputPath>..\bin\Debug-windows-x86_64\Hazel-ScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\bin-int\Debug-windows-x86_64\Hazel-ScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -33,7 +34,8 @@
     <OutputPath>..\bin\Release-windows-x86_64\Hazel-ScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\bin-int\Release-windows-x86_64\Hazel-ScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -45,7 +47,8 @@
     <OutputPath>..\bin\Dist-windows-x86_64\Hazel-ScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\bin-int\Dist-windows-x86_64\Hazel-ScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -67,6 +70,7 @@
     <Compile Include="src\Hazel\Math\Vector3.cs" />
     <Compile Include="src\Hazel\Math\Vector4.cs" />
     <Compile Include="src\Hazel\Physics\Collider.cs" />
+    <Compile Include="src\Hazel\Physics\ForceMode.cs" />
     <Compile Include="src\Hazel\Physics\Physics.cs" />
     <Compile Include="src\Hazel\Renderer\Color.cs" />
     <Compile Include="src\Hazel\Renderer\Material.cs" />

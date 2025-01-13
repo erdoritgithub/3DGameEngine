@@ -358,6 +358,7 @@ namespace Hazel {
 			b2Body* body = (b2Body*)component.RuntimeBody;
 			const auto& velocity = body->GetLinearVelocity();
 			HZ_CORE_ASSERT(outVelocity);
+
 			*outVelocity = { velocity.x, velocity.y };
 		}
 
@@ -455,6 +456,7 @@ namespace Hazel {
 
 			HZ_CORE_ASSERT(outVelocity);
 			physx::PxVec3 velocity = dynamicActor->getLinearVelocity();
+			HZ_CORE_INFO("Hazel_RigidBodyComponent_GetLinearVelocity - {0}, {1}, {2}", velocity.x, velocity.y, velocity.z);
 			*outVelocity = { velocity.x, velocity.y, velocity.z };
 		}
 
@@ -474,7 +476,10 @@ namespace Hazel {
 			HZ_CORE_ASSERT(dynamicActor);
 
 			HZ_CORE_ASSERT(velocity);
-			dynamicActor->setLinearVelocity({ velocity->x, velocity->y, velocity->z });
+			physx::PxVec3 pxVelocity = { velocity->x, velocity->y, velocity->z };
+			if (!pxVelocity.isFinite())
+				return;
+			dynamicActor->setLinearVelocity(pxVelocity);
 		}
 
 		void Hazel_RigidBodyComponent_GetAngularVelocity(uint64_t entityID, glm::vec3* outVelocity)
