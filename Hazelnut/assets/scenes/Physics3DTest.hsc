@@ -11,7 +11,7 @@ Entities:
       Tag: Box
     TransformComponent:
       Position: [0, 0, 0]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [50, 1, 50]
     MeshComponent:
       AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\Cube1m.fbx
@@ -30,52 +30,30 @@ Entities:
       StaticFriction: 1
       DynamicFriction: 1
       Bounciness: 0
-    BoxColliderComponent:
-      Offset: [0, 0, 0]
-      Size: [1, 1, 1]
+    MeshColliderComponent:
+      AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\Cube1m.fbx
       IsTrigger: false
   - Entity: 5178862374589434728
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Position: [-21.7406311, 9.70659542, 15]
-      Rotation: [0.999910355, -0.0133911213, 0, 0]
+      Position: [2.80800009, 2.25, 0]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    ScriptComponent:
-      ModuleName: Example.BasicController
-      StoredFields:
-        - Name: Speed
-          Type: 1
-          Data: 12
-        - Name: DistanceFromPlayer
-          Type: 1
-          Data: 10
     CameraComponent:
       Camera: some camera data...
       Primary: true
   - Entity: 14057422478420564497
     TagComponent:
-      Tag: Player
+      Tag: Sphere
     TransformComponent:
       Position: [-3.98769951, 1, -1.96695328e-06]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    ScriptComponent:
-      ModuleName: Example.PlayerSphere
-      StoredFields:
-        - Name: HorizontalForce
-          Type: 1
-          Data: 10
-        - Name: MaxSpeed
-          Type: 6
-          Data: [10, 10, 10]
-        - Name: JumpForce
-          Type: 1
-          Data: 200
     MeshComponent:
       AssetPath: assets\meshes\Sphere1m.fbx
     RigidBodyComponent:
-      BodyType: 1
+      BodyType: 0
       Mass: 1
       IsKinematic: false
       Constraints:
@@ -97,7 +75,7 @@ Entities:
       Tag: Box
     TransformComponent:
       Position: [0, 1.5, 0]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [2, 2, 2]
     MeshComponent:
       AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\Cube1m.fbx
@@ -124,8 +102,8 @@ Entities:
     TagComponent:
       Tag: Mesh Collider
     TransformComponent:
-      Position: [-2.32141495, 1, -0.00171399117]
-      Rotation: [1, 0, 0, 0]
+      Position: [22.9622288, 1, -0.00171399117]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
       AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\Sphere1m.fbx
@@ -146,4 +124,44 @@ Entities:
       Bounciness: 0.100000001
     MeshColliderComponent:
       AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\Sphere1m.fbx
+      IsTrigger: false
+  - Entity: 3247025703490125974
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Position: [2.80803752, 4.51659966, 0]
+      Rotation: [0, 0, 0]
+      Scale: [2, 2, 2]
+    ScriptComponent:
+      ModuleName: FPSExample.FPSPlayer
+      StoredFields:
+        - Name: WalkingSpeed
+          Type: 1
+          Data: 10
+        - Name: RunSpeed
+          Type: 1
+          Data: 20
+        - Name: JumpForce
+          Type: 1
+          Data: 50
+    MeshComponent:
+      AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\Capsule.fbx
+    RigidBodyComponent:
+      BodyType: 1
+      Mass: 1
+      IsKinematic: false
+      Constraints:
+        LockPositionX: false
+        LockPositionY: false
+        LockPositionZ: false
+        LockRotationX: true
+        LockRotationY: true
+        LockRotationZ: true
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0.100000001
+    CapsuleColliderComponent:
+      Radius: 1
+      Height: 1
       IsTrigger: false

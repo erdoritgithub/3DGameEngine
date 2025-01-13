@@ -110,7 +110,7 @@ namespace Hazel {
 		m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EditorLayer::OnEntityDeleted, this, std::placeholders::_1));
 
 		SceneSerializer serializer(m_EditorScene);
-		serializer.Deserialize("assets/scenes/FPSDemo.hsc");
+		serializer.Deserialize("assets/scenes/PhysicsTest2.hsc");
 	}
 
 	void EditorLayer::OnDetach()

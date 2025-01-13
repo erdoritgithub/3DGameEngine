@@ -15,6 +15,11 @@ namespace Hazel
 		virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) override;
 	};
 
+	class PhysicsAssertHandler : public physx::PxAssertHandler
+	{
+		virtual void operator()(const char* exp, const char* file, int line, bool& ignore);
+	};
+
 	class ContactListener : public physx::PxSimulationEventCallback
 	{
 	public:
@@ -38,8 +43,8 @@ namespace Hazel
 		static void AddCapsuleCollider(physx::PxRigidActor& actor, const physx::PxMaterial& material, const CapsuleColliderComponent& collider, const glm::vec3& size = glm::vec3(0.0F));
 		static void AddMeshCollider(physx::PxRigidActor& actor, const physx::PxMaterial& material, MeshColliderComponent& collider, const glm::vec3& size = glm::vec3(0.0F));
 
-		static physx::PxConvexMesh* CreateConvexMesh(MeshColliderComponent& collider);
-
+		static std::vector<physx::PxTriangleMesh*> CreateTriangleMesh(MeshColliderComponent& collider, bool invalidateOld = false);
+		static std::vector<physx::PxConvexMesh*> CreateConvexMesh(MeshColliderComponent& collider, bool invalidateOld = false);
 		static physx::PxMaterial* CreateMaterial(const PhysicsMaterialComponent& material);
 
 		static bool Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* hit);

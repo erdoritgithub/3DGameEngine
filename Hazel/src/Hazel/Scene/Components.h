@@ -214,7 +214,8 @@ namespace Hazel {
 	struct MeshColliderComponent
 	{
 		Ref<Hazel::Mesh> CollisionMesh;
-		Ref<Hazel::Mesh> ProcessedMesh;
+		std::vector<Ref<Hazel::Mesh>> ProcessedMeshes;
+		bool IsConvex = false;
 		bool IsTrigger = false;
 
 		MeshColliderComponent() = default;
