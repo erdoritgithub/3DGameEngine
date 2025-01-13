@@ -32,7 +32,7 @@ Entities:
       DynamicFriction: 1
       Bounciness: 0
     MeshColliderComponent:
-      AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\sponza.obj
+      AssetPath: assets\meshes\sponza\sponza.obj
       IsTrigger: false
   - Entity: 4655832978979727422
     TagComponent:
@@ -42,7 +42,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [5, 5, 5]
     MeshComponent:
-      AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\Cube1m.fbx
+      AssetPath: assets\meshes\Cube1m.fbx
     RigidBodyComponent:
       BodyType: 1
       Mass: 1

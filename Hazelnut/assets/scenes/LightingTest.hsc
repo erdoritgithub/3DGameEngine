@@ -66,7 +66,7 @@ Entities:
       Rotation: [1.13830311e-06, 0, 4.45406357e-07]
       Scale: [5.00000381, 5.00001049, 5.00000381]
     MeshComponent:
-      AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\Cube1m.fbx
+      AssetPath: assets\meshes\Cube1m.fbx
     RigidBodyComponent:
       BodyType: 1
       Mass: 1

@@ -125,6 +125,11 @@ project "Hazel"
 		"%{LibraryDir.PhysX_SimulationController}"
     }
 
+	defines
+	{
+		"PX_PHYSX_STATIC_LIB"
+	}
+
     filter "files:Hazel/vendor/FastNoise/**.cpp or files:Hazel/vendor/yaml-cpp/src/**.cpp"
         flags { "NoPCH" }
     
@@ -134,8 +139,7 @@ project "Hazel"
 		defines 
 		{ 
             "HZ_PLATFORM_WINDOWS",
-            "HZ_BUILD_DLL",
-			"PX_PHYSX_STATIC_LIB"
+            "HZ_BUILD_DLL"
 		}
 
     filter "configurations:Debug"
@@ -146,7 +150,7 @@ project "Hazel"
 		defines
 		{
 			"HZ_RELEASE",
-			"NDEBUG" -- This is apparently not defined in release mode? PhysX requires it to be defined
+			"NDEBUG" -- PhysX Requires This
 		}
         optimize "On"
 
