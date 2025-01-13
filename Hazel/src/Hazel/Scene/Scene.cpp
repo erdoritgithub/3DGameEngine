@@ -139,9 +139,8 @@ namespace Hazel {
 		s_ActiveScenes[m_SceneID] = this;
 
 		if (!isEditorScene)
-		{
 			Physics::CreateScene();
-		}
+		
 
 		Init();
 	}
@@ -499,6 +498,7 @@ namespace Hazel {
 
 	void Scene::OnRuntimeStop()
 	{
+		Input::SetCursorMode(CursorMode::Normal);
 		delete[] m_Physics2DBodyEntityBuffer;
 		Physics::DestroyScene();
 		m_IsPlaying = false;

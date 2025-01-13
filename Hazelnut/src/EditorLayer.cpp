@@ -122,7 +122,7 @@ namespace Hazel {
 		m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EditorLayer::SelectEntity, this, std::placeholders::_1));
 		m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EditorLayer::OnEntityDeleted, this, std::placeholders::_1));
 
-		OpenScene("assets/scenes/LightingTest.hsc");
+		OpenScene("assets/scenes/FPSDemo.hsc");
 	}
 
 	void EditorLayer::OnDetach()
@@ -393,7 +393,7 @@ namespace Hazel {
 
 	void EditorLayer::NewScene()
 	{
-		m_EditorScene = Ref<Scene>::Create();
+		m_EditorScene = Ref<Scene>::Create("Empty Scene", true);
 		m_SceneHierarchyPanel->SetContext(m_EditorScene);
 		ScriptEngine::SetSceneContext(m_EditorScene);
 		UpdateWindowTitle("Untitled Scene");
