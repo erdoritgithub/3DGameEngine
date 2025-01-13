@@ -18,7 +18,7 @@ namespace Hazel {
 	uint32_t PhysicsLayerManager::AddLayer(const std::string& name, bool setCollisions)
 	{
 		uint32_t layerId = GetNextLayerID();
-		PhysicsLayer layer = { layerId, name, BIT(layerId) };
+		PhysicsLayer layer = { layerId, name, BIT(layerId), BIT(layerId) };
 		s_Layers.push_back(layer);
 		if (setCollisions)
 		{
@@ -66,7 +66,8 @@ namespace Hazel {
 			otherLayerInfo.CollidesWith &= ~layerInfo.BitValue;
 		}
 	}
-	const std::vector<PhysicsLayer>& PhysicsLayerManager::GetLayerCollisions(uint32_t layerId)
+
+	std::vector<PhysicsLayer> PhysicsLayerManager::GetLayerCollisions(uint32_t layerId)
 	{
 		const PhysicsLayer& layer = GetLayer(layerId);
 		std::vector<PhysicsLayer> layers;

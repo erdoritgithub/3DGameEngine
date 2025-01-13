@@ -65,7 +65,6 @@
     <Compile Include="src\Hazel\Math\Mathf.cs" />
     <Compile Include="src\Hazel\Math\Matrix4.cs" />
     <Compile Include="src\Hazel\Math\Noise.cs" />
-    <Compile Include="src\Hazel\Math\Quaternion.cs" />
     <Compile Include="src\Hazel\Math\Transform.cs" />
     <Compile Include="src\Hazel\Math\Vector2.cs" />
     <Compile Include="src\Hazel\Math\Vector3.cs" />

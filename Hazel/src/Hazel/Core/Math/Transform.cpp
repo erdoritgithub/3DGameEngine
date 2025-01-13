@@ -12,21 +12,23 @@ namespace Hazel {
 	{
 		RecalculateMatrix();
 	}
+
 	const glm::mat4& Transform::GetMatrix()
 	{
-		if (m_Changed)
+		if (m_HasChanged)
 			RecalculateMatrix();
 		return m_Matrix;
 	}
+
 	void Transform::RecalculateMatrix()
 	{
 		glm::quat rotation = glm::quat(glm::radians(m_Rotation));
-		m_Up = glm::rotate(rotation, glm::vec3(0.0F, 1.0F, 0.0F));
-		m_Right = glm::rotate(rotation, glm::vec3(1.0F, 0.0F, 0.0F));
-		m_Forward = glm::rotate(rotation, glm::vec3(0.0F, 0.0F, -1.0F));
+		m_Up = glm::normalize(glm::rotate(rotation, glm::vec3(0.0F, 1.0F, 0.0F)));
+		m_Right = glm::normalize(glm::rotate(rotation, glm::vec3(1.0F, 0.0F, 0.0F)));
+		m_Forward = glm::normalize(glm::rotate(rotation, glm::vec3(0.0F, 0.0F, -1.0F)));
 		m_Matrix = glm::translate(glm::mat4(1.0F), m_Translation)
 			* glm::toMat4(rotation)
 			* glm::scale(glm::mat4(1.0F), m_Scale);
-		m_Changed = false;
+		
 	}
 }

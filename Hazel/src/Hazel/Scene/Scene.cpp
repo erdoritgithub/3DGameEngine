@@ -9,6 +9,7 @@
 #include "Hazel/Script/ScriptEngine.h"
 
 #include "Hazel/Renderer/Renderer2D.h"
+#include "Hazel/Physics/Physics.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -17,9 +18,6 @@
 
 // Box2D
 #include <box2d/box2d.h>
-
-// PhysX
-#include "Hazel/Physics/Physics.h"
 
 namespace Hazel {
 
@@ -160,16 +158,6 @@ namespace Hazel {
 		m_SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, false);
 	}
 
-	static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform)
-	{
-		glm::vec3 scale, translation, skew;
-		glm::vec4 perspective;
-		glm::quat orientation;
-		glm::decompose(transform, scale, orientation, translation, skew, perspective);
-
-		return { translation, orientation, scale };
-	}
-
 	// Merge OnUpdate/Render into one function?
 	void Scene::OnUpdate(Timestep ts)
 	{
@@ -223,7 +211,7 @@ namespace Hazel {
 		if (!cameraEntity)
 			return;
 
-		glm::mat4 cameraViewMatrix = glm::inverse(cameraEntity.GetComponent<TransformComponent>().Transformation.GetMatrix());
+		glm::mat4 cameraViewMatrix = glm::inverse(cameraEntity.Transformation().GetMatrix());
 		HZ_CORE_ASSERT(cameraEntity, "Scene does not contain any cameras!");
 		SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>();
 		camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
@@ -392,6 +380,7 @@ namespace Hazel {
 				Entity e = { entity, this };
 				UUID entityID = e.GetComponent<IDComponent>().ID;
 				Transform& transform = e.Transformation();
+				glm::vec3 translation = transform.GetTranslation();
 				auto& rigidBody2D = m_Registry.get<RigidBody2DComponent>(entity);
 
 				b2BodyDef bodyDef;
@@ -402,7 +391,7 @@ namespace Hazel {
 				else if (rigidBody2D.BodyType == RigidBody2DComponent::Type::Kinematic)
 					bodyDef.type = b2_kinematicBody;
 
-				bodyDef.position.Set(transform.GetTranslation().x, transform.GetTranslation().y);
+				bodyDef.position.Set(translation.x, translation.y);
 
 				bodyDef.angle = glm::radians(transform.GetRotation().z);
 

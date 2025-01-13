@@ -638,18 +638,25 @@ namespace Hazel {
 
 			bool snap = Input::IsKeyPressed(HZ_KEY_LEFT_CONTROL);
 
-			auto& entityTransform = selection.Entity.Transformation();
+			Transform& entityTransform = selection.Entity.Transformation();
 			float snapValue = GetSnapValue();
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 			if (m_SelectionMode == SelectionMode::Entity)
 			{
+				glm::mat4 transform = entityTransform.GetMatrix();
+
 				ImGuizmo::Manipulate(glm::value_ptr(m_EditorCamera.GetViewMatrix()),
 					glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
 					(ImGuizmo::OPERATION)m_GizmoType,
 					ImGuizmo::LOCAL,
-					entityTransform.GetMatrixPointer(),
+					glm::value_ptr(transform),
 					nullptr,
 					snap ? snapValues : nullptr);
+
+				auto [translation, rotation, scale] = GetTransformDecomposition(transform);
+				entityTransform.SetTranslation(translation);
+				entityTransform.SetRotation(rotation);
+				entityTransform.SetScale(scale);
 			}
 			else
 			{
@@ -939,6 +946,14 @@ namespace Hazel {
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
+		if (Input::IsKeyPressed(HZ_KEY_LEFT_ALT))
+		{
+			if (Input::IsKeyPressed(HZ_KEY_SPACE))
+			{
+				OnSceneStop();
+			}
+		}
+
 		if (m_ViewportPanelFocused)
 		{
 			switch (e.GetKeyCode())
