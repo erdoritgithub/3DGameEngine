@@ -171,8 +171,8 @@ namespace Hazel {
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rb.RuntimeActor);
 
 			physx::PxTransform actorPose = actor->getGlobalPose();
-			transform.Translation = (FromPhysXVector(actorPose.p));
-			transform.Rotation = glm::degrees(glm::eulerAngles(FromPhysXQuat(actorPose.q)));
+			transform.Translation = FromPhysXVector(actorPose.p);
+			transform.Rotation = glm::eulerAngles(FromPhysXQuat(actorPose.q));
 		}
 	}
 

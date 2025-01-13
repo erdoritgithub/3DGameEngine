@@ -25,6 +25,7 @@ namespace Hazel {
 	{
 		switch (type)
 		{
+		case OpenGLShaderUniformDeclaration::Type::BOOL:       return 1;
 		case OpenGLShaderUniformDeclaration::Type::INT32:      return 4;
 		case OpenGLShaderUniformDeclaration::Type::FLOAT32:    return 4;
 		case OpenGLShaderUniformDeclaration::Type::VEC2:       return 4 * 2;
@@ -38,6 +39,7 @@ namespace Hazel {
 	OpenGLShaderUniformDeclaration::Type OpenGLShaderUniformDeclaration::StringToType(const std::string& type)
 	{
 		if (type == "int")      return Type::INT32;
+		if (type == "bool")     return Type::BOOL;
 		if (type == "float")    return Type::FLOAT32;
 		if (type == "vec2")     return Type::VEC2;
 		if (type == "vec3")     return Type::VEC3;
@@ -51,6 +53,7 @@ namespace Hazel {
 		switch (type)
 		{
 		case OpenGLShaderUniformDeclaration::Type::INT32:      return "int32";
+		case OpenGLShaderUniformDeclaration::Type::BOOL:       return "bool";
 		case OpenGLShaderUniformDeclaration::Type::FLOAT32:    return "float";
 		case OpenGLShaderUniformDeclaration::Type::VEC2:       return "vec2";
 		case OpenGLShaderUniformDeclaration::Type::VEC3:       return "vec3";

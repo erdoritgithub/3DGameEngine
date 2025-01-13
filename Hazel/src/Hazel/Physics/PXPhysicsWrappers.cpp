@@ -302,9 +302,9 @@ namespace Hazel {
 		std::vector<physx::PxTriangleMesh*> meshes;
 
 		if (invalidateOld)
-			ConvexMeshSerializer::DeleteIfSerializedAndInvalidated(collider.CollisionMesh->GetFilePath());
+			PhysicsMeshSerializer::DeleteIfSerialized(collider.CollisionMesh->GetFilePath());
 
-		if (!ConvexMeshSerializer::IsSerialized(collider.CollisionMesh->GetFilePath()))
+		if (!PhysicsMeshSerializer::IsSerialized(collider.CollisionMesh->GetFilePath()))
 		{
 			const std::vector<Vertex>& vertices = collider.CollisionMesh->GetStaticVertices();
 			const std::vector<Index>& indices = collider.CollisionMesh->GetIndices();
@@ -315,35 +315,35 @@ namespace Hazel {
 
 			for (const auto& submesh : collider.CollisionMesh->GetSubmeshes())
 			{
-				physx::PxTriangleMeshDesc convexDesc;
-				convexDesc.points.count = submesh.VertexCount;
-				convexDesc.points.stride = sizeof(glm::vec3);
-				convexDesc.points.data = &vertexPositions[submesh.BaseVertex];
-				convexDesc.triangles.count = submesh.IndexCount / 3;
-				convexDesc.triangles.data = &indices[submesh.BaseIndex / 3];
-				convexDesc.triangles.stride = sizeof(Index);
+				physx::PxTriangleMeshDesc triangleDesc;
+				triangleDesc.points.count = submesh.VertexCount;
+				triangleDesc.points.stride = sizeof(glm::vec3);
+				triangleDesc.points.data = &vertexPositions[submesh.BaseVertex];
+				triangleDesc.triangles.count = submesh.IndexCount / 3;
+				triangleDesc.triangles.data = &indices[submesh.BaseIndex / 3];
+				triangleDesc.triangles.stride = sizeof(Index);
 
 				physx::PxDefaultMemoryOutputStream buf;
 				physx::PxTriangleMeshCookingResult::Enum result;
-				if (!s_CookingFactory->cookTriangleMesh(convexDesc, buf, &result))
+				if (!s_CookingFactory->cookTriangleMesh(triangleDesc, buf, &result))
 				{
 					HZ_CORE_ERROR("Failed to cook triangle mesh: {0}", submesh.MeshName);
 					continue;
 				}
 
-				ConvexMeshSerializer::SerializeMesh(collider.CollisionMesh->GetFilePath(), buf, submesh.MeshName);
+				PhysicsMeshSerializer::SerializeMesh(collider.CollisionMesh->GetFilePath(), buf, submesh.MeshName);
 				physx::PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
 				meshes.push_back(s_Physics->createTriangleMesh(input));
 			}
 		}
 		else
 		{
-			std::vector<physx::PxDefaultMemoryInputData> serializedMeshes = ConvexMeshSerializer::DeserializeMesh(collider.CollisionMesh->GetFilePath());
+			std::vector<physx::PxDefaultMemoryInputData> serializedMeshes = PhysicsMeshSerializer::DeserializeMesh(collider.CollisionMesh->GetFilePath());
 
 			for (auto& meshData : serializedMeshes)
 				meshes.push_back(s_Physics->createTriangleMesh(meshData));
 
-			ConvexMeshSerializer::CleanupDataBuffers();
+			PhysicsMeshSerializer::CleanupDataBuffers();
 		}
 
 		if (collider.ProcessedMeshes.size() <= 0)
@@ -351,7 +351,7 @@ namespace Hazel {
 			for (auto mesh : meshes)
 			{
 				const uint32_t nbVerts = mesh->getNbVertices();
-				const physx::PxVec3* convexVertices = mesh->getVertices();
+				const physx::PxVec3* triangleVertices = mesh->getVertices();
 				const uint32_t nbTriangles = mesh->getNbTriangles();
 				const physx::PxU16* tris = (const physx::PxU16*)mesh->getTriangles();
 
@@ -361,7 +361,7 @@ namespace Hazel {
 				for (uint32_t v = 0; v < nbVerts; v++)
 				{
 					Vertex v1;
-					v1.Position = FromPhysXVector(convexVertices[v]);
+					v1.Position = FromPhysXVector(triangleVertices[v]);
 					vertices.push_back(v1);
 				}
 
@@ -393,9 +393,9 @@ namespace Hazel {
 		s_CookingFactory->setParams(newParams);
 
 		if (invalidateOld)
-			ConvexMeshSerializer::DeleteIfSerializedAndInvalidated(collider.CollisionMesh->GetFilePath());
+			PhysicsMeshSerializer::DeleteIfSerialized(collider.CollisionMesh->GetFilePath());
 
-		if (!ConvexMeshSerializer::IsSerialized(collider.CollisionMesh->GetFilePath()))
+		if (!PhysicsMeshSerializer::IsSerialized(collider.CollisionMesh->GetFilePath()))
 		{
 			const std::vector<Vertex>& vertices = collider.CollisionMesh->GetStaticVertices();
 			const std::vector<Index>& indices = collider.CollisionMesh->GetIndices();
@@ -419,19 +419,19 @@ namespace Hazel {
 					continue;
 				}
 
-				ConvexMeshSerializer::SerializeMesh(collider.CollisionMesh->GetFilePath(), buf, submesh.MeshName);
+				PhysicsMeshSerializer::SerializeMesh(collider.CollisionMesh->GetFilePath(), buf, submesh.MeshName);
 				physx::PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
 				meshes.push_back(s_Physics->createConvexMesh(input));
 			}
 		}
 		else
 		{
-			std::vector<physx::PxDefaultMemoryInputData> serializedMeshes = ConvexMeshSerializer::DeserializeMesh(collider.CollisionMesh->GetFilePath());
+			std::vector<physx::PxDefaultMemoryInputData> serializedMeshes = PhysicsMeshSerializer::DeserializeMesh(collider.CollisionMesh->GetFilePath());
 
 			for (auto& meshData : serializedMeshes)
 				meshes.push_back(s_Physics->createConvexMesh(meshData));
 
-			ConvexMeshSerializer::CleanupDataBuffers();
+			PhysicsMeshSerializer::CleanupDataBuffers();
 		}
 
 		if (collider.ProcessedMeshes.size() <= 0)

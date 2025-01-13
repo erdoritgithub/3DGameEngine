@@ -11,7 +11,7 @@ Entities:
       Tag: Sponza
     TransformComponent:
       Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
+      Rotation: [0, 0, 0]
       Scale: [0.100000001, 0.100000001, 0.100000001]
     MeshComponent:
       AssetPath: assets\meshes\sponza\sponza.obj
@@ -32,14 +32,14 @@ Entities:
       DynamicFriction: 1
       Bounciness: 0
     MeshColliderComponent:
-      AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\sponza\sponza.obj
+      AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\sponza.obj
       IsTrigger: false
   - Entity: 4655832978979727422
     TagComponent:
       Tag: Empty Entity
     TransformComponent:
       Position: [-49.4744797, 30.9813614, 0]
-      Rotation: [0, -0, 0]
+      Rotation: [0, 0, 0]
       Scale: [5, 5, 5]
     MeshComponent:
       AssetPath: C:\Users\erdor\source\repos\3DHazel\Hazelnut\assets\meshes\Cube1m.fbx
@@ -68,7 +68,7 @@ Entities:
       Tag: Camera
     TransformComponent:
       Position: [16.2292404, 288.519653, 0.464014918]
-      Rotation: [112.385818, 89.2054977, 179.969971]
+      Rotation: [0, 0, 0]
       Scale: [0.999880314, 0.999906898, 0.999875307]
     CameraComponent:
       Camera: some camera data...

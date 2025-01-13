@@ -19,6 +19,9 @@
 // Box2D
 #include <box2d/box2d.h>
 
+// TEMP
+#include "Hazel/Core/Input.h"
+
 namespace Hazel {
 
 	static const std::string DefaultEntityName = "Entity";
@@ -129,6 +132,7 @@ namespace Hazel {
 		m_SceneEntity = m_Registry.create();
 		m_Registry.emplace<SceneComponent>(m_SceneEntity, m_SceneID);
 
+		// TODO: Obviously not necessary in all cases
 		Box2DWorldComponent& b2dWorld = m_Registry.emplace<Box2DWorldComponent>(m_SceneEntity, std::make_unique<b2World>(b2Vec2{ 0.0f, -9.8f }));
 		b2dWorld.World->SetContactListener(&s_Box2DContactListener);
 
@@ -161,19 +165,6 @@ namespace Hazel {
 	// Merge OnUpdate/Render into one function?
 	void Scene::OnUpdate(Timestep ts)
 	{
-		// Update all entities
-		{
-			auto view = m_Registry.view<ScriptComponent>();
-			for (auto entity : view)
-			{
-				Entity e = { entity, this };
-				if (ScriptEngine::ModuleExists(e.GetComponent<ScriptComponent>().ModuleName))
-					ScriptEngine::OnUpdateEntity(e, ts);
-			}
-		}
-
-		// TODO: Choose what Physics system to use for 2D vs 3D
-
 		// Box2D physics
 		auto sceneView = m_Registry.view<Box2DWorldComponent>();
 		auto& box2DWorld = m_Registry.get<Box2DWorldComponent>(sceneView.front()).World;
@@ -191,11 +182,20 @@ namespace Hazel {
 
 				auto& position = body->GetPosition();
 				auto& transform = e.GetComponent<TransformComponent>();
-
 				transform.Translation.x = position.x;
 				transform.Translation.y = position.y;
-				transform.Rotation.z = glm::degrees(body->GetAngle());
+				transform.Rotation.z = body->GetAngle();
+			}
+		}
 
+		// Update all entities
+		{
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				if (ScriptEngine::ModuleExists(e.GetComponent<ScriptComponent>().ModuleName))
+					ScriptEngine::OnUpdateEntity(e, ts);
 			}
 		}
 
@@ -229,7 +229,6 @@ namespace Hazel {
 
 				// TODO: Should we render (logically)
 				SceneRenderer::SubmitMesh(meshComponent, transformComponent.GetTransform(), nullptr);
-
 			}
 		}
 		SceneRenderer::EndScene();
@@ -259,10 +258,41 @@ namespace Hazel {
 		/////////////////////////////////////////////////////////////////////
 		// RENDER 3D SCENE
 		/////////////////////////////////////////////////////////////////////
+
+		{
+			m_LightEnvironment = LightEnvironment();
+			auto lights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
+			uint32_t directionalLightIndex = 0;
+			for (auto entity : lights)
+			{
+				auto [transformComponent, lightComponent] = lights.get<TransformComponent, DirectionalLightComponent>(entity);
+				glm::vec3 direction = -glm::normalize(glm::mat3(transformComponent.GetTransform()) * glm::vec3(1.0f));
+				m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
+				{
+					direction,
+					lightComponent.Radiance,
+					lightComponent.Intensity,
+					lightComponent.CastShadows
+				};
+			}
+		}
+
+		{
+			m_Environment = Environment();
+			auto lights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
+			for (auto entity : lights)
+			{
+				auto [transformComponent, skyLightComponent] = lights.get<TransformComponent, SkyLightComponent>(entity);
+				m_Environment = skyLightComponent.SceneEnvironment;
+				m_EnvironmentIntensity = skyLightComponent.Intensity;
+				SetSkybox(m_Environment.RadianceMap);
+			}
+		}
+
 		m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
 
 		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-		SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
+		SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix(), 0.1f, 1000.0f, 45.0f }); // TODO: real values
 		for (auto entity : group)
 		{
 			auto& [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
@@ -323,7 +353,6 @@ namespace Hazel {
 
 				if (m_SelectedEntity == entity)
 					SceneRenderer::SubmitColliderMesh(collider, e.GetComponent<TransformComponent>().GetTransform());
-
 			}
 		}
 
@@ -390,10 +419,9 @@ namespace Hazel {
 					bodyDef.type = b2_dynamicBody;
 				else if (rigidBody2D.BodyType == RigidBody2DComponent::Type::Kinematic)
 					bodyDef.type = b2_kinematicBody;
-
 				bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
 
-				bodyDef.angle = glm::radians(transform.Rotation.z);
+				bodyDef.angle = transform.Rotation.z;
 
 				b2Body* body = world->CreateBody(&bodyDef);
 				body->SetFixedRotation(rigidBody2D.FixedRotation);
@@ -409,6 +437,7 @@ namespace Hazel {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
+				auto& transform = e.Transform();
 
 				auto& boxCollider2D = m_Registry.get<BoxCollider2DComponent>(entity);
 				if (e.HasComponent<RigidBody2DComponent>())
@@ -434,6 +463,7 @@ namespace Hazel {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
+				auto& transform = e.Transform();
 
 				auto& circleCollider2D = m_Registry.get<CircleCollider2DComponent>(entity);
 				if (e.HasComponent<RigidBody2DComponent>())
@@ -478,12 +508,6 @@ namespace Hazel {
 	{
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
-	}
-
-	void Scene::SetEnvironment(const Environment& environment)
-	{
-		m_Environment = environment;
-		SetSkybox(environment.RadianceMap);
 	}
 
 	void Scene::SetSkybox(const Ref<TextureCube>& skybox)
@@ -574,6 +598,8 @@ namespace Hazel {
 
 		CopyComponentIfExists<TransformComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<MeshComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<DirectionalLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SkyLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<ScriptComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<CameraComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SpriteRendererComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
@@ -626,6 +652,8 @@ namespace Hazel {
 		CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<MeshComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<DirectionalLightComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SkyLightComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<ScriptComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);

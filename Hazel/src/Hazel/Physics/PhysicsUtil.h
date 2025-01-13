@@ -23,10 +23,10 @@ namespace Hazel {
 	physx::PxFilterFlags HazelFilterShader(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0, physx::PxFilterObjectAttributes attributes1,
 	physx::PxFilterData filterData1, physx::PxPairFlags& pairFlags, const void* constantBlock, physx::PxU32 constantBlockSize);
 
-	class ConvexMeshSerializer
+	class PhysicsMeshSerializer
 	{
 	public:
-		static void DeleteIfSerializedAndInvalidated(const std::string& filepath);
+		static void DeleteIfSerialized(const std::string& filepath);
 		static void SerializeMesh(const std::string& filepath, const physx::PxDefaultMemoryOutputStream& data, const std::string& submeshName = "");
 		static bool IsSerialized(const std::string& filepath);
 		static std::vector<physx::PxDefaultMemoryInputData> DeserializeMesh(const std::string& filepath);

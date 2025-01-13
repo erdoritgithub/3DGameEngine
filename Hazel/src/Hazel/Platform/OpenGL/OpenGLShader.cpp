@@ -49,24 +49,24 @@ namespace Hazel {
 			Parse();
 
 		Renderer::Submit([=]()
-		{
-			if (m_RendererID)
-				glDeleteProgram(m_RendererID);
-
-			CompileAndUploadShader();
-			if (!m_IsCompute)
 			{
-				ResolveUniforms();
-				ValidateUniforms();
-			}
+				if (m_RendererID)
+					glDeleteProgram(m_RendererID);
 
-			if (m_Loaded)
-			{
-				for (auto& callback : m_ShaderReloadedCallbacks)
-					callback();
-			}
+				CompileAndUploadShader();
+				if (!m_IsCompute)
+				{
+					ResolveUniforms();
+					ValidateUniforms();
+				}
 
-			m_Loaded = true;
+				if (m_Loaded)
+				{
+					for (auto& callback : m_ShaderReloadedCallbacks)
+						callback();
+				}
+
+				m_Loaded = true;
 			});
 	}
 
@@ -97,7 +97,6 @@ namespace Hazel {
 		{
 			HZ_CORE_ASSERT(false, "Could not load shader!");
 		}
-
 		in.close();
 		return result;
 	}
@@ -121,6 +120,7 @@ namespace Hazel {
 			pos = source.find(typeToken, nextLinePos);
 			auto shaderType = ShaderTypeFromString(type);
 			shaderSources[shaderType] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+
 			// Compute shaders cannot contain other types
 			if (shaderType == GL_COMPUTE_SHADER)
 			{
@@ -183,7 +183,7 @@ namespace Hazel {
 
 	std::vector<std::string> Tokenize(const std::string& string)
 	{
-		return SplitString(string, " \t\n");
+		return SplitString(string, " \t\n\r");
 	}
 
 	std::vector<std::string> GetLines(const std::string& string)
@@ -256,6 +256,7 @@ namespace Hazel {
 
 	static bool IsTypeStringResource(const std::string& type)
 	{
+		if (type == "sampler1D")		return true;
 		if (type == "sampler2D")		return true;
 		if (type == "sampler2DMS")		return true;
 		if (type == "samplerCube")		return true;
@@ -503,11 +504,11 @@ namespace Hazel {
 			}
 			else if (resource->GetCount() > 1)
 			{
-				resource->m_Register = 0;
+				resource->m_Register = sampler;
 				uint32_t count = resource->GetCount();
 				int* samplers = new int[count];
 				for (uint32_t s = 0; s < count; s++)
-					samplers[s] = s;
+					samplers[s] = sampler++;
 				UploadUniformIntArray(resource->GetName(), samplers, count);
 				delete[] samplers;
 			}
@@ -567,7 +568,7 @@ namespace Hazel {
 				std::vector<GLchar> infoLog(maxLength);
 				glGetShaderInfoLog(shaderRendererID, maxLength, &maxLength, &infoLog[0]);
 
-				HZ_CORE_ERROR("Shader compilation failed:\n{0}", &infoLog[0]);
+				HZ_CORE_ERROR("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
 
 				// We don't need the shader anymore.
 				glDeleteShader(shaderRendererID);
@@ -593,7 +594,7 @@ namespace Hazel {
 			// The maxLength includes the NULL character
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-			HZ_CORE_ERROR("Shader compilation failed:\n{0}", &infoLog[0]);
+			HZ_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
 
 			// We don't need the program anymore.
 			glDeleteProgram(program);
@@ -648,6 +649,9 @@ namespace Hazel {
 		uint32_t offset = uniform->GetOffset();
 		switch (uniform->GetType())
 		{
+		case OpenGLShaderUniformDeclaration::Type::BOOL:
+			UploadUniformFloat(uniform->GetLocation(), *(bool*)&buffer.Data[offset]);
+			break;
 		case OpenGLShaderUniformDeclaration::Type::FLOAT32:
 			UploadUniformFloat(uniform->GetLocation(), *(float*)&buffer.Data[offset]);
 			break;
@@ -684,6 +688,9 @@ namespace Hazel {
 		uint32_t offset = uniform->GetOffset();
 		switch (uniform->GetType())
 		{
+		case OpenGLShaderUniformDeclaration::Type::BOOL:
+			UploadUniformFloat(uniform->GetLocation(), *(bool*)&buffer.Data[offset]);
+			break;
 		case OpenGLShaderUniformDeclaration::Type::FLOAT32:
 			UploadUniformFloat(uniform->GetLocation(), *(float*)&buffer.Data[offset]);
 			break;
@@ -717,6 +724,9 @@ namespace Hazel {
 	{
 		switch (field.GetType())
 		{
+		case OpenGLShaderUniformDeclaration::Type::BOOL:
+			UploadUniformFloat(field.GetLocation(), *(bool*)&data[offset]);
+			break;
 		case OpenGLShaderUniformDeclaration::Type::FLOAT32:
 			UploadUniformFloat(field.GetLocation(), *(float*)&data[offset]);
 			break;
@@ -750,38 +760,38 @@ namespace Hazel {
 			const UniformDecl& decl = uniformBuffer.GetUniforms()[i];
 			switch (decl.Type)
 			{
-				case UniformType::Float:
-				{
-					const std::string& name = decl.Name;
-					float value = *(float*)(uniformBuffer.GetBuffer() + decl.Offset);
-					Renderer::Submit([=]() {
-						UploadUniformFloat(name, value);
-						});
-				}
-				case UniformType::Float3:
-				{
-					const std::string& name = decl.Name;
-					glm::vec3& values = *(glm::vec3*)(uniformBuffer.GetBuffer() + decl.Offset);
-					Renderer::Submit([=]() {
-						UploadUniformFloat3(name, values);
-						});
-				}
-				case UniformType::Float4:
-				{
-					const std::string& name = decl.Name;
-					glm::vec4& values = *(glm::vec4*)(uniformBuffer.GetBuffer() + decl.Offset);
-					Renderer::Submit([=]() {
-						UploadUniformFloat4(name, values);
-						});
-				}
-				case UniformType::Matrix4x4:
-				{
-						const std::string& name = decl.Name;
-						glm::mat4& values = *(glm::mat4*)(uniformBuffer.GetBuffer() + decl.Offset);
-						Renderer::Submit([=]() {
-							UploadUniformMat4(name, values);
-						});
-				}
+			case UniformType::Float:
+			{
+				const std::string& name = decl.Name;
+				float value = *(float*)(uniformBuffer.GetBuffer() + decl.Offset);
+				Renderer::Submit([=]() {
+					UploadUniformFloat(name, value);
+					});
+			}
+			case UniformType::Float3:
+			{
+				const std::string& name = decl.Name;
+				glm::vec3& values = *(glm::vec3*)(uniformBuffer.GetBuffer() + decl.Offset);
+				Renderer::Submit([=]() {
+					UploadUniformFloat3(name, values);
+					});
+			}
+			case UniformType::Float4:
+			{
+				const std::string& name = decl.Name;
+				glm::vec4& values = *(glm::vec4*)(uniformBuffer.GetBuffer() + decl.Offset);
+				Renderer::Submit([=]() {
+					UploadUniformFloat4(name, values);
+					});
+			}
+			case UniformType::Matrix4x4:
+			{
+				const std::string& name = decl.Name;
+				glm::mat4& values = *(glm::mat4*)(uniformBuffer.GetBuffer() + decl.Offset);
+				Renderer::Submit([=]() {
+					UploadUniformMat4(name, values);
+					});
+			}
 			}
 		}
 	}
@@ -797,6 +807,20 @@ namespace Hazel {
 	{
 		Renderer::Submit([=]() {
 			UploadUniformInt(name, value);
+			});
+	}
+
+	void OpenGLShader::SetBool(const std::string& name, bool value)
+	{
+		Renderer::Submit([=]() {
+			UploadUniformInt(name, value);
+			});
+	}
+
+	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)
+	{
+		Renderer::Submit([=]() {
+			UploadUniformFloat2(name, value);
 			});
 	}
 
@@ -913,6 +937,17 @@ namespace Hazel {
 		else
 			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
 	}
+
+	void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2& values)
+	{
+		glUseProgram(m_RendererID);
+		auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		if (location != -1)
+			glUniform2f(location, values.x, values.y);
+		else
+			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+	}
+
 
 	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& values)
 	{

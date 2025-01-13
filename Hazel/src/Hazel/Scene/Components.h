@@ -8,6 +8,7 @@
 #include "Hazel/Core/UUID.h"
 #include "Hazel/Renderer/Texture.h"
 #include "Hazel/Renderer/Mesh.h"
+#include "Hazel/Renderer/SceneEnvironment.h"
 #include "Hazel/Scene/SceneCamera.h"
 
 namespace Hazel {
@@ -46,7 +47,7 @@ namespace Hazel {
 		glm::mat4 GetTransform() const
 		{
 			return glm::translate(glm::mat4(1.0F), Translation)
-				* glm::toMat4(glm::quat(glm::radians(Rotation)))
+				* glm::toMat4(glm::quat(Rotation))
 				* glm::scale(glm::mat4(1.0F), Scale);
 		}
 	};
@@ -226,6 +227,27 @@ namespace Hazel {
 		}
 
 		operator Ref<Hazel::Mesh>() { return CollisionMesh; }
+	};
+
+	enum class LightType
+	{
+		None = 0, Directional = 1, Point = 2, Spot = 3
+	};
+
+	struct DirectionalLightComponent
+	{
+		glm::vec3 Radiance = { 1.0f, 1.0f, 1.0f };
+		float Intensity = 1.0f;
+		bool CastShadows = true;
+		bool SoftShadows = true;
+		float LightSize = 0.5f; // For PCSS
+	};
+
+	struct SkyLightComponent
+	{
+		Environment SceneEnvironment;
+		float Intensity = 1.0f;
+		float Angle = 0.0f;
 	};
 
 }

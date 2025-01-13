@@ -7,7 +7,7 @@ namespace Hazel {
 
 	physx::PxTransform ToPhysXTransform(const TransformComponent& transform)
 	{
-		physx::PxQuat r = ToPhysXQuat(glm::normalize(glm::quat(glm::radians(transform.Rotation))));
+		physx::PxQuat r = ToPhysXQuat(glm::normalize(glm::quat(transform.Rotation)));
 		physx::PxVec3 p = ToPhysXVector(transform.Translation);
 		return physx::PxTransform(p, r);
 	}
@@ -86,7 +86,7 @@ namespace Hazel {
 		return physx::PxFilterFlag::eSUPPRESS;
 	}
 
-	void ConvexMeshSerializer::DeleteIfSerializedAndInvalidated(const std::string& filepath)
+	void PhysicsMeshSerializer::DeleteIfSerialized(const std::string& filepath)
 	{
 		std::filesystem::path p = filepath;
 		std::filesystem::path path = p.parent_path() / (p.filename().string() + ".pxm");
@@ -99,7 +99,7 @@ namespace Hazel {
 			std::filesystem::remove(p.parent_path() / dirName);
 	}
 
-	void ConvexMeshSerializer::SerializeMesh(const std::string& filepath, const physx::PxDefaultMemoryOutputStream& data, const std::string& submeshName)
+	void PhysicsMeshSerializer::SerializeMesh(const std::string& filepath, const physx::PxDefaultMemoryOutputStream& data, const std::string& submeshName)
 	{
 		std::filesystem::path p = filepath;
 		std::filesystem::path path = p.parent_path() / (p.filename().string() + ".pxm");
@@ -129,7 +129,7 @@ namespace Hazel {
 		}
 	}
 
-	bool ConvexMeshSerializer::IsSerialized(const std::string& filepath)
+	bool PhysicsMeshSerializer::IsSerialized(const std::string& filepath)
 	{
 		std::filesystem::path p = filepath;
 		size_t lastDot = p.filename().string().find_first_of(".");
@@ -141,7 +141,7 @@ namespace Hazel {
 
 	static std::vector<physx::PxU8*> s_MeshDataBuffers;
 
-	std::vector<physx::PxDefaultMemoryInputData> ConvexMeshSerializer::DeserializeMesh(const std::string& filepath)
+	std::vector<physx::PxDefaultMemoryInputData> PhysicsMeshSerializer::DeserializeMesh(const std::string& filepath)
 	{
 		std::vector<physx::PxDefaultMemoryInputData> result;
 
@@ -175,7 +175,7 @@ namespace Hazel {
 		return result;
 	}
 
-	void ConvexMeshSerializer::CleanupDataBuffers()
+	void PhysicsMeshSerializer::CleanupDataBuffers()
 	{
 		for (auto buffer : s_MeshDataBuffers)
 			delete[] buffer;

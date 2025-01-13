@@ -32,6 +32,7 @@ namespace Hazel {
 		virtual uint32_t GetHeight() const = 0;
 		virtual std::pair<uint32_t, uint32_t> GetSize() const = 0;
 		virtual std::pair<float, float> GetWindowPos() const = 0;
+		virtual void Maximize() = 0;
 
 		// Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;

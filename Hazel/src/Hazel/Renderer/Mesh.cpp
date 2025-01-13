@@ -67,7 +67,7 @@ namespace Hazel {
 
 		virtual void write(const char* message) override
 		{
-			HZ_CORE_ERROR("Assimp error: {0}", message);
+			HZ_CORE_WARN("Assimp: {0}", message);
 		}
 	};
 

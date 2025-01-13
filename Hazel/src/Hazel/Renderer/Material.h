@@ -13,7 +13,8 @@ namespace Hazel {
 	{
 		None = BIT(0),
 		DepthTest = BIT(1),
-		Blend = BIT(2)
+		Blend = BIT(2),
+		TwoSided = BIT(3)
 	};
 
 	class Material : public RefCounted
@@ -27,6 +28,7 @@ namespace Hazel {
 
 		uint32_t GetFlags() const { return m_MaterialFlags; }
 		void SetFlag(MaterialFlag flag) { m_MaterialFlags |= (uint32_t)flag; }
+		Ref<Shader> GetShader() { return m_Shader; }
 
 		template <typename T>
 		void Set(const std::string& name, const T& value)
@@ -77,16 +79,19 @@ namespace Hazel {
 			return m_Textures[slot];
 		}
 
+		ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
+
 	public:
 		static Ref<Material> Create(const Ref<Shader>& shader);
+
 	private:
 		void AllocateStorage();
 		void OnShaderReloaded();
 		void BindTextures();
 
 		ShaderUniformDeclaration* FindUniformDeclaration(const std::string& name);
-		ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
 		Buffer& GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration);
+
 	private:
 		Ref<Shader> m_Shader;
 		std::unordered_set<MaterialInstance*> m_MaterialInstances;
