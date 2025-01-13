@@ -6,12 +6,10 @@
 #include "Hazel/Core/Application.h"
 #include "Hazel/Renderer/Mesh.h"
 #include "Hazel/Script/ScriptEngine.h"
-
 #include "Hazel/Physics/PhysicsLayer.h"
 #include "Hazel/Physics/PXPhysicsWrappers.h"
 #include "Hazel/Renderer/MeshFactory.h"
 
-#include "Hazel/Core/Math/Transform.h"
 #include <assimp/scene.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -583,52 +581,32 @@ namespace Hazel {
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			Transform& transform = entity.GetComponent<TransformComponent>();
+			TransformComponent& transform = entity.GetComponent<TransformComponent>();
 			if (ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(TransformComponent).hash_code()), ImGuiTreeNodeFlags_DefaultOpen, "Transform"))
 			{
-				glm::vec3 translation = transform.GetTranslation();
-				glm::vec3 rotation = transform.GetRotation();
-				glm::vec3 scale = transform.GetScale();
-
 				ImGui::Columns(2);
 				ImGui::Text("Translation");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(-1);
-
-				if (ImGui::DragFloat3("##translation", glm::value_ptr(translation), 0.25f))
-				{
-					transform.SetTranslation(translation);
-				}
-
+				ImGui::DragFloat3("##translation", glm::value_ptr(transform.Translation), 0.25f);
 				ImGui::PopItemWidth();
 				ImGui::NextColumn();
 
 				ImGui::Text("Rotation");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(-1);
-
-				if (ImGui::DragFloat3("##rotation", glm::value_ptr(rotation), 0.25f))
-				{
-					transform.SetRotation(rotation);
-				}
-
+				ImGui::DragFloat3("##rotation", glm::value_ptr(transform.Rotation), 0.25f);
 				ImGui::PopItemWidth();
 				ImGui::NextColumn();
 
 				ImGui::Text("Scale");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(-1);
-
-				if (ImGui::DragFloat3("##scale", glm::value_ptr(scale), 0.25f))
-				{
-					transform.SetScale(scale);
-				}
-
+				ImGui::DragFloat3("##scale", glm::value_ptr(transform.Scale), 0.25f);
 				ImGui::PopItemWidth();
 				ImGui::NextColumn();
 
 				ImGui::Columns(1);
-
 
 				ImGui::TreePop();
 			}
@@ -878,7 +856,6 @@ namespace Hazel {
 				// Rigidbody Type
 				const char* rbTypeStrings[] = { "Static", "Dynamic" };
 				const char* currentType = rbTypeStrings[(int)rbc.BodyType];
-
 				ImGui::TextUnformatted("Type");
 				ImGui::SameLine();
 				if (ImGui::BeginCombo("##TypeSelection", currentType))
@@ -903,7 +880,6 @@ namespace Hazel {
 
 				uint32_t currentLayer = rbc.Layer;
 				const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayer(currentLayer);
-
 				ImGui::TextUnformatted("Layer");
 				ImGui::SameLine();
 				if (ImGui::BeginCombo("##LayerSelection", layerInfo.Name.c_str()))
@@ -921,7 +897,6 @@ namespace Hazel {
 					}
 					ImGui::EndCombo();
 				}
-
 
 				if (rbc.BodyType == RigidBodyComponent::Type::Dynamic)
 				{
@@ -997,6 +972,7 @@ namespace Hazel {
 
 				if (Property("Height", ccc.Height))
 					changed = true;
+
 				Property("Is Trigger", ccc.IsTrigger);
 
 				if (changed)

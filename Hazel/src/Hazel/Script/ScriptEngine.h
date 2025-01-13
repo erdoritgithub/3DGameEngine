@@ -119,6 +119,7 @@ namespace Hazel {
 
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, Timestep ts);
+		static void OnPhysicsUpdateEntity(Entity entity, float fixedTimeStep);
 
 		static void OnCollision2DBegin(Entity entity);
 		static void OnCollision2DEnd(Entity entity);

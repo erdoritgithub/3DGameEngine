@@ -3,6 +3,7 @@
 #include "PXPhysicsWrappers.h"
 
 #include "PhysicsLayer.h"
+#include "Hazel/Script/ScriptEngine.h"
 #include <PhysX/extensions/PxBroadPhaseExt.h>
 
 namespace Hazel {
@@ -93,7 +94,8 @@ namespace Hazel {
 
 		RigidBodyComponent& rigidbody = e.GetComponent<RigidBodyComponent>();
 
-		physx::PxRigidActor* actor = PXPhysicsWrappers::CreateActor(rigidbody, e.Transformation());
+		TransformComponent& transform = e.GetComponent<TransformComponent>();
+		physx::PxRigidActor* actor = PXPhysicsWrappers::CreateActor(rigidbody, transform);
 		if (rigidbody.BodyType == RigidBodyComponent::Type::Dynamic)
 			s_SimulatedEntities.push_back(e);
 
@@ -106,30 +108,28 @@ namespace Hazel {
 
 		physx::PxMaterial* material = PXPhysicsWrappers::CreateMaterial(e.GetComponent<PhysicsMaterialComponent>());
 
-		const Transform& transform = e.Transformation();
-
 		if (e.HasComponent<BoxColliderComponent>())
 		{
 			BoxColliderComponent& collider = e.GetComponent<BoxColliderComponent>();
-			PXPhysicsWrappers::AddBoxCollider(*actor, *material, collider, transform.GetScale());
+			PXPhysicsWrappers::AddBoxCollider(*actor, *material, collider, transform.Scale);
 		}
 
 		if (e.HasComponent<SphereColliderComponent>())
 		{
 			SphereColliderComponent& collider = e.GetComponent<SphereColliderComponent>();
-			PXPhysicsWrappers::AddSphereCollider(*actor, *material, collider, transform.GetScale());
+			PXPhysicsWrappers::AddSphereCollider(*actor, *material, collider, transform.Scale);
 		}
 
 		if (e.HasComponent<CapsuleColliderComponent>())
 		{
 			CapsuleColliderComponent& collider = e.GetComponent<CapsuleColliderComponent>();
-			PXPhysicsWrappers::AddCapsuleCollider(*actor, *material, collider, transform.GetScale());
+			PXPhysicsWrappers::AddCapsuleCollider(*actor, *material, collider, transform.Scale);
 		}
 
 		if (e.HasComponent<MeshColliderComponent>())
 		{
 			MeshColliderComponent& collider = e.GetComponent<MeshColliderComponent>();
-			PXPhysicsWrappers::AddMeshCollider(*actor, *material, collider, transform.GetScale());
+			PXPhysicsWrappers::AddMeshCollider(*actor, *material, collider, transform.Scale);
 		}
 
 		if (!PhysicsLayerManager::IsLayerValid(rigidbody.Layer))
@@ -155,19 +155,24 @@ namespace Hazel {
 
 		s_SimulationTime -= s_Settings.FixedTimestep;
 
-		// TODO: Maybe FixedUpdate for scripts?
+		for (Entity& e : s_SimulatedEntities)
+		{
+			if (ScriptEngine::IsEntityModuleValid(e))
+				ScriptEngine::OnPhysicsUpdateEntity(e, s_Settings.FixedTimestep);
+		}
+
 		s_Scene->simulate(s_Settings.FixedTimestep);
 		s_Scene->fetchResults(true);
 
 		for (Entity& e : s_SimulatedEntities)
 		{
-			Transform& transform = e.Transformation();
+			TransformComponent& transform = e.Transform();
 			RigidBodyComponent& rb = e.GetComponent<RigidBodyComponent>();
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rb.RuntimeActor);
 
 			physx::PxTransform actorPose = actor->getGlobalPose();
-			transform.SetTranslation(FromPhysXVector(actorPose.p));
-			transform.SetRotation(FromPhysXQuat(actorPose.q));
+			transform.Translation = (FromPhysXVector(actorPose.p));
+			transform.Rotation = glm::degrees(glm::eulerAngles(FromPhysXQuat(actorPose.q)));
 		}
 	}
 

@@ -188,10 +188,10 @@ namespace Hazel {
 			out << YAML::Key << "TransformComponent";
 			out << YAML::BeginMap; // TransformComponent
 
-			auto& transform = entity.GetComponent<TransformComponent>().Transformation;
-			out << YAML::Key << "Position" << YAML::Value << transform.GetTranslation();
-			out << YAML::Key << "Rotation" << YAML::Value << transform.GetRotation();
-			out << YAML::Key << "Scale" << YAML::Value << transform.GetScale();
+			auto& transform = entity.GetComponent<TransformComponent>();
+			out << YAML::Key << "Position" << YAML::Value << transform.Translation;
+			out << YAML::Key << "Rotation" << YAML::Value << transform.Rotation;
+			out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
 
 			out << YAML::EndMap; // TransformComponent
 		}
@@ -538,19 +538,15 @@ namespace Hazel {
 				if (transformComponent)
 				{
 					// Entities always have transforms
-					auto& transform = deserializedEntity.GetComponent<TransformComponent>().Transformation;
-					glm::vec3 translation = transformComponent["Position"].as<glm::vec3>();
-					glm::vec3 rotation = transformComponent["Rotation"].as<glm::vec3>();
-					glm::vec3 scale = transformComponent["Scale"].as<glm::vec3>();
-
-					transform.SetTranslation(translation);
-					transform.SetRotation(rotation);
-					transform.SetScale(scale);
+					auto& transform = deserializedEntity.GetComponent<TransformComponent>();
+					transform.Translation = transformComponent["Position"].as<glm::vec3>();
+					transform.Rotation = transformComponent["Rotation"].as<glm::vec3>();
+					transform.Scale = transformComponent["Scale"].as<glm::vec3>();
 
 					HZ_CORE_INFO("  Entity Transform:");
-					HZ_CORE_INFO("    Translation: {0}, {1}, {2}", translation.x, translation.y, translation.z);
-					HZ_CORE_INFO("    Rotation: {0}, {1}, {2}", rotation.x, rotation.y, rotation.z);
-					HZ_CORE_INFO("    Scale: {0}, {1}, {2}", scale.x, scale.y, scale.z);
+					HZ_CORE_INFO("    Translation: {0}, {1}, {2}", transform.Translation.x, transform.Translation.y, transform.Translation.z);
+					HZ_CORE_INFO("    Rotation: {0}, {1}, {2}", transform.Rotation.x, transform.Rotation.y, transform.Rotation.z);
+					HZ_CORE_INFO("    Scale: {0}, {1}, {2}", transform.Scale.x, transform.Scale.y, transform.Scale.z);
 				}
 
 				auto scriptComponent = entity["ScriptComponent"];

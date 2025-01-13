@@ -10,9 +10,6 @@
 #include <chrono>
 #include <thread>
 
-#include <Windows.h>
-#include <winioctl.h>
-
 #include "ScriptEngineRegistry.h"
 
 #include "Hazel/Scene/Scene.h"
@@ -44,6 +41,7 @@ namespace Hazel {
 		MonoMethod* OnCreateMethod = nullptr;
 		MonoMethod* OnDestroyMethod = nullptr;
 		MonoMethod* OnUpdateMethod = nullptr;
+		MonoMethod* OnPhysicsUpdateMethod = nullptr;
 
 		// Physics
 		MonoMethod* OnCollisionBeginMethod = nullptr;
@@ -58,6 +56,7 @@ namespace Hazel {
 			Constructor = GetMethod(s_CoreAssemblyImage, "Hazel.Entity:.ctor(ulong)");
 			OnCreateMethod = GetMethod(image, FullName + ":OnCreate()");
 			OnUpdateMethod = GetMethod(image, FullName + ":OnUpdate(single)");
+			OnPhysicsUpdateMethod = GetMethod(image, FullName + ":OnPhysicsUpdate(single)");
 
 			// Physics (Entity class)
 			OnCollisionBeginMethod = GetMethod(s_CoreAssemblyImage, "Hazel.Entity:OnCollisionBegin(single)");
@@ -363,6 +362,16 @@ namespace Hazel {
 		{
 			void* args[] = { &ts };
 			CallMethod(entityInstance.GetInstance(), entityInstance.ScriptClass->OnUpdateMethod, args);
+		}
+	}
+
+	void ScriptEngine::OnPhysicsUpdateEntity(Entity entity, float fixedTimeStep)
+	{
+		EntityInstance& entityInstance = GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID()).Instance;
+		if (entityInstance.ScriptClass->OnPhysicsUpdateMethod)
+		{
+			void* args[] = { &fixedTimeStep };
+			CallMethod(entityInstance.GetInstance(), entityInstance.ScriptClass->OnPhysicsUpdateMethod, args);
 		}
 	}
 
