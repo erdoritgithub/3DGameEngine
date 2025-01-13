@@ -4,6 +4,7 @@
 #include "PhysicsLayer.h"
 
 #include "Hazel/Script/ScriptEngine.h"
+
 #include <glm/gtx/rotate_vector.hpp>
 
 namespace Hazel {
@@ -20,6 +21,7 @@ namespace Hazel {
 	void PhysicsErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
 	{
 		const char* errorMessage = NULL;
+
 		switch (code)
 		{
 		case physx::PxErrorCode::eNO_ERROR:				errorMessage = "No Error"; break;
@@ -33,6 +35,7 @@ namespace Hazel {
 		case physx::PxErrorCode::ePERF_WARNING:			errorMessage = "Performance Warning"; break;
 		case physx::PxErrorCode::eMASK_ALL:				errorMessage = "Unknown Error"; break;
 		}
+
 		switch (code)
 		{
 		case physx::PxErrorCode::eNO_ERROR:
@@ -69,6 +72,7 @@ namespace Hazel {
 		{
 			physx::PxActor& actor = *actors[i];
 			Entity& entity = *(Entity*)actor.userData;
+
 			HZ_CORE_INFO("PhysX Actor waking up: ID: {0}, Name: {1}", std::to_string(entity.GetUUID()), entity.GetComponent<TagComponent>().Tag);
 		}
 	}
@@ -79,6 +83,7 @@ namespace Hazel {
 		{
 			physx::PxActor& actor = *actors[i];
 			Entity& entity = *(Entity*)actor.userData;
+
 			HZ_CORE_INFO("PhysX Actor going to sleep: ID: {0}, Name: {1}", std::to_string(entity.GetUUID()), entity.GetComponent<TagComponent>().Tag);
 		}
 	}
@@ -87,6 +92,7 @@ namespace Hazel {
 	{
 		Entity& a = *(Entity*)pairHeader.actors[0]->userData;
 		Entity& b = *(Entity*)pairHeader.actors[1]->userData;
+
 		if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_HAS_FIRST_TOUCH)
 		{
 			if (ScriptEngine::IsEntityModuleValid(a)) ScriptEngine::OnCollisionBegin(a);
@@ -103,6 +109,7 @@ namespace Hazel {
 	{
 		Entity& a = *(Entity*)pairs->triggerActor->userData;
 		Entity& b = *(Entity*)pairs->otherActor->userData;
+
 		if (pairs->status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 		{
 			if (ScriptEngine::IsEntityModuleValid(a)) ScriptEngine::OnTriggerBegin(a);
@@ -130,6 +137,7 @@ namespace Hazel {
 		case Hazel::BroadphaseType::MultiBoxPrune: return physx::PxBroadPhaseType::eMBP;
 		case Hazel::BroadphaseType::AutomaticBoxPrune: return physx::PxBroadPhaseType::eABP;
 		}
+
 		return physx::PxBroadPhaseType::eABP;
 	}
 
@@ -141,6 +149,7 @@ namespace Hazel {
 		case Hazel::FrictionType::OneDirectional:	return physx::PxFrictionType::eONE_DIRECTIONAL;
 		case Hazel::FrictionType::TwoDirectional:	return physx::PxFrictionType::eTWO_DIRECTIONAL;
 		}
+
 		return physx::PxFrictionType::ePATCH;
 	}
 
@@ -149,6 +158,7 @@ namespace Hazel {
 		physx::PxSceneDesc sceneDesc(s_Physics->getTolerancesScale());
 
 		const PhysicsSettings& settings = Physics::GetSettings();
+
 		sceneDesc.gravity = ToPhysXVector(settings.Gravity);
 		sceneDesc.broadPhaseType = HazelToPhysXBroadphaseType(settings.BroadphaseAlgorithm);
 		sceneDesc.cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(1);
@@ -163,6 +173,8 @@ namespace Hazel {
 	physx::PxRigidActor* PXPhysicsWrappers::CreateActor(const RigidBodyComponent& rigidbody, const Transform& transform)
 	{
 		physx::PxRigidActor* actor = nullptr;
+
+		const PhysicsSettings& settings = Physics::GetSettings();
 
 		if (rigidbody.BodyType == RigidBodyComponent::Type::Static)
 		{
@@ -181,6 +193,8 @@ namespace Hazel {
 			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidbody.LockRotationY);
 			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidbody.LockRotationZ);
 
+			dynamicActor->setSolverIterationCounts(settings.SolverIterations, settings.SolverVelocityIterations);
+
 			physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
 			actor = dynamicActor;
 		}
@@ -190,8 +204,8 @@ namespace Hazel {
 
 	void PXPhysicsWrappers::SetCollisionFilters(const physx::PxRigidActor& actor, uint32_t physicsLayer)
 	{
-
 		const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayer(physicsLayer);
+
 		if (layerInfo.CollidesWith == 0)
 			return;
 
@@ -257,28 +271,28 @@ namespace Hazel {
 		physx::PxConvexMeshGeometry convexGeometry = physx::PxConvexMeshGeometry(CreateConvexMesh(collider));
 		convexGeometry.meshFlags = physx::PxConvexMeshGeometryFlag::eTIGHT_BOUNDS;
 		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(actor, convexGeometry, material);
-
 		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !collider.IsTrigger);
 		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, collider.IsTrigger);
 	}
 
 	physx::PxConvexMesh* PXPhysicsWrappers::CreateConvexMesh(MeshColliderComponent& collider)
 	{
-		std::vector<Vertex> vertices = collider.CollisionMesh->GetStaticVertices();
-
-		physx::PxConvexMeshDesc convexDesc;
-		convexDesc.points.count = vertices.size();
-		convexDesc.points.stride = sizeof(Vertex);
-		convexDesc.points.data = vertices.data();
-		convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
-
 		physx::PxConvexMesh* mesh = nullptr;
 		if (!ConvexMeshSerializer::IsSerialized(collider.CollisionMesh->GetFilePath()))
 		{
+			std::vector<Vertex> vertices = collider.CollisionMesh->GetStaticVertices();
+
+			physx::PxConvexMeshDesc convexDesc;
+			convexDesc.points.count = vertices.size();
+			convexDesc.points.stride = sizeof(Vertex);
+			convexDesc.points.data = vertices.data();
+			convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+
 			physx::PxDefaultMemoryOutputStream buf;
 			physx::PxConvexMeshCookingResult::Enum result;
 			if (!s_CookingFactory->cookConvexMesh(convexDesc, buf, &result))
 				HZ_CORE_ASSERT(false);
+
 			ConvexMeshSerializer::SerializeMesh(collider.CollisionMesh->GetFilePath(), buf);
 			physx::PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
 			mesh = s_Physics->createConvexMesh(input);
@@ -289,6 +303,7 @@ namespace Hazel {
 			mesh = s_Physics->createConvexMesh(input);
 		}
 
+		// TODO: This doesn't really belong here since this generates the debug mesh used for the editor
 		if (!collider.ProcessedMesh)
 		{
 			// Based On: https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/ThirdParty/PhysX3/NvCloth/samples/SampleBase/renderer/ConvexRenderMesh.cpp
@@ -353,15 +368,16 @@ namespace Hazel {
 		physx::PxScene* scene = static_cast<physx::PxScene*>(Physics::GetPhysicsScene());
 		physx::PxRaycastBuffer hitInfo;
 		bool result = scene->raycast(ToPhysXVector(origin), ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo);
+
 		if (result)
 		{
 			Entity& entity = *(Entity*)hitInfo.block.actor->userData;
-			
 			hit->EntityID = entity.GetUUID();
 			hit->Position = FromPhysXVector(hitInfo.block.position);
 			hit->Normal = FromPhysXVector(hitInfo.block.normal);
 			hit->Distance = hitInfo.block.distance;
 		}
+
 		return result;
 	}
 
@@ -370,52 +386,61 @@ namespace Hazel {
 		physx::PxScene* scene = static_cast<physx::PxScene*>(Physics::GetPhysicsScene());
 
 		memset(s_OverlapBuffer, 0, sizeof(s_OverlapBuffer));
-
 		physx::PxOverlapBuffer buf(s_OverlapBuffer, OVERLAP_MAX_COLLIDERS);
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(halfSize.x, halfSize.y, halfSize.z);
 		physx::PxTransform pose = ToPhysXTransform(glm::translate(glm::mat4(1.0F), origin));
 
 		bool result = scene->overlap(geometry, pose, buf);
+
 		if (result)
 		{
 			uint32_t bodyCount = buf.nbTouches >= OVERLAP_MAX_COLLIDERS ? OVERLAP_MAX_COLLIDERS : buf.nbTouches;
 			memcpy(buffer.data(), buf.touches, bodyCount * sizeof(physx::PxOverlapHit));
 			*count = bodyCount;
 		}
+
 		return result;
 	}
 
 	bool PXPhysicsWrappers::OverlapCapsule(const glm::vec3& origin, float radius, float halfHeight, std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t* count)
 	{
 		physx::PxScene* scene = static_cast<physx::PxScene*>(Physics::GetPhysicsScene());
+
 		memset(s_OverlapBuffer, 0, sizeof(s_OverlapBuffer));
 		physx::PxOverlapBuffer buf(s_OverlapBuffer, OVERLAP_MAX_COLLIDERS);
 		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(radius, halfHeight);
 		physx::PxTransform pose = ToPhysXTransform(glm::translate(glm::mat4(1.0F), origin));
+
 		bool result = scene->overlap(geometry, pose, buf);
+
 		if (result)
 		{
 			uint32_t bodyCount = buf.nbTouches >= OVERLAP_MAX_COLLIDERS ? OVERLAP_MAX_COLLIDERS : buf.nbTouches;
 			memcpy(buffer.data(), buf.touches, bodyCount * sizeof(physx::PxOverlapHit));
 			*count = bodyCount;
 		}
+
 		return result;
 	}
 
 	bool PXPhysicsWrappers::OverlapSphere(const glm::vec3& origin, float radius, std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t* count)
 	{
 		physx::PxScene* scene = static_cast<physx::PxScene*>(Physics::GetPhysicsScene());
+
 		memset(s_OverlapBuffer, 0, sizeof(s_OverlapBuffer));
 		physx::PxOverlapBuffer buf(s_OverlapBuffer, OVERLAP_MAX_COLLIDERS);
 		physx::PxSphereGeometry geometry = physx::PxSphereGeometry(radius);
 		physx::PxTransform pose = ToPhysXTransform(glm::translate(glm::mat4(1.0F), origin));
+
 		bool result = scene->overlap(geometry, pose, buf);
+
 		if (result)
 		{
 			uint32_t bodyCount = buf.nbTouches >= OVERLAP_MAX_COLLIDERS ? OVERLAP_MAX_COLLIDERS : buf.nbTouches;
 			memcpy(buffer.data(), buf.touches, bodyCount * sizeof(physx::PxOverlapHit));
 			*count = bodyCount;
 		}
+
 		return result;
 	}
 
@@ -435,8 +460,8 @@ namespace Hazel {
 
 	void PXPhysicsWrappers::Shutdown()
 	{
+		s_CookingFactory->release();
 		s_Physics->release();
 		s_Foundation->release();
 	}
-
 }

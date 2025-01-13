@@ -455,9 +455,12 @@ namespace Hazel {
 
 		out << YAML::Key << "PhysicsLayers";
 		out << YAML::Value << YAML::BeginSeq;
-		for (uint32_t i = 0; i < PhysicsLayerManager::GetLayerCount(); i++)
+
+		for (const auto& layer : PhysicsLayerManager::GetLayers())
 		{
-			const PhysicsLayer& layer = PhysicsLayerManager::GetLayer(i);
+			// Never serialize the Default layer
+			if (layer.LayerID == 0)
+				continue;
 
 			out << YAML::BeginMap;
 			out << YAML::Key << "Name" << YAML::Value << layer.Name;
@@ -748,8 +751,6 @@ namespace Hazel {
 		auto physicsLayers = data["PhysicsLayers"];
 		if (physicsLayers)
 		{
-			PhysicsLayerManager::ClearLayers();
-
 			for (auto layer : physicsLayers)
 			{
 				PhysicsLayerManager::AddLayer(layer["Name"].as<std::string>(), false);

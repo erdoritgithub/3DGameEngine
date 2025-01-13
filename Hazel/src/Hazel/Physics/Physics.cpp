@@ -147,8 +147,7 @@ namespace Hazel {
 
 	void Physics::Simulate(Timestep ts)
 	{
-		HZ_CORE_ASSERT(s_Scene);
-
+		
 		s_SimulationTime += ts.GetMilliseconds();
 
 		if (s_SimulationTime < s_Settings.FixedTimestep)
@@ -156,6 +155,7 @@ namespace Hazel {
 
 		s_SimulationTime -= s_Settings.FixedTimestep;
 
+		// TODO: Maybe FixedUpdate for scripts?
 		s_Scene->simulate(s_Settings.FixedTimestep);
 		s_Scene->fetchResults(true);
 

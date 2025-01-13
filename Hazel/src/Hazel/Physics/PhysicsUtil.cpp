@@ -1,6 +1,8 @@
 #include "hzpch.h"
 #include "PhysicsUtil.h"
 
+#include <filesystem>
+
 namespace Hazel {
 
 	physx::PxTransform ToPhysXTransform(const Transform& transform)
@@ -71,7 +73,9 @@ namespace Hazel {
 			pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
 			return physx::PxFilterFlag::eDEFAULT;
 		}
+
 		pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT;
+
 		if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
 		{
 			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
@@ -80,7 +84,6 @@ namespace Hazel {
 		}
 
 		return physx::PxFilterFlag::eSUPPRESS;
-		return physx::PxFilterFlag::eDEFAULT;
 	}
 
 	void ConvexMeshSerializer::SerializeMesh(const std::string& filepath, const physx::PxDefaultMemoryOutputStream& data)
@@ -88,6 +91,7 @@ namespace Hazel {
 		std::filesystem::path p = filepath;
 		auto path = p.parent_path() / (p.filename().string() + ".pxm");
 		std::string cachedFilepath = path.string();
+
 		FILE* f = fopen(cachedFilepath.c_str(), "wb");
 		if (f)
 		{
@@ -101,6 +105,7 @@ namespace Hazel {
 		std::filesystem::path p = filepath;
 		auto path = p.parent_path() / (p.filename().string() + ".pxm");
 		std::string cachedFilepath = path.string();
+
 		FILE* f = fopen(cachedFilepath.c_str(), "rb");
 		bool exists = f != nullptr;
 		if (exists)
@@ -109,22 +114,30 @@ namespace Hazel {
 	}
 
 	static physx::PxU8* s_MeshDataBuffer;
+
 	physx::PxDefaultMemoryInputData ConvexMeshSerializer::DeserializeMesh(const std::string& filepath)
 	{
 		std::filesystem::path p = filepath;
 		auto path = p.parent_path() / (p.filename().string() + ".pxm");
 		std::string cachedFilepath = path.string();
+
 		FILE* f = fopen(cachedFilepath.c_str(), "rb");
+
 		uint32_t size;
 		if (f)
 		{
 			fseek(f, 0, SEEK_END);
 			size = ftell(f);
 			fseek(f, 0, SEEK_SET);
+
+			if (s_MeshDataBuffer)
+				delete[] s_MeshDataBuffer;
+
 			s_MeshDataBuffer = new physx::PxU8[size / sizeof(physx::PxU8)];
 			fread(s_MeshDataBuffer, sizeof(physx::PxU8), size / sizeof(physx::PxU8), f);
 			fclose(f);
 		}
+
 		return physx::PxDefaultMemoryInputData(s_MeshDataBuffer, size);
 	}
 

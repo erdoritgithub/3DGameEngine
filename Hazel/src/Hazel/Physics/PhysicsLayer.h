@@ -6,7 +6,13 @@ namespace Hazel {
 		std::string Name;
 		uint32_t BitValue;
 		int32_t CollidesWith = 0;
+
+		bool IsValid() const
+		{
+			return LayerID >= 0 && !Name.empty() && BitValue > 0;
+		}
 	};
+
 	class PhysicsLayerManager
 	{
 	public:
@@ -24,13 +30,11 @@ namespace Hazel {
 		static bool IsLayerValid(uint32_t layerId);
 		
 	private:
-		static void ClearLayers();
 		static uint32_t GetNextLayerID();
 
 	private:
 		static std::vector<PhysicsLayer> s_Layers;
 		static PhysicsLayer s_NullLayer;
 
-		friend class SceneSerializer;
 	};
 }
