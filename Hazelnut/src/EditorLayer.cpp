@@ -347,6 +347,7 @@ namespace Hazel {
 		SceneSerializer serializer(newScene);
 		serializer.Deserialize(filepath);
 		m_EditorScene = newScene;
+		m_SceneFilePath = filepath;
 
 		std::filesystem::path path = filepath;
 		UpdateWindowTitle(path.filename().string());

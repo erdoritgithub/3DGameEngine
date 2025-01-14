@@ -122,6 +122,7 @@ namespace Hazel {
 		uint32_t IndexCount;
 		uint32_t VertexCount;
 
+		glm::mat4 LocalTransform;
 		glm::mat4 Transform;
 		AABB BoundingBox;
 
