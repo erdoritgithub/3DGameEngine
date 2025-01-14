@@ -14,7 +14,7 @@ namespace Hazel {
 	PhysicsActor::PhysicsActor(Entity entity)
 		: m_Entity(entity), m_RigidBody(entity.GetComponent<RigidBodyComponent>()), m_Material(entity.GetComponent<PhysicsMaterialComponent>())
 	{
-		Create();
+		Initialize();
 	}
 
 	PhysicsActor::~PhysicsActor()
@@ -184,7 +184,7 @@ namespace Hazel {
 		allocator.deallocate(shapes);
 	}
 
-	void PhysicsActor::Create()
+	void PhysicsActor::Initialize()
 	{
 		physx::PxPhysics& physics = PXPhysicsWrappers::GetPhysics();
 
@@ -223,7 +223,11 @@ namespace Hazel {
 			m_RigidBody.Layer = 0;
 
 		SetLayer(m_RigidBody.Layer);
+		m_ActorInternal->userData = &m_Entity;
+	}
 
+	void PhysicsActor::Spawn()
+	{
 		static_cast<physx::PxScene*>(Physics::GetPhysicsScene())->addActor(*m_ActorInternal);
 	}
 
@@ -241,11 +245,6 @@ namespace Hazel {
 		physx::PxTransform actorPose = m_ActorInternal->getGlobalPose();
 		transform.Translation = FromPhysXVector(actorPose.p);
 		transform.Rotation = glm::eulerAngles(FromPhysXQuat(actorPose.q));
-	}
-
-	void PhysicsActor::SetUserData(void* userData)
-	{
-		m_ActorInternal->userData = userData;
 	}
 
 }

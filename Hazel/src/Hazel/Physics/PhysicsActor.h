@@ -34,10 +34,10 @@ namespace Hazel {
 		Entity& GetEntity() { return m_Entity; }
 
 	private:
-		void Create();
+		void Initialize();
+		void Spawn();
 		void Update(float fixedTimestep);
 		void SynchronizeTransform();
-		void SetUserData(void* userData);
 
 	private:
 		Entity m_Entity;
