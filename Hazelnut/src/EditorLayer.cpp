@@ -14,6 +14,7 @@
 
 #include "Hazel/Physics/Physics.h"
 #include "Hazel/Math/Math.h"
+#include "Hazel/Utilities/DragDropData.h"
 
 namespace Hazel {
 
@@ -53,7 +54,11 @@ namespace Hazel {
 		m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EditorLayer::SelectEntity, this, std::placeholders::_1));
 		m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EditorLayer::OnEntityDeleted, this, std::placeholders::_1));
 
-		OpenScene("assets/scenes/Physics2DTest2.hsc");
+		m_AssetManagerPanel = CreateScope<AssetManagerPanel>();
+		m_ObjectsPanel = CreateScope<ObjectsPanel>();
+
+		//OpenScene("assets/scenes/FPSDemo.hsc");
+		NewScene();
 	}
 
 	void EditorLayer::OnDetach()
@@ -74,6 +79,7 @@ namespace Hazel {
 
 		m_RuntimeScene->OnRuntimeStart();
 		m_SceneHierarchyPanel->SetContext(m_RuntimeScene);
+		m_CurrentScene = m_RuntimeScene;
 	}
 
 	void EditorLayer::OnSceneStop()
@@ -87,6 +93,7 @@ namespace Hazel {
 		m_SelectionContext.clear();
 		ScriptEngine::SetSceneContext(m_EditorScene);
 		m_SceneHierarchyPanel->SetContext(m_EditorScene);
+		m_CurrentScene = m_EditorScene;
 	}
 
 	void EditorLayer::UpdateWindowTitle(const std::string& sceneName)
@@ -369,6 +376,8 @@ namespace Hazel {
 
 		m_EditorScene->SetSelectedEntity({});
 		m_SelectionContext.clear();
+
+		m_CurrentScene = m_EditorScene;
 	}
 
 	void EditorLayer::SaveScene()
@@ -486,6 +495,9 @@ namespace Hazel {
 			ShowBoundingBoxes(m_UIShowBoundingBoxes, m_UIShowBoundingBoxesOnTop);
 		if (m_UIShowBoundingBoxes && Property("On Top", m_UIShowBoundingBoxesOnTop))
 			ShowBoundingBoxes(m_UIShowBoundingBoxes, m_UIShowBoundingBoxesOnTop);
+
+		m_AssetManagerPanel->OnImGuiRender();
+		m_ObjectsPanel->OnImGuiRender();
 
 		char* label = m_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
 		if (ImGui::Button(label))
@@ -615,6 +627,7 @@ namespace Hazel {
 
 			TransformComponent& entityTransform = selection.Entity.Transform();
 			glm::mat4 transform = entityTransform.GetTransform();
+			// m_CurrentScene->GetTransformRelativeToParent(selection.Entity);
 			float snapValue = GetSnapValue();
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
@@ -652,6 +665,42 @@ namespace Hazel {
 
 				selection.Mesh->Transform = glm::inverse(transform) * transformBase;
 			}
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			auto data = ImGui::AcceptDragDropPayload("scene_entity_objectP");
+			if (data)
+			{
+				auto d = (DragDropData*)data->Data;
+				if (d->Type == "Mesh")
+				{
+					auto entity = m_EditorScene->CreateEntity(d->Name);
+					entity.AddComponent<MeshComponent>(Ref<Mesh>::Create(d->SourcePath));
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		/* Payload Implementation For Getting Assets In The Viewport From Asset Manager */
+		if (ImGui::BeginDragDropTarget())
+		{
+			auto data = ImGui::AcceptDragDropPayload("scene_entity_assetsP");
+			if (data)
+			{
+				auto d = (DragDropData*)data->Data;
+				if (d->Type == "HazelScene")
+				{
+					auto sceneName = d->SourcePath;
+					OpenScene(sceneName);
+				}
+				if (d->Type == "Mesh")
+				{
+					auto entity = m_EditorScene->CreateEntity(d->Name);
+					entity.AddComponent<MeshComponent>(Ref<Mesh>::Create(d->SourcePath));
+				}
+			}
+			ImGui::EndDragDropTarget();
 		}
 
 		ImGui::End();

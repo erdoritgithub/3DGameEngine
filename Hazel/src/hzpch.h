@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <fstream>
 #include <filesystem>
+#include <map>
 #include <Hazel/Core/Core.h>
 #include <Hazel/Core/Log.h>
 #include <Hazel/Core/Events/Event.h>

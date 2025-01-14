@@ -234,6 +234,7 @@ namespace Hazel {
 				auto aiMaterialName = aiMaterial->GetName();
 
 				auto mi = Ref<MaterialInstance>::Create(m_BaseMaterial, aiMaterialName.data);
+				mi->SetFlag(MaterialFlag::TwoSided, false);
 				m_Materials[i] = mi;
 
 				HZ_MESH_LOG("  {0} (Index = {1})", aiMaterialName.data, i);

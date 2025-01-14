@@ -7,6 +7,8 @@
 #include "Hazel/Core/Application.h"
 #include "Hazel/Renderer/Mesh.h"
 #include "Hazel/Script/ScriptEngine.h"
+#include "Hazel/Physics/Physics.h"
+#include "Hazel/Physics/PhysicsActor.h"
 #include "Hazel/Physics/PhysicsLayer.h"
 #include "Hazel/Physics/PXPhysicsWrappers.h"
 #include "Hazel/Renderer/MeshFactory.h"
@@ -54,15 +56,36 @@ namespace Hazel {
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
+		ImRect windowRect = { ImGui::GetWindowContentRegionMin(), ImGui::GetWindowContentRegionMax() };
+
 		if (m_Context)
 		{
 			uint32_t entityCount = 0, meshCount = 0;
 			m_Context->m_Registry.each([&](auto entity)
 				{
 					Entity e(entity, m_Context.Raw());
-					if (e.HasComponent<IDComponent>())
+					if (e.HasComponent<IDComponent>() && e.GetParentUUID() == 0)
 						DrawEntityNode(e);
 				});
+
+			if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
+			{
+				const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("scene_entity_hierarchy", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+				if (payload)
+				{
+					UUID droppedHandle = *((UUID*)payload->Data);
+					Entity e = m_Context->FindEntityByUUID(droppedHandle);
+					Entity previousParent = m_Context->FindEntityByUUID(e.GetParentUUID());
+					if (previousParent)
+					{
+						auto& children = previousParent.Children();
+						children.erase(std::remove(children.begin(), children.end(), droppedHandle), children.end());
+					}
+					e.SetParentUUID(0);
+					HZ_CORE_INFO("Unparented Entity!");
+				}
+				ImGui::EndDragDropTarget();
+			}
 
 			if (ImGui::BeginPopupContextWindow(0, 1))
 			{
@@ -151,9 +174,48 @@ namespace Hazel {
 
 			ImGui::EndPopup();
 		}
+
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			UUID entityId = entity.GetUUID();
+			ImGui::Text(entity.GetComponent<TagComponent>().Tag.c_str());
+			ImGui::SetDragDropPayload("scene_entity_hierarchy", &entityId, sizeof(UUID));
+			ImGui::EndDragDropSource();
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("scene_entity_hierarchy", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+
+			if (payload)
+			{
+				UUID droppedHandle = *((UUID*)payload->Data);
+				Entity e = m_Context->FindEntityByUUID(droppedHandle);
+				// Remove from previous parent
+				Entity previousParent = m_Context->FindEntityByUUID(e.GetParentUUID());
+				if (previousParent)
+				{
+					auto& parentChildren = previousParent.Children();
+					parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), droppedHandle), parentChildren.end());
+				}
+				e.SetParentUUID(entity.GetUUID());
+				auto& children = entity.Children();
+				children.push_back(droppedHandle);
+				HZ_CORE_INFO("Dropping Entity {0} on {1}", std::to_string(droppedHandle), entity.GetID());
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
 		if (opened)
 		{
-			// TODO: Children
+			for (auto child : entity.Children())
+			{
+				Entity e = m_Context->FindEntityByUUID(child);
+				if (e)
+					DrawEntityNode(e);
+			}
+
 			ImGui::TreePop();
 		}
 
@@ -504,6 +566,7 @@ namespace Hazel {
 						component.CollisionMesh = m_SelectionContext.GetComponent<MeshComponent>().Mesh;
 						PXPhysicsWrappers::CreateTriangleMesh(component);
 					}
+
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -853,11 +916,13 @@ namespace Hazel {
 					if (UI::BeginTreeNode("Constraints", false))
 					{
 						UI::BeginPropertyGrid();
+
 						UI::BeginCheckboxGroup("Freeze Position");
 						UI::PropertyCheckboxGroup("X", rbc.LockPositionX);
 						UI::PropertyCheckboxGroup("Y", rbc.LockPositionY);
 						UI::PropertyCheckboxGroup("Z", rbc.LockPositionZ);
 						UI::EndCheckboxGroup();
+
 						UI::BeginCheckboxGroup("Freeze Rotation");
 						UI::PropertyCheckboxGroup("X", rbc.LockRotationX);
 						UI::PropertyCheckboxGroup("Y", rbc.LockRotationY);
@@ -865,7 +930,6 @@ namespace Hazel {
 						UI::EndCheckboxGroup();
 
 						UI::EndPropertyGrid();
-
 						UI::EndTreeNode();
 					}
 				}
@@ -944,15 +1008,12 @@ namespace Hazel {
 					ImGui::Text("File Path");
 					ImGui::NextColumn();
 					ImGui::PushItemWidth(-1);
-
 					if (mcc.CollisionMesh)
 						ImGui::InputText("##meshfilepath", (char*)mcc.CollisionMesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
 					else
 						ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
-
 					ImGui::PopItemWidth();
 					ImGui::NextColumn();
-
 					if (ImGui::Button("...##openmesh"))
 					{
 						std::string file = Application::Get().OpenFile();
@@ -977,13 +1038,13 @@ namespace Hazel {
 					else
 						PXPhysicsWrappers::CreateTriangleMesh(mcc, glm::vec3(1.0f), true);
 				}
-
 				UI::Property("Is Trigger", mcc.IsTrigger);
 				if (UI::Property("Override Mesh", mcc.OverrideMesh))
 				{
 					if (!mcc.OverrideMesh && entity.HasComponent<MeshComponent>())
 					{
 						mcc.CollisionMesh = entity.GetComponent<MeshComponent>().Mesh;
+
 						if (mcc.IsConvex)
 							PXPhysicsWrappers::CreateConvexMesh(mcc, glm::vec3(1.0f), true);
 						else

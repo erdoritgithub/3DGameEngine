@@ -63,6 +63,10 @@ namespace Hazel {
 			return !(*this == other);
 		}
 
+		void SetParentUUID(UUID parent) { GetComponent<ParentComponent>().ParentHandle = parent; }
+		UUID GetParentUUID() { return GetComponent<ParentComponent>().ParentHandle; }
+		std::vector<UUID>& Children() { return GetComponent<ChildrenComponent>().Children; }
+
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 		std::string GetID() { return std::to_string(GetUUID()); }
 		UUID GetSceneUUID() { return m_Scene->GetUUID(); }
