@@ -15,4 +15,4 @@
 #include <Hazel/Core/Log.h>
 #include <Hazel/Core/Events/Event.h>
 // Math
-#include <Hazel/Core/Math/Mat4.h>
+#include <Hazel/Math/Mat4.h>

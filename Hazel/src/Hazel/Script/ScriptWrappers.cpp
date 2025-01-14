@@ -1,7 +1,7 @@
 #include "hzpch.h"
 #include "ScriptWrappers.h"
 
-#include "Hazel/Core/Math/Noise.h"
+#include "Hazel/Math/Noise.h"
 
 #include "Hazel/Scene/Scene.h"
 #include "Hazel/Scene/Entity.h"

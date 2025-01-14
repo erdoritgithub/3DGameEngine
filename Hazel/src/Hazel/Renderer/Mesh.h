@@ -11,7 +11,7 @@
 #include "Hazel/Renderer/Shader.h"
 #include "Hazel/Renderer/Material.h"
 
-#include "Hazel/Core/Math/AABB.h"
+#include "Hazel/Math/AABB.h"
 
 struct aiNode;
 struct aiAnimation;
