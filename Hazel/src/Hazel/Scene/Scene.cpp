@@ -485,7 +485,7 @@ namespace Hazel {
 
 		{
 			auto view = m_Registry.view<RigidBodyComponent>();
-			Physics::ExpandEntityBuffer(view.size());
+
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };

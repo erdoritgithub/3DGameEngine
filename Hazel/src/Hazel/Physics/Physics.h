@@ -67,7 +67,6 @@ namespace Hazel {
 	public:
 		static void Init();
 		static void Shutdown();
-		static void ExpandEntityBuffer(uint32_t entityCount);
 
 		static void CreateScene();
 		static void CreateActor(Entity e);

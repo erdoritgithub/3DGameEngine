@@ -218,19 +218,19 @@ namespace Hazel {
 
 	struct MeshColliderComponent
 	{
-		Ref<Hazel::Mesh> CollisionMesh;
-		std::vector<Ref<Hazel::Mesh>> ProcessedMeshes;
+		Ref<Mesh> CollisionMesh;
+		std::vector<Ref<Mesh>> ProcessedMeshes;
 		bool IsConvex = false;
 		bool IsTrigger = false;
 
 		MeshColliderComponent() = default;
 		MeshColliderComponent(const MeshColliderComponent& other) = default;
-		MeshColliderComponent(const Ref<Hazel::Mesh>& mesh)
+		MeshColliderComponent(const Ref<Mesh>& mesh)
 			: CollisionMesh(mesh)
 		{
 		}
 
-		operator Ref<Hazel::Mesh>() { return CollisionMesh; }
+		operator Ref<Mesh>() { return CollisionMesh; }
 	};
 
 	enum class LightType
