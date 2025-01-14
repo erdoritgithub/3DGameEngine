@@ -139,11 +139,10 @@ namespace Hazel {
 		return std::filesystem::is_directory(path);
 	}
 
-	static std::vector<physx::PxU8*> s_MeshDataBuffers;
+	static physx::PxU8* s_MeshDataBuffer;
 
-	std::vector<physx::PxDefaultMemoryInputData> PhysicsMeshSerializer::DeserializeMesh(const std::string& filepath)
+	physx::PxDefaultMemoryInputData PhysicsMeshSerializer::DeserializeMesh(const std::string& filepath, const std::string& submeshName)
 	{
-		std::vector<physx::PxDefaultMemoryInputData> result;
 
 		std::filesystem::path p = filepath;
 		size_t lastDot = p.filename().string().find_first_of(".");
@@ -151,36 +150,26 @@ namespace Hazel {
 		std::string dirName = p.filename().string().substr(0, lastDot);
 		auto path = p.parent_path() / dirName;
 
-		for (const auto& file : std::filesystem::directory_iterator(path))
+		if (submeshName.length() > 0)
+			path = p.parent_path() / dirName / (submeshName + ".pxm");
+
+		FILE* f = fopen(path.string().c_str(), "rb");
+		uint32_t size;
+		if (f)
 		{
-			HZ_CORE_INFO("De-Serializing {0}", file.path().string());
+			fseek(f, 0, SEEK_END);
+			size = ftell(f);
+			fseek(f, 0, SEEK_SET);
 
-			FILE* f = fopen(file.path().string().c_str(), "rb");
-			uint32_t size;
+			if (s_MeshDataBuffer)
+				delete[] s_MeshDataBuffer;
 
-			if (f)
-			{
-				fseek(f, 0, SEEK_END);
-				size = ftell(f);
-				fseek(f, 0, SEEK_SET);
-
-				physx::PxU8* buffer = new physx::PxU8[size / sizeof(physx::PxU8)];
-				fread(buffer, sizeof(physx::PxU8), size / sizeof(physx::PxU8), f);
-				fclose(f);
-				s_MeshDataBuffers.push_back(buffer);
-				result.push_back(physx::PxDefaultMemoryInputData(buffer, size));
-			}
+			s_MeshDataBuffer = new physx::PxU8[size / sizeof(physx::PxU8)];
+			fread(s_MeshDataBuffer, sizeof(physx::PxU8), size / sizeof(physx::PxU8), f);
+			fclose(f);
 		}
 
-		return result;
-	}
-
-	void PhysicsMeshSerializer::CleanupDataBuffers()
-	{
-		for (auto buffer : s_MeshDataBuffers)
-			delete[] buffer;
-
-		s_MeshDataBuffers.clear();
+		return physx::PxDefaultMemoryInputData(s_MeshDataBuffer, size);
 	}
 
 }

@@ -928,7 +928,7 @@ namespace Hazel {
 				UI::EndPropertyGrid();
 			});
 
-		DrawComponent<MeshColliderComponent>("Mesh Collider", entity, [](MeshColliderComponent& mcc)
+		DrawComponent<MeshColliderComponent>("Mesh Collider", entity, [&](MeshColliderComponent& mcc)
 			{
 				ImGui::Columns(3);
 				ImGui::SetColumnWidth(0, 100);
@@ -950,9 +950,9 @@ namespace Hazel {
 					{
 						mcc.CollisionMesh = Ref<Mesh>::Create(file);
 						if (mcc.IsConvex)
-							PXPhysicsWrappers::CreateConvexMesh(mcc, true);
+							PXPhysicsWrappers::CreateConvexMesh(mcc, entity.Transform().Scale, true);
 						else
-							PXPhysicsWrappers::CreateTriangleMesh(mcc, true);
+							PXPhysicsWrappers::CreateTriangleMesh(mcc, entity.Transform().Scale, true);
 					}
 				}
 				ImGui::Columns(1);
@@ -961,9 +961,9 @@ namespace Hazel {
 				if (UI::Property("Is Convex", mcc.IsConvex))
 				{
 					if (mcc.IsConvex)
-						PXPhysicsWrappers::CreateConvexMesh(mcc, true);
+						PXPhysicsWrappers::CreateConvexMesh(mcc, entity.Transform().Scale, true);
 					else
-						PXPhysicsWrappers::CreateTriangleMesh(mcc, true);
+						PXPhysicsWrappers::CreateTriangleMesh(mcc, entity.Transform().Scale, true);
 				}
 
 				UI::Property("Is Trigger", mcc.IsTrigger);

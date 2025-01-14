@@ -791,9 +791,9 @@ namespace Hazel {
 					component.IsTrigger = meshColliderComponent["IsTrigger"] ? meshColliderComponent["IsTrigger"].as<bool>() : false;
 
 					if (component.IsConvex)
-						PXPhysicsWrappers::CreateConvexMesh(component);
+						PXPhysicsWrappers::CreateConvexMesh(component, deserializedEntity.Transform().Scale);
 					else
-						PXPhysicsWrappers::CreateTriangleMesh(component);
+						PXPhysicsWrappers::CreateTriangleMesh(component, deserializedEntity.Transform().Scale);
 
 					HZ_CORE_INFO("  Mesh Collider Asset Path: {0}", meshPath);
 				}

@@ -30,7 +30,11 @@ namespace Hazel {
 
 	PhysicsActor::~PhysicsActor()
 	{
-		m_ActorInternal->release();
+		if (m_ActorInternal && m_ActorInternal->isReleasable())
+		{
+			m_ActorInternal->release();
+			m_ActorInternal = nullptr;
+		}
 	}
 
 	glm::vec3 PhysicsActor::GetPosition()
@@ -224,11 +228,11 @@ namespace Hazel {
 			m_ActorInternal = actor;
 		}
 
-		physx::PxMaterial* physicsMat = physics.createMaterial(m_Material.StaticFriction, m_Material.DynamicFriction, m_Material.Bounciness);
-		if (m_Entity.HasComponent<BoxColliderComponent>()) PXPhysicsWrappers::AddBoxCollider(*this, *physicsMat);
-		if (m_Entity.HasComponent<SphereColliderComponent>()) PXPhysicsWrappers::AddSphereCollider(*this, *physicsMat);
-		if (m_Entity.HasComponent<CapsuleColliderComponent>()) PXPhysicsWrappers::AddCapsuleCollider(*this, *physicsMat);
-		if (m_Entity.HasComponent<MeshColliderComponent>()) PXPhysicsWrappers::AddMeshCollider(*this, *physicsMat);
+		m_MaterialInternal = physics.createMaterial(m_Material.StaticFriction, m_Material.DynamicFriction, m_Material.Bounciness);
+		if (m_Entity.HasComponent<BoxColliderComponent>()) PXPhysicsWrappers::AddBoxCollider(*this);
+		if (m_Entity.HasComponent<SphereColliderComponent>()) PXPhysicsWrappers::AddSphereCollider(*this);
+		if (m_Entity.HasComponent<CapsuleColliderComponent>()) PXPhysicsWrappers::AddCapsuleCollider(*this);
+		if (m_Entity.HasComponent<MeshColliderComponent>()) PXPhysicsWrappers::AddMeshCollider(*this);
 
 		if (!PhysicsLayerManager::IsLayerValid(m_RigidBody.Layer))
 			m_RigidBody.Layer = 0;
@@ -264,6 +268,14 @@ namespace Hazel {
 			// Synchronize Physics Actor with static Entity
 			m_ActorInternal->setGlobalPose(ToPhysXTransform(m_Entity.Transform()));
 		}
+	}
+
+	void PhysicsActor::AddCollisionShape(physx::PxShape* shape)
+	{
+		bool status = m_ActorInternal->attachShape(*shape);
+		shape->release();
+		if (!status)
+			shape = nullptr;
 	}
 
 }
