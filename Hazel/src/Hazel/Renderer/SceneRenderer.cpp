@@ -358,9 +358,6 @@ namespace Hazel {
 		s_Data.SceneData.SkyboxMaterial->Set("u_SkyIntensity", s_Data.SceneData.SceneEnvironmentIntensity);
 		Renderer::SubmitFullscreenQuad(s_Data.SceneData.SkyboxMaterial);
 
-		float aspectRatio = (float)s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetWidth() / (float)s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetHeight();
-		float frustumSize = 2.0f * sceneCamera.Near * glm::tan(sceneCamera.FOV * 0.5f) * aspectRatio;
-
 		// Render entities
 		for (auto& dc : s_Data.DrawList)
 		{

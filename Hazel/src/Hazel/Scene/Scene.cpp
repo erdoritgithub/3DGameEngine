@@ -35,7 +35,7 @@ namespace Hazel {
 	};
 
 	// TODO: MOVE TO PHYSICS FILE!
-	class ContactListener : public b2ContactListener
+	class ContactListener2D : public b2ContactListener
 	{
 	public:
 		virtual void BeginContact(b2Contact* contact) override
@@ -94,7 +94,7 @@ namespace Hazel {
 		}
 	};
 
-	static ContactListener s_Box2DContactListener;
+	static ContactListener2D s_Box2DContactListener;
 
 	struct Box2DWorldComponent
 	{
@@ -333,10 +333,11 @@ namespace Hazel {
 				meshComponent.Mesh->OnUpdate(ts);
 
 				// TODO: Should we render (logically)
-				SceneRenderer::SubmitMesh(meshComponent, transformComponent.GetTransform());
+				if (m_SelectedEntity == entity)
+					SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent.GetTransform());
+				else
+					SceneRenderer::SubmitMesh(meshComponent, transformComponent.GetTransform());
 
-				/*if (m_SelectedEntity == entity)
-					SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent.GetTransform());*/
 			}
 		}
 

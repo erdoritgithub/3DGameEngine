@@ -80,10 +80,10 @@ namespace Hazel {
 		
 	}
 
-	void Renderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
+	void Renderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest, bool faceCulling)
 	{
 		Renderer::Submit([=]() {
-			RendererAPI::DrawIndexed(count, type, depthTest);
+			RendererAPI::DrawIndexed(count, type, depthTest, faceCulling);
 			});
 	}
 
@@ -156,15 +156,10 @@ namespace Hazel {
 
 		}
 
-		if (cullFace)
-			Renderer::Submit([]() { glEnable(GL_CULL_FACE); });
-		else
-			Renderer::Submit([]() { glDisable(GL_CULL_FACE); });
-
 		s_Data.m_FullscreenQuadVertexBuffer->Bind();
 		s_Data.m_FullscreenQuadPipeline->Bind();
 		s_Data.m_FullscreenQuadIndexBuffer->Bind();
-		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
+		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest, cullFace);
 	}
 
 	void Renderer::SubmitFullscreenQuad(Ref<MaterialInstance> material)
@@ -185,12 +180,7 @@ namespace Hazel {
 		s_Data.m_FullscreenQuadPipeline->Bind();
 		s_Data.m_FullscreenQuadIndexBuffer->Bind();
 
-		if (cullFace)
-			Renderer::Submit([]() { glEnable(GL_CULL_FACE); });
-		else
-			Renderer::Submit([]() { glDisable(GL_CULL_FACE); });
-
-		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
+		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest, cullFace);
 
 	}
 

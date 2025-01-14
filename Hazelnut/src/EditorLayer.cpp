@@ -53,7 +53,7 @@ namespace Hazel {
 		m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EditorLayer::SelectEntity, this, std::placeholders::_1));
 		m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EditorLayer::OnEntityDeleted, this, std::placeholders::_1));
 
-		OpenScene("assets/scenes/FPSDemo.hsc");
+		OpenScene("assets/scenes/Physics2DTest2.hsc");
 	}
 
 	void EditorLayer::OnDetach()
@@ -159,10 +159,23 @@ namespace Hazel {
 					Renderer::BeginRenderPass(SceneRenderer::GetFinalRenderPass(), false);
 					auto viewProj = m_EditorCamera.GetViewProjection();
 					Renderer2D::BeginScene(viewProj, false);
-					Renderer2D::DrawRotatedQuad({ transform.Translation.x, transform.Translation.y }, size * 2.0f, transform.Rotation.z, { 1.0f, 0.0f, 1.0f, 1.0f });
+					Renderer2D::DrawRotatedRect({ transform.Translation.x, transform.Translation.y }, size * 2.0f, transform.Rotation.z, { 0.0f, 1.0f, 1.0f, 1.0f });
 					Renderer2D::EndScene();
 					Renderer::EndRenderPass();
 				}
+
+				if (selection.Entity.HasComponent<CircleCollider2DComponent>())
+				{
+					const auto& size = selection.Entity.GetComponent<CircleCollider2DComponent>().Radius;
+					const TransformComponent& transform = selection.Entity.GetComponent<TransformComponent>();
+					Renderer::BeginRenderPass(SceneRenderer::GetFinalRenderPass(), false);
+					auto viewProj = m_EditorCamera.GetViewProjection();
+					Renderer2D::BeginScene(viewProj, false);
+					Renderer2D::DrawCircle({ transform.Translation.x, transform.Translation.y }, size, { 0.0f, 1.0f, 1.0f, 1.0f });
+					Renderer2D::EndScene();
+					Renderer::EndRenderPass();
+				}
+
 			}
 
 			break;
