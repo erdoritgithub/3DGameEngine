@@ -193,7 +193,6 @@ namespace Hazel {
 				glSamplerParameteri(s_Data.ShadowMapSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glSamplerParameteri(s_Data.ShadowMapSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			});
-
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
@@ -280,7 +279,6 @@ namespace Hazel {
 				glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
 				glGenerateTextureMipmap(envUnfiltered->GetRendererID());
 			});
-
 
 		if (!envFilteringShader)
 			envFilteringShader = Shader::Create("assets/shaders/EnvironmentMipFilter.glsl");
@@ -416,7 +414,6 @@ namespace Hazel {
 					});
 			}
 
-
 			auto overrideMaterial = nullptr; // dc.Material;
 			Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
 		}
@@ -450,6 +447,7 @@ namespace Hazel {
 			baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
 			baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
 			baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
+
 			baseMaterial->Set("u_LightMatrixCascade0", s_Data.LightMatrices[0]);
 			baseMaterial->Set("u_LightMatrixCascade1", s_Data.LightMatrices[1]);
 			baseMaterial->Set("u_LightMatrixCascade2", s_Data.LightMatrices[2]);
@@ -777,6 +775,7 @@ namespace Hazel {
 			roundOffset = roundOffset * 2.0f / ShadowMapResolution;
 			roundOffset.z = 0.0f;
 			roundOffset.w = 0.0f;
+
 			lightOrthoMatrix[3] += roundOffset;
 
 			// Store split distance and matrix in cascade

@@ -151,32 +151,40 @@ namespace Hazel {
 						{
 							HZ_CORE_INFO("Creating Folder...");
 						}
+
 						if (ImGui::MenuItem("Scene"))
 						{
 							HZ_CORE_INFO("Creating Scene...");
 						}
+
 						if (ImGui::MenuItem("Script"))
 						{
 							HZ_CORE_INFO("Creating Script...");
 						}
+
 						if (ImGui::MenuItem("Prefab"))
 						{
 							HZ_CORE_INFO("Creating Prefab...");
 						}
+
 						if (ImGui::BeginMenu("Shaders"))
 						{
 							if (ImGui::MenuItem("Shader"))
 							{
 								HZ_CORE_INFO("Creating Shader File...");
 							}
+
 							if (ImGui::MenuItem("Shader Graph"))
 							{
 								HZ_CORE_INFO("Creating Shader Graph...");
 							}
+
 							ImGui::EndMenu();
 						}
+
 						ImGui::EndMenu();
 					}
+
 					ImGui::EndPopup();
 				}
 

@@ -42,9 +42,7 @@ namespace Hazel {
 
 	void EditorLayer::OnAttach()
 	{
-
 		using namespace glm;
-
 
 		// Editor
 		m_CheckerboardTex = Texture2D::Create("assets/editor/Checkerboard.tga");
@@ -175,6 +173,7 @@ namespace Hazel {
 				{
 					const auto& size = selection.Entity.GetComponent<CircleCollider2DComponent>().Radius;
 					const TransformComponent& transform = selection.Entity.GetComponent<TransformComponent>();
+
 					Renderer::BeginRenderPass(SceneRenderer::GetFinalRenderPass(), false);
 					auto viewProj = m_EditorCamera.GetViewProjection();
 					Renderer2D::BeginScene(viewProj, false);
@@ -626,8 +625,7 @@ namespace Hazel {
 			bool snap = Input::IsKeyPressed(HZ_KEY_LEFT_CONTROL);
 
 			TransformComponent& entityTransform = selection.Entity.Transform();
-			glm::mat4 transform = entityTransform.GetTransform();
-			// m_CurrentScene->GetTransformRelativeToParent(selection.Entity);
+			glm::mat4 transform = entityTransform.GetTransform();// m_CurrentScene->GetTransformRelativeToParent(selection.Entity);
 			float snapValue = GetSnapValue();
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
@@ -689,11 +687,13 @@ namespace Hazel {
 			if (data)
 			{
 				auto d = (DragDropData*)data->Data;
+
 				if (d->Type == "HazelScene")
 				{
 					auto sceneName = d->SourcePath;
 					OpenScene(sceneName);
 				}
+
 				if (d->Type == "Mesh")
 				{
 					auto entity = m_EditorScene->CreateEntity(d->Name);
@@ -702,6 +702,7 @@ namespace Hazel {
 			}
 			ImGui::EndDragDropTarget();
 		}
+
 
 		ImGui::End();
 		ImGui::PopStyleVar();

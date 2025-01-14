@@ -71,19 +71,24 @@ namespace Hazel {
 			if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
 			{
 				const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("scene_entity_hierarchy", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+
 				if (payload)
 				{
 					UUID droppedHandle = *((UUID*)payload->Data);
 					Entity e = m_Context->FindEntityByUUID(droppedHandle);
 					Entity previousParent = m_Context->FindEntityByUUID(e.GetParentUUID());
+
 					if (previousParent)
 					{
 						auto& children = previousParent.Children();
 						children.erase(std::remove(children.begin(), children.end(), droppedHandle), children.end());
 					}
+
 					e.SetParentUUID(0);
+
 					HZ_CORE_INFO("Unparented Entity!");
 				}
+
 				ImGui::EndDragDropTarget();
 			}
 
@@ -191,6 +196,7 @@ namespace Hazel {
 			{
 				UUID droppedHandle = *((UUID*)payload->Data);
 				Entity e = m_Context->FindEntityByUUID(droppedHandle);
+
 				// Remove from previous parent
 				Entity previousParent = m_Context->FindEntityByUUID(e.GetParentUUID());
 				if (previousParent)
@@ -198,10 +204,12 @@ namespace Hazel {
 					auto& parentChildren = previousParent.Children();
 					parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), droppedHandle), parentChildren.end());
 				}
+
 				e.SetParentUUID(entity.GetUUID());
 				auto& children = entity.Children();
 				children.push_back(droppedHandle);
-				HZ_CORE_INFO("Dropping Entity {0} on {1}", std::to_string(droppedHandle), entity.GetID());
+
+				//HZ_CORE_INFO("Dropping Entity {0} on {1}", droppedHandle, entity.GetUUID());
 			}
 
 			ImGui::EndDragDropTarget();
