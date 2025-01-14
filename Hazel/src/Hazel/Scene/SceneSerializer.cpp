@@ -433,9 +433,12 @@ namespace Hazel {
 			out << YAML::BeginMap; // MeshColliderComponent
 
 			auto& meshColliderComponent = entity.GetComponent<MeshColliderComponent>();
-			out << YAML::Key << "AssetPath" << YAML::Value << meshColliderComponent.CollisionMesh->GetFilePath();
+			if (meshColliderComponent.OverrideMesh)
+				out << YAML::Key << "AssetPath" << YAML::Value << meshColliderComponent.CollisionMesh->GetFilePath();
+
 			out << YAML::Key << "IsConvex" << YAML::Value << meshColliderComponent.IsConvex;
 			out << YAML::Key << "IsTrigger" << YAML::Value << meshColliderComponent.IsTrigger;
+			out << YAML::Key << "OverrideMesh" << YAML::Value << meshColliderComponent.OverrideMesh;
 
 			out << YAML::EndMap; // MeshColliderComponent
 		}
@@ -784,18 +787,31 @@ namespace Hazel {
 				auto meshColliderComponent = entity["MeshColliderComponent"];
 				if (meshColliderComponent)
 				{
-					std::string meshPath = meshColliderComponent["AssetPath"].as<std::string>();
-					auto& component = deserializedEntity.AddComponent<MeshColliderComponent>(Ref<Mesh>::Create(meshPath));
+					Ref<Mesh> collisionMesh = deserializedEntity.HasComponent<MeshComponent>() ? deserializedEntity.GetComponent<MeshComponent>().Mesh : nullptr;
+					bool overrideMesh = meshColliderComponent["OverrideMesh"] ? meshColliderComponent["OverrideMesh"].as<bool>() : false;
 
-					component.IsConvex = meshColliderComponent["IsConvex"] ? meshColliderComponent["IsConvex"].as<bool>() : false;
-					component.IsTrigger = meshColliderComponent["IsTrigger"] ? meshColliderComponent["IsTrigger"].as<bool>() : false;
+					if (overrideMesh)
+					{
+						std::string meshPath = meshColliderComponent["AssetPath"].as<std::string>();
+						collisionMesh = Ref<Mesh>::Create(meshPath);
+					}
 
-					if (component.IsConvex)
-						PXPhysicsWrappers::CreateConvexMesh(component, deserializedEntity.Transform().Scale);
+					if (collisionMesh)
+					{
+						auto& component = deserializedEntity.AddComponent<MeshColliderComponent>(collisionMesh);
+						component.IsConvex = meshColliderComponent["IsConvex"] ? meshColliderComponent["IsConvex"].as<bool>() : false;
+						component.IsTrigger = meshColliderComponent["IsTrigger"] ? meshColliderComponent["IsTrigger"].as<bool>() : false;
+						component.OverrideMesh = overrideMesh;
+						if (component.IsConvex)
+							PXPhysicsWrappers::CreateConvexMesh(component, deserializedEntity.Transform().Scale);
+						else
+							PXPhysicsWrappers::CreateTriangleMesh(component, deserializedEntity.Transform().Scale);
+					}
 					else
-						PXPhysicsWrappers::CreateTriangleMesh(component, deserializedEntity.Transform().Scale);
+					{
+						HZ_CORE_WARN("MeshColliderComponent in use without valid mesh!");
+					}
 
-					HZ_CORE_INFO("  Mesh Collider Asset Path: {0}", meshPath);
 				}
 
 			}

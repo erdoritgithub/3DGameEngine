@@ -220,6 +220,7 @@ namespace Hazel {
 		std::vector<Ref<Mesh>> ProcessedMeshes;
 		bool IsConvex = false;
 		bool IsTrigger = false;
+		bool OverrideMesh = false;
 
 		MeshColliderComponent() = default;
 		MeshColliderComponent(const MeshColliderComponent& other) = default;
