@@ -7,6 +7,7 @@
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Physics/PhysicsUtil.h"
 #include "Hazel/Physics/PXPhysicsWrappers.h"
+#include "Hazel/Physics/PhysicsActor.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -144,16 +145,19 @@ namespace Hazel {
 		}
 
 		static std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS> s_OverlapBuffer;
+
 		MonoArray* Hazel_Physics_OverlapBox(glm::vec3* origin, glm::vec3* halfSize)
 		{
 			MonoArray* outColliders = nullptr;
 			memset(s_OverlapBuffer.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(physx::PxOverlapHit));
+
 			uint32_t count;
 			if (PXPhysicsWrappers::OverlapBox(*origin, *halfSize, s_OverlapBuffer, &count))
 			{
 				outColliders = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("Hazel.Collider"), count);
 				AddCollidersToArray(outColliders, s_OverlapBuffer, count, count);
 			}
+
 			return outColliders;
 		}
 
@@ -190,42 +194,53 @@ namespace Hazel {
 		int32_t Hazel_Physics_OverlapBoxNonAlloc(glm::vec3* origin, glm::vec3* halfSize, MonoArray* outColliders)
 		{
 			memset(s_OverlapBuffer.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(physx::PxOverlapHit));
+
 			uint64_t arrayLength = mono_array_length(outColliders);
+
 			uint32_t count;
 			if (PXPhysicsWrappers::OverlapBox(*origin, *halfSize, s_OverlapBuffer, &count))
 			{
 				if (count > arrayLength)
 					count = arrayLength;
+
 				AddCollidersToArray(outColliders, s_OverlapBuffer, count, arrayLength);
 			}
+
 			return count;
 		}
 
 		int32_t Hazel_Physics_OverlapCapsuleNonAlloc(glm::vec3* origin, float radius, float halfHeight, MonoArray* outColliders)
 		{
 			memset(s_OverlapBuffer.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(physx::PxOverlapHit));
+
 			uint64_t arrayLength = mono_array_length(outColliders);
 			uint32_t count;
 			if (PXPhysicsWrappers::OverlapCapsule(*origin, radius, halfHeight, s_OverlapBuffer, &count))
 			{
 				if (count > arrayLength)
 					count = arrayLength;
+
 				AddCollidersToArray(outColliders, s_OverlapBuffer, count, arrayLength);
 			}
+
 			return count;
 		}
 
 		int32_t Hazel_Physics_OverlapSphereNonAlloc(glm::vec3* origin, float radius, MonoArray* outColliders)
 		{
 			memset(s_OverlapBuffer.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(physx::PxOverlapHit));
+
 			uint64_t arrayLength = mono_array_length(outColliders);
+
 			uint32_t count;
 			if (PXPhysicsWrappers::OverlapSphere(*origin, radius, s_OverlapBuffer, &count))
 			{
 				if (count > arrayLength)
 					count = arrayLength;
+
 				AddCollidersToArray(outColliders, s_OverlapBuffer, count, arrayLength);
 			}
+
 			return count;
 		}
 
@@ -281,6 +296,7 @@ namespace Hazel {
 
 			Entity entity = entityMap.at(entityID);
 			TransformComponent& transform = entity.GetComponent<TransformComponent>();
+
 			glm::quat rotation = glm::quat(transform.Rotation);
 			glm::vec3 right = glm::normalize(glm::rotate(rotation, glm::vec3(1.0F, 0.0F, 0.0F)));
 			glm::vec3 up = glm::normalize(glm::rotate(rotation, glm::vec3(0.0F, 1.0F, 0.0F)));
@@ -288,7 +304,7 @@ namespace Hazel {
 
 			*outTransform = {
 				transform.Translation, glm::degrees(transform.Rotation), transform.Scale,
-			up, right, forward
+				up, right, forward
 			};
 		}
 
@@ -304,7 +320,6 @@ namespace Hazel {
 			transform.Translation = inTransform->Translation;
 			transform.Rotation = glm::radians(inTransform->Rotation);
 			transform.Scale = inTransform->Scale;
-
 		}
 
 		void* Hazel_MeshComponent_GetMesh(uint64_t entityID)
@@ -358,7 +373,6 @@ namespace Hazel {
 			b2Body* body = (b2Body*)component.RuntimeBody;
 			const auto& velocity = body->GetLinearVelocity();
 			HZ_CORE_ASSERT(outVelocity);
-
 			*outVelocity = { velocity.x, velocity.y };
 		}
 
@@ -383,6 +397,7 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
@@ -406,12 +421,8 @@ namespace Hazel {
 				return;
 			}
 
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
-			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			HZ_CORE_ASSERT(dynamicActor);
-
-			HZ_CORE_ASSERT(force);
-			dynamicActor->addForce({ force->x, force->y, force->z }, (physx::PxForceMode::Enum)forceMode);
+			Ref<PhysicsActor> actor = Physics::GetActorForEntity(entity);
+			actor->AddForce(*force, forceMode);
 		}
 
 		void Hazel_RigidBodyComponent_AddTorque(uint64_t entityID, glm::vec3* torque, ForceMode forceMode)
@@ -431,12 +442,8 @@ namespace Hazel {
 				return;
 			}
 
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
-			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			HZ_CORE_ASSERT(dynamicActor);
-
-			HZ_CORE_ASSERT(torque);
-			dynamicActor->addTorque({ torque->x, torque->y, torque->z }, (physx::PxForceMode::Enum)forceMode);
+			Ref<PhysicsActor> actor = Physics::GetActorForEntity(entity);
+			actor->AddTorque(*torque, forceMode);
 		}
 
 		void Hazel_RigidBodyComponent_GetLinearVelocity(uint64_t entityID, glm::vec3* outVelocity)
@@ -449,15 +456,9 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
-
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
-			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			HZ_CORE_ASSERT(dynamicActor);
-
 			HZ_CORE_ASSERT(outVelocity);
-			physx::PxVec3 velocity = dynamicActor->getLinearVelocity();
-			HZ_CORE_INFO("Hazel_RigidBodyComponent_GetLinearVelocity - {0}, {1}, {2}", velocity.x, velocity.y, velocity.z);
-			*outVelocity = { velocity.x, velocity.y, velocity.z };
+			Ref<PhysicsActor> actor = Physics::GetActorForEntity(entity);
+			*outVelocity = actor->GetLinearVelocity();
 		}
 
 		void Hazel_RigidBodyComponent_SetLinearVelocity(uint64_t entityID, glm::vec3* velocity)
@@ -470,16 +471,9 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
-
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
-			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			HZ_CORE_ASSERT(dynamicActor);
-
 			HZ_CORE_ASSERT(velocity);
-			physx::PxVec3 pxVelocity = { velocity->x, velocity->y, velocity->z };
-			if (!pxVelocity.isFinite())
-				return;
-			dynamicActor->setLinearVelocity(pxVelocity);
+			Ref<PhysicsActor> actor = Physics::GetActorForEntity(entity);
+			actor->SetLinearVelocity(*velocity);
 		}
 
 		void Hazel_RigidBodyComponent_GetAngularVelocity(uint64_t entityID, glm::vec3* outVelocity)
@@ -488,15 +482,13 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
-			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			HZ_CORE_ASSERT(dynamicActor);
 			HZ_CORE_ASSERT(outVelocity);
-			physx::PxVec3 velocity = dynamicActor->getAngularVelocity();
-			*outVelocity = { velocity.x, velocity.y, velocity.z };
+			Ref<PhysicsActor> actor = Physics::GetActorForEntity(entity);
+			*outVelocity = actor->GetAngularVelocity();
 		}
 
 		void Hazel_RigidBodyComponent_SetAngularVelocity(uint64_t entityID, glm::vec3* velocity)
@@ -505,14 +497,13 @@ namespace Hazel {
 			HZ_CORE_ASSERT(scene, "No active scene!");
 			const auto& entityMap = scene->GetEntityMap();
 			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
-			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			HZ_CORE_ASSERT(dynamicActor);
 			HZ_CORE_ASSERT(velocity);
-			dynamicActor->setAngularVelocity({ velocity->x, velocity->y, velocity->z });
+			Ref<PhysicsActor> actor = Physics::GetActorForEntity(entity);
+			actor->SetAngularVelocity(*velocity);
 		}
 
 		void Hazel_RigidBodyComponent_Rotate(uint64_t entityID, glm::vec3* rotation)
@@ -525,16 +516,9 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
-
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
-			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			HZ_CORE_ASSERT(dynamicActor);
-
-			physx::PxTransform transform = dynamicActor->getGlobalPose();
-			transform.q *= (physx::PxQuat(glm::radians(rotation->x), { 1.0F, 0.0F, 0.0F })
-				* physx::PxQuat(glm::radians(rotation->y), { 0.0F, 1.0F, 0.0F })
-				* physx::PxQuat(glm::radians(rotation->z), { 0.0F, 0.0F, 1.0F }));
-			dynamicActor->setGlobalPose(transform);
+			HZ_CORE_ASSERT(rotation);
+			Ref<PhysicsActor> actor = Physics::GetActorForEntity(entity);
+			actor->Rotate(*rotation);
 		}
 
 		uint32_t Hazel_RigidBodyComponent_GetLayer(uint64_t entityID)
@@ -560,12 +544,8 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
-
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
-			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			HZ_CORE_ASSERT(dynamicActor);
-
-			return dynamicActor->getMass();
+			Ref<PhysicsActor>& actor = Physics::GetActorForEntity(entity);
+			return actor->GetMass();
 		}
 
 		void Hazel_RigidBodyComponent_SetMass(uint64_t entityID, float mass)
@@ -578,13 +558,8 @@ namespace Hazel {
 			Entity entity = entityMap.at(entityID);
 			HZ_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>());
 			auto& component = entity.GetComponent<RigidBodyComponent>();
-
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)component.RuntimeActor;
-			physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
-			HZ_CORE_ASSERT(dynamicActor);
-
-			component.Mass = mass;
-			physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, mass);
+			Ref<PhysicsActor>& actor = Physics::GetActorForEntity(entity);
+			actor->SetMass(mass);
 		}
 
 		Ref<Mesh>* Hazel_Mesh_Constructor(MonoString* filepath)

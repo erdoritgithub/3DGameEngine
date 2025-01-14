@@ -7,6 +7,8 @@
 
 namespace Hazel {
 
+	class PhysicsActor;
+
 	enum class ForceMode : uint16_t
 	{
 		Force = 0,
@@ -70,6 +72,7 @@ namespace Hazel {
 		static void CreateScene();
 		static void CreateActor(Entity e);
 
+		static Ref<PhysicsActor> GetActorForEntity(Entity entity);
 		static void Simulate(Timestep ts);
 
 		static void DestroyScene();
