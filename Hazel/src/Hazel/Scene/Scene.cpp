@@ -10,6 +10,7 @@
 
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Physics/Physics.h"
+#include "Hazel/Physics/PhysicsActor.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
